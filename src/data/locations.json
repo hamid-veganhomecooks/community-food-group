@@ -1,0 +1,68 @@
+[
+  {
+    "id": "main-hub",
+    "name": "Main Community Hub",
+    "address": "123 Main Street, Springfield",
+    "coordinates": {
+      "lat": 40.7128,
+      "lng": -74.0060
+    },
+    "hours": {
+      "monday": "10:00 AM - 6:00 PM",
+      "tuesday": "10:00 AM - 6:00 PM",
+      "wednesday": "10:00 AM - 6:00 PM",
+      "thursday": "10:00 AM - 6:00 PM",
+      "friday": "10:00 AM - 6:00 PM",
+      "saturday": "9:00 AM - 2:00 PM",
+      "sunday": "Closed"
+    },
+    "phone": "(555) 123-4567",
+    "email": "main@communityfood.org",
+    "description": "Our main hub with food distribution, workshops, and community gatherings.",
+    "features": ["Food Distribution", "Workshop Space", "Community Garden"]
+  },
+  {
+    "id": "south-side",
+    "name": "South Side Food Center",
+    "address": "456 Oak Avenue, Springfield",
+    "coordinates": {
+      "lat": 40.7138,
+      "lng": -74.0050
+    },
+    "hours": {
+      "monday": "Closed",
+      "tuesday": "1:00 PM - 7:00 PM",
+      "wednesday": "Closed",
+      "thursday": "1:00 PM - 7:00 PM",
+      "friday": "Closed",
+      "saturday": "10:00 AM - 2:00 PM",
+      "sunday": "Closed"
+    },
+    "phone": "(555) 987-6543",
+    "email": "south@communityfood.org",
+    "description": "Satellite location serving the south side community with weekly distributions.",
+    "features": ["Food Distribution", "Community Outreach"]
+  },
+  {
+    "id": "community-garden",
+    "name": "Community Garden & Learning Center",
+    "address": "789 Garden Lane, Springfield",
+    "coordinates": {
+      "lat": 40.7148,
+      "lng": -74.0070
+    },
+    "hours": {
+      "monday": "8:00 AM - 6:00 PM",
+      "tuesday": "8:00 AM - 6:00 PM",
+      "wednesday": "8:00 AM - 6:00 PM",
+      "thursday": "8:00 AM - 6:00 PM",
+      "friday": "8:00 AM - 6:00 PM",
+      "saturday": "9:00 AM - 5:00 PM",
+      "sunday": "9:00 AM - 5:00 PM"
+    },
+    "phone": "(555) 456-7890",
+    "email": "garden@communityfood.org",
+    "description": "Our garden learning center where we grow food and teach sustainable practices.",
+    "features": ["Community Garden", "Workshop Space", "Learning Center"]
+  }
+]

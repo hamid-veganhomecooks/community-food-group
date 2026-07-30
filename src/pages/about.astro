@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+// Get all pages and find the about page by slug
+const pages = await getCollection('pages');
+const aboutPage = pages.find((page) => page.slug === 'about');
+
+if (!aboutPage) {
+  throw new Error('About page not found');
+}
+
+const { Content } = await aboutPage.render();
+---
+
+<BaseLayout
+  title={aboutPage.data.title}
+  description={aboutPage.data.description}
+  pageTitle={aboutPage.data.heroTitle || aboutPage.data.title}
+>
+  <div class="section bg-cream">
+    <div class="container">
+      <article class="prose prose-lg max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8 md:p-12">
+        <Content />
+      </article>
+    </div>
+  </div>
+</BaseLayout>

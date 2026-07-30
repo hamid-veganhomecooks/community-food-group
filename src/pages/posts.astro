@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MastodonFeed from '../components/MastodonFeed.astro';
+---
+
+<BaseLayout
+  title="Updates"
+  description="Latest updates from our community"
+  pageTitle="All Updates"
+>
+  <div class="section bg-cream">
+    <div class="container">
+      <div class="max-w-3xl mx-auto text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold text-terracotta-dark mb-4">
+          Community Updates
+        </h1>
+        <p class="text-lg text-gray-600">
+          Stay up to date with the latest news, events, and announcements from our community food group.
+        </p>
+      </div>
+
+      <MastodonFeed limit={20} />
+    </div>
+  </div>
+</BaseLayout>

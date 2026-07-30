@@ -1,0 +1,108 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import locations from '../data/locations.json';
+import { MapPin, Clock, Phone, Mail } from 'lucide-astro';
+---
+
+<BaseLayout
+  title="Locations"
+  description="Find a community food group location near you"
+  pageTitle="Our Locations"
+>
+  <div class="section bg-cream">
+    <div class="container">
+      <div class="max-w-3xl mx-auto text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold text-terracotta-dark mb-4">
+          Find Us
+        </h1>
+        <p class="text-lg text-gray-600">
+          Visit any of our locations to get involved, pick up food, or learn more about our programs.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {locations.map((location) => (
+          <article
+            id={location.id}
+            class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+          >
+            <h2 class="text-2xl font-bold text-terracotta mb-3">
+              {location.name}
+            </h2>
+
+            <div class="space-y-3 text-gray-700">
+              <div class="flex items-start space-x-2">
+                <MapPin class="w-5 h-5 text-terracotta flex-shrink-0 mt-0.5" aria-hidden="true" />
+                <div>
+                  <p>{location.address}</p>
+                  <a
+                    href={`https://www.google.com/maps?q=${location.coordinates.lat},${location.coordinates.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-sm text-terracotta hover:text-terracotta-dark"
+                    aria-label={`Get directions to ${location.name}`}
+                  >
+                    Get Directions →
+                  </a>
+                </div>
+              </div>
+
+              <div class="flex items-start space-x-2">
+                <Clock class="w-5 h-5 text-terracotta flex-shrink-0 mt-0.5" aria-hidden="true" />
+                <div>
+                  <p class="font-medium text-gray-800">Hours:</p>
+                  <ul class="text-sm" aria-label="Operating hours">
+                    {Object.entries(location.hours).map(([day, hours]) => (
+                      <li key={day} class="flex justify-between gap-4">
+                        <span class="capitalize">{day}</span>
+                        <span class="text-gray-600">{hours}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {location.phone && (
+                <div class="flex items-center space-x-2">
+                  <Phone class="w-5 h-5 text-terracotta flex-shrink-0" aria-hidden="true" />
+                  <a href={`tel:${location.phone}`} class="hover:text-terracotta">
+                    {location.phone}
+                  </a>
+                </div>
+              )}
+
+              {location.email && (
+                <div class="flex items-center space-x-2">
+                  <Mail class="w-5 h-5 text-terracotta flex-shrink-0" aria-hidden="true" />
+                  <a href={`mailto:${location.email}`} class="hover:text-terracotta">
+                    {location.email}
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {location.features && (
+              <div class="mt-4">
+                <h3 class="font-semibold text-gray-800 text-sm mb-2">Features:</h3>
+                <div class="flex flex-wrap gap-2">
+                  {location.features.map((feature) => (
+                    <span
+                      key={feature}
+                      class="bg-sage-light/20 text-sage-dark px-3 py-1 rounded-full text-sm"
+                    >
+                      {feature}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <p class="mt-4 text-gray-700 text-sm">
+              {location.description}
+            </p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </div>
+</BaseLayout>

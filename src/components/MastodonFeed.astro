@@ -1,0 +1,107 @@
+---
+import type { MastodonPost } from '../types/mastodon';
+
+export interface Props {
+  limit?: number;
+}
+
+const { limit = 10 } = Astro.props;
+
+let posts: MastodonPost[] = [];
+
+try {
+  // Use Astro.glob for data files in Astro 5
+  const dataModules = import.meta.glob('../data/mastodon-posts.json', { 
+    eager: true,
+    import: 'default'
+  });
+  
+  if (dataModules && Object.keys(dataModules).length > 0) {
+    const firstKey = Object.keys(dataModules)[0];
+    const allPosts = dataModules[firstKey] as MastodonPost[];
+    posts = Array.isArray(allPosts) ? allPosts.slice(0, limit) : [];
+  }
+} catch (_error) {
+  // Silently handle missing data file
+  posts = [];
+}
+---
+
+{posts.length > 0 ? (
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {posts.map((post) => (
+      <article class="card" aria-label={`Post from ${new Date(post.created_at).toLocaleDateString()}`}>
+        <div class="flex items-start space-x-3 mb-3">
+          {post.account?.avatar && (
+            <img
+              src={post.account.avatar}
+              alt={post.account.display_name || post.account.username}
+              class="w-10 h-10 rounded-full object-cover"
+              loading="lazy"
+              width="40"
+              height="40"
+            />
+          )}
+          <div>
+            <p class="font-semibold text-gray-900">
+              {post.account?.display_name || post.account?.username || 'Community Food Group'}
+            </p>
+            <p class="text-sm text-gray-500">
+              {new Date(post.created_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </p>
+          </div>
+        </div>
+
+        <div class="prose prose-sm max-w-none text-gray-700">
+          {post.content}
+        </div>
+
+        {post.media_attachments && post.media_attachments.length > 0 && (
+          <div class="mt-4 grid grid-cols-2 gap-2">
+            {post.media_attachments.slice(0, 4).map((media) => (
+              <img
+                key={media.id}
+                src={media.preview_url || media.url}
+                alt={media.description || 'Post attachment'}
+                class="rounded-lg object-cover w-full h-32"
+                loading="lazy"
+              />
+            ))}
+          </div>
+        )}
+
+        <div class="mt-4 flex items-center space-x-4 text-sm text-gray-500">
+          <span aria-label="Replies">
+            💬 {post.replies_count || 0}
+          </span>
+          <span aria-label="Re-posts">
+            🔄 {post.reblogs_count || 0}
+          </span>
+          <span aria-label="Favorites">
+            ❤️ {post.favourites_count || 0}
+          </span>
+        </div>
+
+        {post.url && (
+          <a
+            href={post.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="mt-4 inline-block text-sm text-terracotta hover:text-terracotta-dark font-medium"
+            aria-label="View original post on Mastodon"
+          >
+            View on Mastodon →
+          </a>
+        )}
+      </article>
+    ))}
+  </div>
+) : (
+  <div class="text-center py-12">
+    <p class="text-gray-600">No updates available at the moment. Please check back later!</p>
+  </div>
+)}

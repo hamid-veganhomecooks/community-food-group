@@ -1,0 +1,115 @@
+---
+import { Menu, X } from 'lucide-astro';
+---
+
+<header class="bg-white shadow-sm sticky top-0 z-50" role="banner" aria-label="Main navigation">
+  <nav class="container flex items-center justify-between h-16" aria-label="Primary navigation">
+    <!-- Logo -->
+    <a href="/" class="flex items-center space-x-2 text-xl font-bold text-terracotta hover:text-terracotta-dark transition-colors" aria-label="Community Food Group Home">
+      <span class="text-2xl">🍲</span>
+      <span>Community Food Group</span>
+    </a>
+
+    <!-- Desktop Navigation -->
+    <ul class="hidden md:flex items-center space-x-6" role="menubar">
+      <li role="none">
+        <a href="/" class="text-gray-700 hover:text-terracotta transition-colors font-medium" role="menuitem">
+          Home
+        </a>
+      </li>
+      <li role="none">
+        <a href="/about" class="text-gray-700 hover:text-terracotta transition-colors font-medium" role="menuitem">
+          About
+        </a>
+      </li>
+      <li role="none">
+        <a href="/locations" class="text-gray-700 hover:text-terracotta transition-colors font-medium" role="menuitem">
+          Locations
+        </a>
+      </li>
+      <li role="none">
+        <a href="/join" class="text-gray-700 hover:text-terracotta transition-colors font-medium" role="menuitem">
+          Join
+        </a>
+      </li>
+      <li role="none">
+        <a href="/donate" class="btn-primary text-sm" role="menuitem">
+          Donate
+        </a>
+      </li>
+    </ul>
+
+    <!-- Mobile Menu Toggle -->
+    <button
+      type="button"
+      class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-terracotta"
+      aria-controls="mobile-menu"
+      aria-expanded="false"
+      aria-label="Toggle navigation menu"
+      id="mobile-menu-toggle"
+      data-mobile-toggle
+    >
+      <Menu class="w-6 h-6 text-gray-700" data-icon-open />
+      <X class="w-6 h-6 text-gray-700 hidden" data-icon-close />
+    </button>
+  </nav>
+
+  <!-- Mobile Navigation -->
+  <div id="mobile-menu" class="md:hidden hidden bg-white border-t border-gray-200" data-mobile-menu>
+    <ul class="container py-4 space-y-3" role="menubar" aria-label="Mobile navigation">
+      <li role="none">
+        <a href="/" class="block text-gray-700 hover:text-terracotta transition-colors font-medium" role="menuitem">
+          Home
+        </a>
+      </li>
+      <li role="none">
+        <a href="/about" class="block text-gray-700 hover:text-terracotta transition-colors font-medium" role="menuitem">
+          About
+        </a>
+      </li>
+      <li role="none">
+        <a href="/locations" class="block text-gray-700 hover:text-terracotta transition-colors font-medium" role="menuitem">
+          Locations
+        </a>
+      </li>
+      <li role="none">
+        <a href="/join" class="block text-gray-700 hover:text-terracotta transition-colors font-medium" role="menuitem">
+          Join
+        </a>
+      </li>
+      <li role="none">
+        <a href="/donate" class="inline-block btn-primary text-sm w-full text-center" role="menuitem">
+          Donate
+        </a>
+      </li>
+    </ul>
+  </div>
+</header>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.querySelector('[data-mobile-toggle]');
+    const menu = document.querySelector('[data-mobile-menu]');
+    const iconOpen = document.querySelector('[data-icon-open]');
+    const iconClose = document.querySelector('[data-icon-close]');
+
+    if (toggle && menu && iconOpen && iconClose) {
+      toggle.addEventListener('click', () => {
+        const isExpanded = menu.classList.toggle('hidden');
+        toggle.setAttribute('aria-expanded', !isExpanded);
+        iconOpen.classList.toggle('hidden');
+        iconClose.classList.toggle('hidden');
+      });
+
+      // Close mobile menu when clicking a link
+      menu.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => {
+          menu.classList.add('hidden');
+          toggle.setAttribute('aria-expanded', 'false');
+          iconOpen.classList.remove('hidden');
+          iconClose.classList.add('hidden');
+        });
+      });
+    }
+  });
+</script>

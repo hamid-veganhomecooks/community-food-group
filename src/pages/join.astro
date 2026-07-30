@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+// Get all pages and find the join page by slug
+const pages = await getCollection('pages');
+const joinPage = pages.find((page) => page.slug === 'join');
+
+if (!joinPage) {
+  throw new Error('Join page not found');
+}
+
+const { Content } = await joinPage.render();
+---
+
+<BaseLayout
+  title={joinPage.data.title}
+  description={joinPage.data.description}
+  pageTitle={joinPage.data.heroTitle || joinPage.data.title}
+>
+  <div class="section bg-cream">
+    <div class="container">
+      <article class="prose prose-lg max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8 md:p-12">
+        <Content />
+      </article>
+    </div>
+  </div>
+</BaseLayout>

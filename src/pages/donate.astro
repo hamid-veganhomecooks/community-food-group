@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+// Get all pages and find the donate page by slug
+const pages = await getCollection('pages');
+const donatePage = pages.find((page) => page.slug === 'donate');
+
+if (!donatePage) {
+  throw new Error('Donate page not found');
+}
+
+const { Content } = await donatePage.render();
+---
+
+<BaseLayout
+  title={donatePage.data.title}
+  description={donatePage.data.description}
+  pageTitle={donatePage.data.heroTitle || donatePage.data.title}
+>
+  <div class="section bg-cream">
+    <div class="container">
+      <article class="prose prose-lg max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8 md:p-12">
+        <Content />
+      </article>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,102 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MastodonFeed from '../components/MastodonFeed.astro';
+import locations from '../data/locations.json';
+---
+
+<BaseLayout
+  title="Home"
+  description="Community Food Group - Building food security through community action"
+  pageTitle="Welcome"
+>
+  <!-- Hero Section -->
+  <section class="bg-gradient-to-r from-terracotta to-terracotta-dark text-white py-20">
+    <div class="container">
+      <div class="max-w-3xl">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
+          Nourishing Our Community
+        </h1>
+        <p class="text-lg md:text-xl text-cream/90 mb-8">
+          Building a more food-secure future through connection, education, and community action.
+        </p>
+        <div class="flex flex-wrap gap-4">
+          <a href="/join" class="btn-secondary bg-white text-terracotta hover:bg-cream">
+            Join Us
+          </a>
+          <a href="/donate" class="btn-primary bg-cream text-terracotta-dark hover:bg-white">
+            Donate
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Latest Updates Section -->
+  <section class="section bg-cream">
+    <div class="container">
+      <h2 class="text-3xl md:text-4xl font-bold text-terracotta-dark mb-8">
+        Latest Updates
+      </h2>
+      <MastodonFeed limit={6} />
+      <div class="mt-8 text-center">
+        <a href="/posts" class="btn-primary">
+          View All Updates
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Locations Preview -->
+  <section class="section bg-white">
+    <div class="container">
+      <h2 class="text-3xl md:text-4xl font-bold text-terracotta-dark mb-4">
+        Our Locations
+      </h2>
+      <p class="text-gray-600 mb-8 max-w-2xl">
+        Visit us at any of our community locations. We're here to serve you.
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {locations.slice(0, 3).map((location) => (
+          <div class="card">
+            <h3 class="text-xl font-semibold text-terracotta mb-2">
+              {location.name}
+            </h3>
+            <p class="text-gray-600 text-sm mb-2">{location.address}</p>
+            <p class="text-gray-700 text-sm mb-4">{location.description}</p>
+            <a
+              href={`/locations#${location.id}`}
+              class="text-terracotta hover:text-terracotta-dark font-medium text-sm inline-flex items-center"
+            >
+              Learn More →
+            </a>
+          </div>
+        ))}
+      </div>
+      <div class="mt-8 text-center">
+        <a href="/locations" class="btn-primary">
+          View All Locations
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action -->
+  <section class="section bg-sage text-white">
+    <div class="container text-center">
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+        Ready to Make a Difference?
+      </h2>
+      <p class="text-cream/90 text-lg max-w-2xl mx-auto mb-8">
+        Whether you have an hour or a day, your contribution helps build a stronger community.
+      </p>
+      <div class="flex flex-wrap justify-center gap-4">
+        <a href="/join" class="btn-primary bg-white text-sage-dark hover:bg-cream">
+          Volunteer Today
+        </a>
+        <a href="/donate" class="btn-secondary bg-cream text-sage-dark hover:bg-white">
+          Support Our Mission
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
