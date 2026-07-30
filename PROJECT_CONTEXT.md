@@ -101,46 +101,46 @@ These are product-content decisions and must not be invented by an implementatio
 
 ```text
 /
-â”œâ”€â”€ .env.example                     # Scaffold Mastodon variables; values unverified
-â”œâ”€â”€ .gitignore
-â”œâ”€â”€ README.md                        # Present but incomplete
-â”œâ”€â”€ PROJECT_CONTEXT.md               # Project-level SSOT
-â”œâ”€â”€ TASK_SPEC.md                     # Active task-level SSOT
-â”œâ”€â”€ astro.config.mjs                 # Static output; site URL unverified
-â”œâ”€â”€ package.json
-â”œâ”€â”€ package-lock.json
-â”œâ”€â”€ tailwind.config.mjs              # Tailwind 3 configuration
-â”œâ”€â”€ tsconfig.json                    # Astro strict TypeScript
-â”œâ”€â”€ scripts/
-â”‚   â””â”€â”€ fetch-mastodon.ts            # Standalone fetch/cache utility; not a build hook
-â””â”€â”€ src/
-    â”œâ”€â”€ components/
-    â”‚   â”œâ”€â”€ Footer.astro
-    â”‚   â”œâ”€â”€ Header.astro
-    â”‚   â””â”€â”€ MastodonFeed.astro
-    â”œâ”€â”€ content/
-    â”‚   â”œâ”€â”€ config.ts                # Legacy content collection definition
-    â”‚   â””â”€â”€ pages/
-    â”‚       â”œâ”€â”€ about.mdx
-    â”‚       â”œâ”€â”€ donate.mdx
-    â”‚       â””â”€â”€ join.mdx
-    â”œâ”€â”€ data/
-    â”‚   â”œâ”€â”€ locations.json           # Unapproved scaffold records
-    â”‚   â””â”€â”€ mastodon-posts.json      # Generated cache; currently an empty array
-    â”œâ”€â”€ env.d.ts
-    â”œâ”€â”€ layouts/
-    â”‚   â””â”€â”€ BaseLayout.astro
-    â”œâ”€â”€ pages/
-    â”‚   â”œâ”€â”€ about.astro
-    â”‚   â”œâ”€â”€ donate.astro
-    â”‚   â”œâ”€â”€ index.astro
-    â”‚   â”œâ”€â”€ join.astro
-    â”‚   â”œâ”€â”€ locations.astro
-    â”‚   â””â”€â”€ posts.astro
-    â”œâ”€â”€ styles/
-    â”‚   â””â”€â”€ global.css
-    â””â”€â”€ types/
-        â””â”€â”€ mastodon.ts
+├── .env.example                     # Scaffold Mastodon variables; values unverified
+├── .gitignore
+├── README.md                        # Present but incomplete
+├── PROJECT_CONTEXT.md               # Project-level SSOT
+├── TASK_SPEC.md                     # Active task-level SSOT
+├── astro.config.mjs                 # Static output; site URL unverified
+├── package.json
+├── package-lock.json
+├── tailwind.config.mjs              # Tailwind 3 configuration
+├── tsconfig.json                    # Astro strict TypeScript
+├── scripts/
+│   └── fetch-mastodon.ts            # Standalone fetch/cache utility; not a build hook
+└── src/
+    ├── components/
+    │   ├── Footer.astro
+    │   ├── Header.astro
+    │   └── MastodonFeed.astro
+    ├── content/
+    │   ├── config.ts                # Legacy content collection definition
+    │   └── pages/
+    │       ├── about.mdx
+    │       ├── donate.mdx
+    │       └── join.mdx
+    ├── data/
+    │   ├── locations.json           # Unapproved scaffold records
+    │   └── mastodon-posts.json      # Generated cache; currently an empty array
+    ├── env.d.ts
+    ├── layouts/
+    │   └── BaseLayout.astro
+    ├── pages/
+    │   ├── about.astro
+    │   ├── donate.astro
+    │   ├── index.astro
+    │   ├── join.astro
+    │   ├── locations.astro
+    │   └── posts.astro
+    ├── styles/
+    │   └── global.css
+    └── types/
+        └── mastodon.ts
 ```
 
 Files named in an earlier plan but absent from the repository are not part of the current architecture unless a future task explicitly creates them.
@@ -155,7 +155,7 @@ Files named in an earlier plan but absent from the repository are not part of th
 
 ### Active task
 
-Execute `TASK_SPEC.md`. The current task is **Task 001 â€” Establish a truthful, deterministic baseline**.
+Execute `TASK_SPEC.md`. The current task is **Task 001 — Establish a truthful, deterministic baseline**.
 
 ### Required inputs
 

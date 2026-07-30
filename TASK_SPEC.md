@@ -1,6 +1,6 @@
 # TASK SPECIFICATION
 
-## Task 001 : Establish a truthful, deterministic baseline
+## Task 001 — Establish a truthful, deterministic baseline
 
 ### Role
 
@@ -53,9 +53,9 @@ No other file may be changed in this task.
 
 4. **Make Mastodon configuration honest and optional**
    - Remove the invented default account handle.
-   - Treat a missing or blank `MASTODON_ACCOUNT` as â€œfeed not configured.â€
+   - Treat a missing or blank `MASTODON_ACCOUNT` as “feed not configured.”
    - In the unconfigured case, exit successfully without overwriting a valid existing cache.
-   - Validate `MASTODON_POST_LIMIT` as an integer in the inclusive range 1â€“40. Use 20 when it is omitted; fail with a clear message when it is invalid.
+   - Validate `MASTODON_POST_LIMIT` as an integer in the inclusive range 1–40. Use 20 when it is omitted; fail with a clear message when it is invalid.
    - Add an HTTP timeout so a stalled Mastodon instance cannot hang a deployment indefinitely.
    - Keep account lookup and status retrieval server/build-side only.
    - Do not add authentication or secrets.
