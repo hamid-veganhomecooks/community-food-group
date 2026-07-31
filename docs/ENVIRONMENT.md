@@ -11,16 +11,34 @@ Everything below is user-local and survives across sessions.
 
 ## 1. Node
 
-Two versions are installed under nvm. The project requires **22.18+**; the shell default is
-Node 20, which **cannot** run `scripts/fetch-mastodon.ts` (`ERR_UNKNOWN_FILE_EXTENSION`).
+Two versions are installed under nvm, 20.20.2 and 22.23.2. The project requires **22.18+**.
+Node 20 **cannot** run `scripts/fetch-mastodon.ts` (`ERR_UNKNOWN_FILE_EXTENSION`) and
+`astro check` refuses to start on it outright.
 
-Select the pinned version before any npm work:
+**[2026-07-31] The nvm default alias now points at 22** (`~/.nvm/alias/default` contains
+`22`, resolving to v22.23.2). It previously pointed at 20, which is why sessions kept
+tripping over this. **A newly opened terminal is on 22 and needs no action.**
+
+Verify with a genuinely clean shell, because an inherited `PATH` will lie:
+
+```bash
+env -i HOME="$HOME" TERM=xterm bash -ic 'node -v'
+```
+
+Once an nvm version directory is on `PATH`, sourcing `nvm.sh` again does **not** override it,
+so a shell started before the alias change - or any subshell of one - keeps reporting the old
+version however many times nvm is reloaded. That is stale `PATH`, not a broken alias. Checking
+with `bash -ic 'node -v'` from such a shell reproduces the false negative.
+
+If a session does land on the wrong version, select the pinned one explicitly:
 
 ```bash
 export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use
 ```
 
-`nvm use` with no argument reads `.nvmrc` (22.23.2).
+`nvm use` with no argument reads `.nvmrc` (22.23.2). The default alias tracks the `22` line
+rather than an exact patch, so installing a newer 22.x moves the shell default while `.nvmrc`
+keeps the project pinned; that drift is intentional and harmless under `engines.node >=22.18`.
 
 ---
 
