@@ -3,6 +3,7 @@ import '../styles/global.css';
 import { Font } from 'astro:assets';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import siteConfig from '../../site.config';
 
 export interface Props {
   title: string;
@@ -12,9 +13,9 @@ export interface Props {
 }
 
 const { title, description, ogImage, pageTitle } = Astro.props;
-const siteTitle = 'Community Food Group';
+const siteTitle = siteConfig.groupName;
 const fullTitle = pageTitle ? `${pageTitle} | ${siteTitle}` : title || siteTitle;
-const metaDescription = description || 'Building food security through community action';
+const metaDescription = description || siteConfig.tagline || siteConfig.groupName;
 const metaImage = ogImage || '/images/og-default.jpg';
 ---
 

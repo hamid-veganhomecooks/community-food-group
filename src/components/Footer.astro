@@ -1,9 +1,13 @@
+---
+import siteConfig from '../../site.config';
+---
+
 <footer class="bg-surface-inverse text-ink-inverse-muted py-12" role="contentinfo">
   <div class="container">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
       <!-- About Section -->
       <div>
-        <h3 class="text-ink-inverse font-semibold text-lg mb-4">Community Food Group</h3>
+        <h3 class="text-ink-inverse font-semibold text-lg mb-4">{siteConfig.groupName}</h3>
         <p class="text-sm">
           Building food security through community action. Together, we're nourishing our neighbors and strengthening our community.
         </p>
@@ -33,7 +37,7 @@
         <h4 class="text-ink-inverse font-semibold text-lg mb-4">Connect With Us</h4>
         <ul class="space-y-2 text-sm">
           <li>
-            <a href="mailto:info@GROUP_DOMAIN" class="hover:text-ink-inverse transition-colors">
+            <a href={`mailto:${siteConfig.contactEmail}`} class="hover:text-ink-inverse transition-colors">
               <span aria-hidden="true">📧</span> Email us
             </a>
           </li>
@@ -49,7 +53,7 @@
     <!-- Bottom Bar -->
     <div class="border-t border-ink-inverse-muted/30 mt-8 pt-6 text-sm text-center md:text-left">
       <p>
-        &copy; {new Date().getFullYear()} Community Food Group. All rights reserved.
+        &copy; {new Date().getFullYear()} {siteConfig.groupName}. All rights reserved.
       </p>
       <p class="mt-1 text-xs">
         Built with 💚 for our community

@@ -1,5 +1,6 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
+import siteConfig from '../site.config';
 
 /**
  * Editorial pages rendered by `src/pages/{about,join,donate}.astro`.
@@ -15,7 +16,7 @@ const pages = defineCollection({
     heroImage: z.string().optional(),
     heroTitle: z.string().optional(),
     heroDescription: z.string().optional(),
-    author: z.string().default('Community Food Group'),
+    author: z.string().default(siteConfig.groupName),
     // `z.coerce.date()` rather than the previous `z.date()`: the content layer hands
     // frontmatter to Zod as parsed YAML, and the legacy collection API used to coerce
     // date strings on our behalf. Coercing here preserves the old accepted input.

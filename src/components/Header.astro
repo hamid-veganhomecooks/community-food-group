@@ -1,13 +1,14 @@
 ---
 import { Menu, X } from 'lucide-astro';
+import siteConfig from '../../site.config';
 ---
 
 <header class="bg-surface-raised shadow-xs sticky top-0 z-50" role="banner">
   <nav class="container flex items-center justify-between h-16" aria-label="Primary navigation">
     <!-- Logo -->
-    <a href="/" class="flex items-center space-x-2 text-xl font-bold text-brand-ink hover:text-brand-hover transition-colors" aria-label="Community Food Group Home">
+    <a href="/" class="flex items-center space-x-2 text-xl font-bold text-brand-ink hover:text-brand-hover transition-colors" aria-label={`${siteConfig.groupName} Home`}>
       <span class="text-2xl">🍲</span>
-      <span>Community Food Group</span>
+      <span>{siteConfig.groupName}</span>
     </a>
 
     <!-- Desktop Navigation -->

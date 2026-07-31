@@ -1,7 +1,8 @@
-# Community Food Group
+# Mutual aid group site template
 
 Public information site for a local mutual aid group that cooks together and distributes
-food directly to neighbours.
+food directly to neighbours - a template plus one group's own instance of it, meant to be
+forked and adopted by other groups. See [Rebranding this site](#rebranding-this-site).
 
 Built with Astro 7, Tailwind CSS 4, and MDX. Static output, intended for Cloudflare Pages.
 
@@ -114,6 +115,40 @@ src/styles/global.css
 
 ## Rebranding this site
 
+This repository is a template plus one group's instance of it. Adopting it for another group
+means editing four documented surfaces, and nothing else:
+
+| Surface | What you edit |
+| --- | --- |
+| `site.config.ts` | Identity constants: group name, tagline, city, contact, social accounts |
+| `:root` brand inputs in `src/styles/global.css` | Fourteen colour values (below) |
+| `src/data/locations.json` | Replace the records wholesale with your own |
+| `src/content/pages/*.mdx` | Rewrite the prose wholesale |
+
+### 1. `site.config.ts` - identity
+
+A typed config file at the repository root holding this group's identity constants: name,
+tagline, city, region, domain, contact email, and social accounts. Every template reads it
+instead of hardcoding a name, so `npm run check` (TypeScript) catches a missing or
+mistyped field.
+
+A field you have not filled in yet holds a placeholder **token** instead of a guess -
+`SCREAMING_SNAKE_CASE`, matching `/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b/`, e.g. `GROUP_NAME` or
+`GROUP_DOMAIN`. A token is unmistakably unfilled, even to a non-technical reader looking at a
+preview - never a plausible-looking guess like `example.com`.
+
+```bash
+npm run check:config
+```
+
+Scans `site.config.ts` and every file under `src/` for that pattern and exits non-zero,
+naming each hit's file, line, and surrounding text, while any token remains. Fill every field
+with a real value (or `null`, for a field you're deliberately not using - see the comment on
+`social.signal` in `site.config.ts` for an example) and it exits 0. It is part of `npm run
+verify`.
+
+### 2. Colour
+
 Colour is a two-layer token system in `src/styles/global.css`. A reusing group only ever
 edits **Layer 1**; every template consumes only **Layer 2**.
 
@@ -167,6 +202,21 @@ list that could drift from what ships - and checks all sixteen role pairs actual
 templates against WCAG 2.2 AA (4.5:1 for text, 3.0:1 for the focus ring). It prints a measured
 ratio for every pair and exits non-zero, naming the failing pair, if a new brand value drops
 below threshold.
+
+### 3. `src/data/locations.json` - locations
+
+Where the group cooks and where it hands out food, plus any other named locations. This
+group's records describe real places in Tucson, Arizona and are not sample data - replace the
+records wholesale with your own rather than editing them in place.
+
+### 4. `src/content/pages/*.mdx` - editorial prose
+
+`about.mdx`, `join.mdx`, and `donate.mdx`. **This prose is rewritten, not tokenized.** A group
+in another city does not need this group's sentences with a name swapped in - they have a
+different model, different programs, and no rented garden plot at a specific address. Do not
+add config interpolation (`{siteConfig.groupName}` and similar) into these documents: a
+sentence that needs a token to make sense belongs to the adopting group, not to the template.
+Write your own copy describing your own group.
 
 ## Typography and spacing
 

@@ -1,5 +1,6 @@
 ---
 import type { MastodonPost } from '../types/mastodon';
+import siteConfig from '../../site.config';
 
 export interface Props {
   limit?: number;
@@ -44,7 +45,7 @@ try {
           )}
           <div>
             <p class="font-semibold text-ink">
-              {post.account?.display_name || post.account?.username || 'Community Food Group'}
+              {post.account?.display_name || post.account?.username || siteConfig.groupName}
             </p>
             <p class="text-sm text-ink-muted">
               {new Date(post.created_at).toLocaleDateString('en-US', {

@@ -76,6 +76,9 @@ npm run check
 step "npm run check:contrast"
 npm run check:contrast
 
+step "npm run check:config"
+npm run check:config
+
 step "npm run build"
 npm run build
 
