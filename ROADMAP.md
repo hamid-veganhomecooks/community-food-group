@@ -20,7 +20,8 @@ deleted.
 Two tracks are independent and can proceed in parallel:
 
 - **Track A (unblocked today):** Tasks 001-004 and 004b. Purely structural. Requires no owner
-  facts - 004b centralizes the identity values without filling them.
+  facts - 004b centralizes the identity values without filling them. **Tasks 001-004 and 004c
+  are complete and merged; 004b is the only Track A task left, and it is active.**
 - **Track B (blocked on owner input):** Tasks 005-007.
 
 Tasks 008-009 close out the release and depend on both tracks.
@@ -117,115 +118,80 @@ protocol wants when scope and repository disagree.
 
 ## Task 004 - Accessibility and shell correctness
 
-**Status: ACTIVE**, promoted 2026-07-31. **Specified in `TASK_SPEC.md`, which is the only
-authority on its scope and acceptance.**
-**Blocked on:** nothing. Task 003 is merged.
-**Touches:** `Header.astro`, `Footer.astro`, `global.css` (focus and reduced-motion only), and
-`scripts/verify-baseline.sh`.
+**Status: COMPLETE**, 2026-07-31. Merged to `main` as `15dd164`.
 
-The planned scope that stood here has been **cut into `TASK_SPEC.md`**, not copied. Two of its
-items had already been overtaken by the repository before promotion: the mobile toggle's
-`isExpanded` variable was renamed in a prior commit, and the roadmap still asked for it. The
-promoted spec records both as already-done so a stateless session does not redo them.
+Removed the application-menu ARIA pattern from both navigation lists, completed the mobile
+menu's keyboard contract (Escape, focus return, close-on-focus-leaving, four close paths
+sharing one function, **no focus trap**), added a single project `:focus-visible` rule on the
+existing `--color-focus` role, resolved both dead footer links, closed a WCAG 2.5.3 Label in
+Name failure by deleting three redundant `aria-label`s, added a preventive
+`prefers-reduced-motion` block, and wired `npm run check:contrast` into the uncached half of
+`npm run verify`.
 
-Two items were also **added** at promotion, from reading the current files rather than this
-entry: a WCAG 2.5.3 Label in Name failure on the footer's social links, and wiring
-`npm run check:contrast` into `npm run verify`, which Task 003 shipped but could not wire
-because `verify-baseline.sh` was outside its scope.
+The dated decisions and the full verification record are in `PROJECT_CONTEXT.md` section 4,
+which is their only copy.
+
+**Carries one durable lesson.** The task spec asserted the Playwright harness already had
+"focus-visible traversal groundwork". It had none. The claim was inherited from an earlier
+document rather than checked, and it was checked rather than trusted only because the
+acceptance criteria demanded executed evidence. Constraint 3.4 applies to a project's own
+notes about itself, not just to the repository - a correction is logged in
+`docs/ENVIRONMENT.md`.
 
 ---
 
 ## Task 004b - Site config and the fork-and-adopt surface
 
-**Status:** queued, and next after Task 004. Unplanned; inserted 2026-07-31 on an owner
-decision to shape the repository for reuse by other groups. **Track A** - it needs no owner
-facts, because the values it centralizes may stay as tokens.
-**Blocked on:** Task 004. Both edit `Header.astro` and `Footer.astro`; this is the same
-collision that forced 003 and 004 into sequence. Do not run them in parallel.
+**Status: ACTIVE**, promoted 2026-07-31. **Specified in `TASK_SPEC.md`, which is the only
+authority on its scope and acceptance.**
+**Blocked on:** nothing. Task 004 is merged as `15dd164` and the working tree is clean, so the
+`Header.astro` / `Footer.astro` collision that sequenced this behind 004 is resolved.
+**Touches:** new `site.config.ts` and `scripts/check-config.mjs`; `verify-baseline.sh`,
+`package.json`, `README.md`; and `Header.astro`, `Footer.astro`, `BaseLayout.astro`,
+`content.config.ts`, `index.astro`, `MastodonFeed.astro`.
 **Sequenced before Task 005** so that content work is not written and then immediately
 refactored into config.
 
-### Why
+The planned scope that stood here has been **cut into `TASK_SPEC.md`**, not copied. The reuse
+model it serves is in `PROJECT_CONTEXT.md` section 2, which remains its authority.
 
-The reuse model is recorded in `PROJECT_CONTEXT.md` section 2 and is the authority on it: this
-repository is a **template plus one group's instance**, adopted by forking, never
-multi-tenant.
+**Three things changed at promotion, from grepping the repository rather than trusting this
+entry:**
 
-There is also a live defect to fix. **`"Community Food Group"` is hardcoded in 9 places across
-`src/`** - the header wordmark, the footer heading and copyright line, `siteTitle` in
-`BaseLayout.astro`, the `author` default in `content.config.ts`, the `index.astro`
-description, and a `MastodonFeed.astro` fallback - while `GROUP NAME` appears **zero** times.
-The owner input is still deferred, so the site is currently shipping a plausible-sounding
-invented organization name in its `<title>` and its copyright notice. That is precisely the
-"dishonest presence" that section 4 contrasts against an honest token: it is
-`info@example.com` wearing a different hat.
+1. **This entry's own inventory was wrong.** It claimed 9 hardcoded occurrences of
+   `"Community Food Group"` and then enumerated 7, in 6 files. The true count is 9 across
+   **7** files; the two it missed were `Header.astro`'s `aria-label` and an MDX heading -
+   which is exactly the `aria-label`-and-not-an-`h1` failure mode its own rationale described.
+2. **One of the 9 cannot be fixed by this task.** `about.mdx:9` is MDX prose, and section 2
+   forbids interpolating config into prose. It is **Task 005's**, and the promoted spec
+   requires it to *survive* rather than treating its survival as a failure.
+3. **A second constraint 1 violation was found and added:** the invented tagline "Building
+   food security through community action", which feeds `<meta name="description">`,
+   `og:description` and `twitter:description` from `BaseLayout.astro`. Section 2 lists OG and
+   Twitter metadata as config-driven chrome, so it belongs here - but the same words also open
+   a footer *prose* blurb, which does not. This raises a new owner input, recorded in
+   `PROJECT_CONTEXT.md` section 4.
 
-**Why config rather than hardcoding real values and rebranding later with an editor or an AI.**
-Find-and-replace rebranding is *unverifiable*. There is no build-time assertion that every
-occurrence was caught, and the missed one will be in an `og:description` or an `aria-label`
-rather than in an `h1` where someone would notice. Section 4 already requires that every token
-be greppable by one documented pattern and that Task 009 fail the build while any remain;
-collapsing the identity constants into one object makes that check a validation of a single
-file instead of a regex fight across the tree. This is the same argument that produced
-`check-contrast.mjs`: a guard that reads the real source of truth beats a duplicate list and
-beats human vigilance.
-
-### Planned scope
-
-- **Create `site.config.ts`** at the repository root, holding only identity constants: group
-  name, city, region, domain, contact email, and social accounts. Typed with an exported
-  interface and `as const satisfies SiteConfig`, so `npm run check` validates it at build with
-  **zero new dependencies**. This deliberately avoids the zod decision still open in Task 009.
-- **Model deliberate absence in the type, not in a comment.** A social account is
-  `{ handle: string } | null`, where `null` means *this group has chosen not to have one* -
-  not *unknown, awaiting a value*. Section 4 warns that a future session must not "helpfully"
-  add a chat link; a type with no third state makes that structural rather than advisory. The
-  withdrawn Signal link is the precedent.
-- **Replace all 9 hardcoded occurrences** with config reads, in `Header.astro`,
-  `Footer.astro`, `BaseLayout.astro`, `content.config.ts`, `index.astro` and
-  `MastodonFeed.astro`. The name becomes the `GROUP NAME` token *in one place*.
-- **Create `scripts/check-config.mjs`**, wired as `npm run check:config` and added to the
-  uncached half of `verify-baseline.sh` alongside `check:contrast`. Zero dependencies, same
-  shape as the contrast script: scan for surviving `SCREAMING_CASE` tokens by the single
-  documented pattern, print each with its location, exit non-zero if any remain. **Prove it
-  fails** before declaring it works - a validator never seen to fail is not yet a validator.
-  This becomes the mechanism for Task 009's pre-publication check.
-- **Broaden `README.md`'s existing `## Rebranding this site` section** into the four adoption
-  surfaces. It currently documents colour only. Colour becomes one of four, not a competing
-  section - **do not add a second rebranding heading.** State plainly which surfaces an adopter
-  edits and, more importantly, that **prose is rewritten rather than tokenized**, so a forking
-  group does not try to parameterize the MDX and ship mad-libs.
-
-### Explicitly out of scope
-
-- **Any interpolation of config into the MDX documents.** Section 2 forbids it. If a sentence
-  needs a token to make sense, it belongs to the adopting group.
-- Filling `GROUP NAME` or `GROUP_DOMAIN` with real values. Both are still owner inputs.
-- `src/data/locations.json` and page copy. **Task 005.**
-- Any colour token, the type scale, or the accessibility work from Task 004.
-- Licence choice and contributor guidance for adopters. Real questions, but not this task.
-
-### Acceptance
-
-- `grep -rn 'Community Food Group' src/` returns **nothing**. Paste the result.
-- `site.config.ts` is the only file in the repository containing an unfilled identity token.
-- `npm run check` reports 0 errors; a deliberately wrong config field is proven to fail it.
-- `npm run check:config` exits non-zero while `GROUP NAME` is unfilled, and its output names
-  the field. This is the expected state today - **the task ships with the check failing on
-  purpose**, because the name genuinely is not known. Do not weaken the check to make it pass.
-- `npm run build` still emits the same six routes, and the rendered `<title>`, footer and
-  header show the token rather than an invented name.
-- `README.md` has exactly one rebranding section, covering four surfaces.
+The promoted spec also resolves two ambiguities this entry left open: the project's **two**
+incompatible token spellings (`GROUP NAME` with a space, `GROUP_DOMAIN` with an underscore)
+are normalized to one greppable pattern, and the `SocialAccount | null` type is given an
+explicit rule for *unknown* versus *deliberately absent* - the Mastodon handle is unknown, so
+it carries a token rather than the `null` this entry's wording would have suggested.
 
 ---
 
 ## Task 004c - Licence
 
-**Status: COMPLETE**, 2026-07-31, implemented in the working tree and **not yet committed**.
-Unplanned; inserted on an owner decision to make the repository a public resource. Executed
-directly rather than queued, on explicit owner authorization, because it touches no source
-file and therefore cannot collide with the active Task 004. Recorded here rather than done
-silently, following the Task 003 precedent for owner-approved scope grants.
+**Status: COMPLETE**, 2026-07-31. Merged to `main` as `bcef6db`. Unplanned; inserted on an
+owner decision to make the repository a public resource. Executed directly rather than queued,
+on explicit owner authorization, because it touches no source file and therefore could not
+collide with the then-active Task 004. Recorded here rather than done silently, following the
+Task 003 precedent for owner-approved scope grants.
+
+*(Corrected 2026-07-31 at Task 004b promotion: this entry read "not yet committed", which was
+true when written and stale by the time it was read. `PROJECT_CONTEXT.md` flagged the drift
+for whoever next wrote this ARCHITECT-owned file. **Verify commit state against `git log`, not
+against a status word in any of these documents.**)*
 
 Dedicated the repository to the public domain under **CC0 1.0 Universal**. The canonical legal
 text was fetched from `creativecommons.org` rather than reproduced from memory, and verified
@@ -262,12 +228,22 @@ dedicated under CC0 is needed. Cheap now, painful to retrofit once patches have 
 **Status:** queued. **Track B.** Next after Task 004b.
 **Blocked on:** the organization name in `PROJECT_CONTEXT.md` section 4. Do not start
 otherwise. *Note: Task 004b reduces this blocker but does not remove it - the name will live
-in one config field rather than nine files, but the prose still has to be written knowing what
-the group is called.* Three former blockers cleared: the contact route is email to `info@GROUP_DOMAIN`
+in one config field rather than eight, but the prose still has to be written knowing what the
+group is called.* Three former blockers cleared: the contact route is email to `info@GROUP_DOMAIN`
 with no chat link anywhere, the **geographic scope is Tucson, Arizona** and the `CITY` token
 is retired, and the **garden is settled in full**. Whether the cook and distribution sites are
 named publicly is still open, but that gates only those records - the garden record can be
 written today.
+
+**This task inherits one occurrence from Task 004b.** `about.mdx:9` reads
+`# About Our Community Food Group`, and 004b deliberately leaves it - fixing it would mean
+either interpolating config into prose, which section 2 forbids, or rewriting this task's copy
+early. It disappears when `about.mdx` is rewritten wholesale. It is also the worked example of
+what Task 009's *judgement* half has to catch: an invented fact that is not a token and
+therefore cannot be caught by a pattern.
+
+**Blockers will be re-confirmed in an `ARCHITECT` session after Task 004b lands**, before this
+task is promoted.
 
 ### Why
 
@@ -453,7 +429,9 @@ section 4, and Tasks 001-007 for anything publishable. The domain also fills the
 - A pre-publication checklist asserting no fabricated data remains. **Task 004b builds the
   mechanical half of this** as `npm run check:config`, which fails while any owner-fill token
   is unfilled. What remains here is the judgement half: fabricated data that is not a token
-  and therefore cannot be caught by a pattern.
+  and therefore cannot be caught by a pattern. `about.mdx`'s hardcoded organization name is
+  the worked example - a pattern-based check cannot distinguish it from legitimate prose,
+  which is why it needs a human rewrite (Task 005) rather than a validator.
 
 ---
 
