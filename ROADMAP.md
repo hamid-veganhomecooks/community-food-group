@@ -51,20 +51,39 @@ them, and a session that cannot obtain them must stop rather than substitute pla
 
 ## Task 001 - Truthful, deterministic baseline
 
-**Status:** active, specified in `TASK_SPEC.md`. Not started.
-**Blocked on:** nothing except a local Node 22.18+ runtime.
+**Status: COMPLETE**, 2026-07-30.
 
-Fixes the build contract: Node version, `check` script, Astro 5 content-collection
-migration, honest and optional Mastodon configuration, removal of the unverified deployment
-URL, and a repaired README. Full specification lives in `TASK_SPEC.md`.
+Fixed the build contract: Node 22 pinned, `check` script added, content collection migrated
+to the loader API, Mastodon configuration made honest and optional, the unverified
+deployment URL removed, and the README repaired.
+
+## Task 001b - Clear the type errors blocking `npm run check`
+
+**Status: COMPLETE**, 2026-07-30.
+
+Task 001 introduced `npm run check`, which immediately failed on four errors in files
+outside its allowed scope. Split out rather than absorbed, to keep the scope boundary
+honest. Removed three React-style `key={...}` props and fixed one `setAttribute` type
+error.
+
+## Task 001c - Astro 7 and Tailwind 4 migration
+
+**Status: COMPLETE**, 2026-07-30. Unplanned; inserted after `npm audit` surfaced 8
+advisories against astro 5.18.2 during Task 001 verification.
+
+The upgrade forced dropping `@astrojs/tailwind`, which does not support Astro 7, so
+Tailwind 4 came with it. Deleted `tailwind.config.mjs` in favour of an `@theme` block,
+moved component classes out of `@layer base`, fixed the `.container` collision, and renamed
+the utilities Tailwind 4 removed. `npm audit` now reports 0 vulnerabilities.
+
+**This invalidates the Tailwind 3 assumptions in the tasks below.** They have been updated.
 
 ---
 
 ## Task 002 - Typographic system and content spacing
 
-**Status:** queued. This is the fix for the reported "everything is compressed" problem.
-**Blocked on:** Task 001 (touches `package.json` and `tailwind.config.mjs`, which 001 also
-edits; sequencing avoids a lockfile conflict).
+**Status: ACTIVE.** This is the fix for the reported "everything is compressed" problem.
+**Blocked on:** nothing. Tasks 001, 001b and 001c are complete.
 
 ### Why
 
@@ -82,8 +101,9 @@ half the site still cramped:
 
 ### Planned scope
 
-- Add `@tailwindcss/typography` (authorized in `PROJECT_CONTEXT.md`, 2026-07-30) and
-  register it in `tailwind.config.mjs`.
+- Add `@tailwindcss/typography` (authorized in `PROJECT_CONTEXT.md`, 2026-07-30). Under
+  Tailwind 4 it is registered with `@plugin '@tailwindcss/typography';` in
+  `src/styles/global.css`. There is no JS config to add it to.
 - Define an explicit type scale rather than accepting per-page ad hoc sizes. Current pages
   hardcode `text-4xl md:text-5xl lg:text-6xl` in three places with no shared definition.
 - Set a **measure**: body copy constrained to roughly 65-75 characters. The editorial pages
@@ -93,13 +113,11 @@ half the site still cramped:
   default gray, and so heading spacing is deliberate: generous space **above** a heading,
   tight space below it, so headings group with the text they introduce.
 - Establish vertical rhythm tokens for section padding, and fix the `.section` helper.
-- Restructure `src/styles/global.css`: `.btn-primary`, `.btn-secondary`, `.card`,
-  `.section`, and `.container` are currently declared in `@layer base`, where component
-  classes do not belong.
-- **Fix the `.container` collision.** The custom `.container` in the base layer is
-  overridden by Tailwind's own `.container` from the components layer, so the intended
-  1280px max-width silently becomes 1536px at large viewports. Verified in the compiled
-  stylesheet. Either disable Tailwind's `container` core plugin or rename the custom class.
+- Define the type scale and spacing tokens as `@theme` custom properties, consistent with
+  how the palette is now declared, rather than as ad hoc utility strings in templates.
+- **Already done in Task 001c, do not redo:** the component classes have been moved out of
+  `@layer base`, and the `.container` collision is fixed by declaring the rule unlayered.
+  Leave `.container` outside any cascade layer or the bug returns.
 - Decide a **heading case convention** and document it: title case for page and section
   headings, sentence case for sub-headings and UI labels. Apply consistently, since the
   current content mixes both.
@@ -109,9 +127,9 @@ half the site still cramped:
 - Compiled CSS contains `prose` rules; paragraph and list spacing is non-zero on all three
   editorial routes.
 - Lists in `about.mdx` render with visible markers.
-- Exactly one `.container` definition wins at every breakpoint, verified in the built CSS.
 - No page hardcodes a heading size outside the shared scale.
 - Type scale and spacing tokens are documented in the README or a short `docs/` note.
+- `npm run check` still reports 0 errors and `npm audit` still reports 0 vulnerabilities.
 
 ---
 
@@ -136,8 +154,11 @@ and expensive after real content and imagery exist.
   combinations are unverified; `text-cream/90` on the terracotta gradient and the
   `sage-light/20` feature chips are the likeliest failures.
 - Present the directions to the owner and record the chosen one as a dated decision.
-- Implement the winner as semantic Tailwind tokens (`surface`, `ink`, `brand`) rather than
-  literal color names, so a future palette change does not require editing every template.
+- Implement the winner as semantic `@theme` tokens (`--color-surface`, `--color-ink`,
+  `--color-brand`) rather than literal colour names, so a future palette change does not
+  require editing every template. The current `@theme` block still uses the literal
+  terracotta/sage/cream names inherited from the scaffold; replacing them is part of this
+  task.
 - Decide font strategy. `BaseLayout.astro` currently loads Inter from the Google Fonts CDN,
   which adds two preconnects and a render-blocking request, and sends visitor IPs to a
   third party. Self-hosting is the likely recommendation and requires an explicit
@@ -314,7 +335,12 @@ print raw HTML markup to visitors.
 
 ### Planned scope
 
-- CI running `npm ci`, `npm run check`, and `npm run build` on pull requests.
+- CI running `npm ci`, `npm run check`, `npm run build`, and `npm audit` on pull requests.
+- **Resolve the zod deprecation.** Astro 7 deprecated the `z` re-export from
+  `astro:content`, producing 12 hints in `src/content.config.ts`. Fixing it means declaring
+  `zod` as a direct dependency, which needs an owner decision under constraint 3.6. It is
+  currently present only as a transitive dependency of astro, so importing it directly today
+  would depend on npm hoisting and is not safe.
 - A link checker, given how many dead and invented links the scaffold shipped with.
 - An automated accessibility pass on built HTML.
 - Dependency update automation.

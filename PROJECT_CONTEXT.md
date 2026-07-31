@@ -23,23 +23,29 @@ You are participating in a modular, multi-session software-development workflow.
 - **Hosting target:** Cloudflare Pages, output directory `dist/`
 - **Content:** Astro content collection for editorial MDX pages
 - **Structured data:** JSON for distribution/meetup sites and the generated Mastodon cache
-- **Styling / UI:** Tailwind CSS 3.4 through `@astrojs/tailwind` 5.1; `lucide-astro` icons
+- **Styling / UI:** Tailwind CSS 4 through `@tailwindcss/vite`; `lucide-astro` icons. Configured in CSS via an `@theme` block in `src/styles/global.css`. There is no `tailwind.config.mjs`.
 - **External data:** Optional Mastodon account feed fetched by a Node build-time utility
 - **Architecture:** Static-first Jamstack. JavaScript is used only where interaction requires it, currently the mobile navigation toggle.
 - **Package manager:** npm with a committed `package-lock.json`
 - **Node contract:** Node 22 LTS (>= 22.18). Decided 2026-07-30. See section 4.
 
-### Installed versions verified on 2026-07-30
+### Installed versions verified on 2026-07-30, after the Astro 7 migration
 
 Read from `npm ls` in the working tree, not from the `package.json` ranges.
 
 | Package | Range in `package.json` | Installed |
 | --- | --- | --- |
-| `astro` | `^5.0.0` | 5.18.2 |
-| `@astrojs/mdx` | `^4.0.0` | 4.3.14 |
-| `@astrojs/tailwind` | `^5.1.0` | 5.1.5 |
-| `tailwindcss` | `^3.4.0` | 3.4.19 |
+| `astro` | `^7.1.6` | 7.1.6 |
+| `@astrojs/mdx` | `^7.0.5` | 7.0.5 |
+| `tailwindcss` | `^4.3.3` | 4.3.3 |
+| `@tailwindcss/vite` | `^4.3.3` | 4.3.3 |
+| `@astrojs/check` | `^0.9.4` | 0.9.x |
 | `lucide-astro` | `^0.468.0` | 0.468.0 |
+
+`@astrojs/tailwind` has been **removed** and must not be reintroduced: its latest
+release (6.0.2) peer-depends on `astro: ^3 || ^4 || ^5` and is incompatible with Astro 7.
+
+`npm audit` reports **0 vulnerabilities** as of 2026-07-30.
 
 ### Organizational model
 
@@ -106,67 +112,76 @@ R2, or deployment assumptions.
   - No deployed build may contain one. This unblocks drafting; it does not unblock publishing.
 - **[2026-07-30]** **Distribution cadence is monthly, with precise scheduling handled off-site.** The public site states the monthly rhythm and directs people to get in touch to join a Signal chat where timing is coordinated. Rationale recorded because it affects copy tone: the exact schedule is set by committee close to the date and genuinely changes, so publishing a specific time in advance would be **inaccurate**, not merely a safety tradeoff. Copy should therefore present the chat as the way to get current details, not as a gate or a screening step, since framing it as security would misrepresent an ordinary coordination problem.
 - **[2026-07-30]** **Cooking classes get a real section now.** They are the most likely near-term expansion and the site should be ready. The section is written as forming or upcoming, never as an established program with a history. Cultural events and other activities are deferred until they are real.
-- **[2026-07-30]** **`@tailwindcss/typography` is authorized as a dependency.** It is the official Tailwind plugin supplying the `prose` classes the editorial routes already reference, and adding it is the correct fix for the content-spacing defect described below. This entry satisfies constraint 3.6 for that package only.
+- **[2026-07-30]** **`@tailwindcss/typography` is authorized as a dependency.** It is the official Tailwind plugin supplying the `prose` classes the editorial routes already reference, and adding it is the correct fix for the content-spacing defect described below. This entry satisfies constraint 3.6 for that package only. Under Tailwind 4 it is registered with `@plugin` in CSS, not in a JS config.
+- **[2026-07-30]** **Migrated to Astro 7 and Tailwind 4.** Driven by 8 security advisories against astro 5.18.2. None of the affected features (`define:vars`, server islands, view transitions, spread props) were in use, so there was no live exposure, but nothing is deployed and this was the cheapest moment to move. The upgrade **forced** dropping `@astrojs/tailwind`, which does not support Astro 7, so Tailwind 4 via `@tailwindcss/vite` came with it. Secondary benefit: the typography and palette work in Tasks 002-003 is now built on Tailwind 4 once rather than twice.
+- **[2026-07-30]** **Tailwind is configured in CSS.** `tailwind.config.mjs` is deleted. The theme lives in an `@theme` block in `src/styles/global.css`. Do not recreate a JS config; Tailwind 4 does not read one by default.
+- **[2026-07-30]** **The `.container` collision is fixed.** The custom `.container` is declared **outside any cascade layer** so it beats Tailwind's own layered `.container` utility. Preserve that. Moving it into `@layer components` would silently reintroduce the bug where the intended `max-w-7xl` was overridden to 96rem at the 2xl breakpoint.
 
 ### Verified repository state on 2026-07-30
 
-`HEAD` is `b33fa7032d1099359c8b73d8b5ce4e3252199df2` (`Update context files`). That commit
-changed only `PROJECT_CONTEXT.md` and `TASK_SPEC.md`. The last commit to touch application
-code is still `7394fbe52888f5edce1682d4009c5e0b7f3420cd` (`Initial Astro site`).
+**Tasks 001 and 001b are complete**, followed by the Astro 7 / Tailwind 4 migration. All
+were verified by execution on Node v22.23.2, not by inspection.
 
-**Task 001 has not been started.** Verified by direct inspection: `.nvmrc` does not exist,
-`package.json` has no `check` script and no `engines` field, `src/content/config.ts` is
-still the legacy definition, `src/content.config.ts` does not exist, `.env.example` still
-contains the invented handle, `astro.config.mjs` still hardcodes the unconfirmed Pages URL,
-`README.md` still terminates mid-instruction inside an unclosed fence at line 31, and
-`scripts/fetch-mastodon.ts` still carries the invented default account.
+Current green baseline, reproducible from a clean `npm ci`:
 
-Facts confirmed by execution rather than reading:
+- `npm ci` exits 0.
+- `npm run check` reports **0 errors, 0 warnings**, and 12 hints (all the same zod
+  deprecation, below).
+- `npm run build` emits the same six routes.
+- `npm audit` reports **0 vulnerabilities**.
 
-- `npx astro build` **succeeds** on Node 20.20.2 and emits all six routes in about 7.6s.
-  The legacy content collection still resolves under Astro 5.18.2, so the migration is a
-  modernization and correctness task, not a build blocker.
-- `node scripts/fetch-mastodon.ts` **fails on Node 20** with
-  `ERR_UNKNOWN_FILE_EXTENSION: Unknown file extension ".ts"`. Mastodon ingestion is
-  therefore non-functional on any runtime below 22.18. The local development machine was
-  observed at Node 20.20.2, so this must be resolved before the feature can be tested at all.
-- **Content spacing defect, root cause identified.** `src/pages/about.astro`,
+### Defects resolved
+
+- **Node runtime.** `node scripts/fetch-mastodon.ts` used to fail on Node 20 with
+  `ERR_UNKNOWN_FILE_EXTENSION`, making Mastodon ingestion impossible to run. Node 22.23.2
+  is now installed and pinned in `.nvmrc`.
+- **The `.container` collision.** Fixed during the Tailwind 4 migration by declaring the
+  rule outside any cascade layer. See the dated decision above; do not undo it.
+- **React `key={...}` props** removed from `locations.astro` and `MastodonFeed.astro` in
+  Task 001b.
+- **`aria-expanded` type error** in `Header.astro`, fixed in Task 001b. The emitted value
+  was always correct; only the type error and a misleading variable name were wrong.
+- **Double-encoded UTF-8** in the context files.
+
+### Open defects
+
+- **Content spacing defect. Still open; this is Task 002.** `src/pages/about.astro`,
   `join.astro`, and `donate.astro` wrap rendered MDX in `class="prose prose-lg"`, but
-  `@tailwindcss/typography` is not installed and `tailwind.config.mjs` declares
-  `plugins: []`. The compiled stylesheet in `dist/_astro/` contains **zero** `prose` rules.
-  Because `@tailwind base` still applies preflight, every paragraph, heading, and list has
-  `margin: 0` and lists lose their markers. The editorial pages therefore render as an
-  undifferentiated block of text. This is a missing-dependency defect, not a matter of
-  tuning margin values, and no amount of per-element margin tweaking is the correct fix.
-- `src/components/MastodonFeed.astro` renders `post.content` as an escaped text node. That
-  field is an HTML string from the Mastodon API, so visitors would see literal `<p>` markup
-  on the page. The current cache is an empty array, which is why the defect has not yet been
-  visible. Safe handling requires either sanitization or an explicit HTML-to-text
-  conversion; it does not mean leaving the escape in place.
+  `@tailwindcss/typography` is not installed, so the compiled stylesheet contains **zero**
+  `prose` rules. Preflight still zeroes every paragraph, heading, and list margin and
+  strips list markers, so the editorial pages render as an undifferentiated block. This is
+  a missing-dependency defect, not a matter of tuning margin values. Note that the
+  mechanism description has changed with Tailwind 4: there is no longer a
+  `tailwind.config.mjs` with `plugins: []`, so the plugin is registered with `@plugin` in
+  `src/styles/global.css`.
+- **`MastodonFeed` prints raw markup. Confirmed empirically on 2026-07-30**, not merely
+  predicted: seeding the cache with one post containing `<p>` tags and building produced
+  `...not erased&lt;/p&gt;` in `dist/index.html`. Visitors would see literal `</p>` on the
+  page. Safe handling requires sanitization or an explicit HTML-to-text conversion at build
+  time; it does not mean leaving the escape in place. Tracked as Task 006.
+- **zod deprecation.** Astro 7 moved to zod v4 and deprecated the `z` re-export from
+  `astro:content`, producing 12 non-blocking hints in `src/content.config.ts`. Resolving it
+  means taking `zod` as a direct dependency, which needs an owner decision under
+  constraint 3.6. `zod@4.4.3` is currently present only as a transitive dependency of astro,
+  so importing it directly today would rely on hoisting and is not safe.
 - `public/` contains no files. `BaseLayout.astro` references `/favicon.svg` and
   `/images/og-default.jpg`, so both 404 on every route.
-- `src/pages/locations.astro` and `src/components/MastodonFeed.astro` pass React-style
-  `key={...}` props inside `.map()` calls. Astro forwards these to the DOM as invalid
-  attributes.
 - `Header.astro` applies `role="menubar"` and `role="menuitem"` to ordinary site
   navigation, which contradicts constraint 3.7.
 - `Footer.astro` contains two `href="#"` dead links, for Mastodon and for email.
-- `Footer.astro`, `.env.example`, the MDX documents, and `src/data/locations.json` contain
-  invented contact information, locations, social links, history, schedules, and impact
-  claims. They are scaffold content and are not approved public facts.
-- The default Mastodon handle `@communityfood@mastodon.social` is unverified scaffold data.
-- There is no CI workflow, automated test suite, formatter, lint command, or explicit
-  type-check command.
+- `Footer.astro`, the MDX documents, and `src/data/locations.json` contain invented contact
+  information, locations, social links, history, schedules, and impact claims. They are
+  scaffold content and are not approved public facts.
+- There is no CI workflow, automated test suite, formatter, or lint command.
 - Cloudflare Pages configuration and a production URL have not been verified.
-- Both context Markdown files previously contained double-encoded UTF-8 sequences in the
-  repository-map tree and in typographic quotes. Corrected on 2026-07-30; see constraint 3.13.
 
 ### Current phase
 
-**Recovery / baseline stabilization.** The repository is a generated prototype, not a
-production-ready public site. Task 001 must make the build contract truthful and
-deterministic before organizational content is published or the design pass begins.
-`ROADMAP.md` holds the ordered sequence from that baseline through launch.
+**Baseline stabilized; entering the design pass.** The build contract is now truthful and
+deterministic, and the toolchain is current. The repository is still a prototype whose
+public copy is invented scaffold data, and it must not be deployed. The next work is
+Task 002, the typographic system and the content-spacing fix. `ROADMAP.md` holds the
+ordered sequence through launch.
 
 ### Open owner inputs
 
@@ -204,21 +219,21 @@ leave the site with no working way to participate.
 |-- TASK_SPEC.md                      # Active task-level SSOT
 |-- ROADMAP.md                        # Ordered backlog beyond the active task
 |-- PRE-CONTXT-GENERATOR-PROTOCOL.md  # Workflow bootstrap protocol
-|-- astro.config.mjs                  # Static output; site URL unverified
-|-- package.json                      # No engines field; no check script
+|-- .nvmrc                            # Pins Node 22.23.2
+|-- astro.config.mjs                  # Static output; site from SITE_URL; Tailwind Vite plugin
+|-- package.json                      # engines.node >=22.18.0; check and prebuild scripts
 |-- package-lock.json
-|-- tailwind.config.mjs               # Tailwind 3 configuration; plugins: []
 |-- tsconfig.json                     # Astro strict TypeScript
 |-- public/                           # Empty; referenced favicon and OG image are absent
 |-- scripts/
-|   `-- fetch-mastodon.ts             # Standalone utility; not a build hook; needs Node 22.18+
+|   `-- fetch-mastodon.ts             # Run by the prebuild hook; needs Node 22.18+
 `-- src/
+    |-- content.config.ts             # Content collection; glob() loader
     |-- components/
     |   |-- Footer.astro
     |   |-- Header.astro
     |   `-- MastodonFeed.astro
     |-- content/
-    |   |-- config.ts                 # Legacy content collection definition
     |   `-- pages/
     |       |-- about.mdx
     |       |-- donate.mdx
@@ -237,10 +252,13 @@ leave the site with no working way to participate.
     |   |-- locations.astro
     |   `-- posts.astro
     |-- styles/
-    |   `-- global.css
+    |   `-- global.css                # @import 'tailwindcss' plus the @theme block
     `-- types/
         `-- mastodon.ts
 ```
+
+There is no `tailwind.config.mjs` and no `src/content/config.ts`. Both were removed
+deliberately; see the dated decisions in section 4.
 
 Generated directories `dist/` and `.astro/` exist locally and are git-ignored.
 
@@ -259,8 +277,8 @@ architecture unless a task explicitly creates them.
 
 ### Active task
 
-Execute `TASK_SPEC.md`. The current task is **Task 001 - Establish a truthful,
-deterministic baseline**.
+Execute `TASK_SPEC.md`. The current task is **Task 002 - Typographic system and content
+spacing**. Tasks 001 and 001b are complete and committed.
 
 ### Required inputs
 
