@@ -1,16 +1,14 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getCollection } from 'astro:content';
+import { getEntry, render } from 'astro:content';
 
-// Get all pages and find the about page by slug
-const pages = await getCollection('pages');
-const aboutPage = pages.find((page) => page.slug === 'about');
+const aboutPage = await getEntry('pages', 'about');
 
 if (!aboutPage) {
-  throw new Error('About page not found');
+  throw new Error("Content entry 'pages/about' was not found");
 }
 
-const { Content } = await aboutPage.render();
+const { Content } = await render(aboutPage);
 ---
 
 <BaseLayout

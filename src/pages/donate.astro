@@ -1,16 +1,14 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getCollection } from 'astro:content';
+import { getEntry, render } from 'astro:content';
 
-// Get all pages and find the donate page by slug
-const pages = await getCollection('pages');
-const donatePage = pages.find((page) => page.slug === 'donate');
+const donatePage = await getEntry('pages', 'donate');
 
 if (!donatePage) {
-  throw new Error('Donate page not found');
+  throw new Error("Content entry 'pages/donate' was not found");
 }
 
-const { Content } = await donatePage.render();
+const { Content } = await render(donatePage);
 ---
 
 <BaseLayout

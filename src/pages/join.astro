@@ -1,16 +1,14 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getCollection } from 'astro:content';
+import { getEntry, render } from 'astro:content';
 
-// Get all pages and find the join page by slug
-const pages = await getCollection('pages');
-const joinPage = pages.find((page) => page.slug === 'join');
+const joinPage = await getEntry('pages', 'join');
 
 if (!joinPage) {
-  throw new Error('Join page not found');
+  throw new Error("Content entry 'pages/join' was not found");
 }
 
-const { Content } = await joinPage.render();
+const { Content } = await render(joinPage);
 ---
 
 <BaseLayout
