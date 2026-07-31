@@ -122,6 +122,12 @@ R2, or deployment assumptions.
 - **[2026-07-30]** **The type scale is semantic and fluid.** Steps are named for role, not size: `--text-display`, `--text-title`, `--text-heading`, `--text-subheading`, `--text-lead`, `--text-body`, `--text-label`. Each is a `clamp()`, so one class replaces a breakpoint chain and `text-title` supersedes `text-4xl md:text-5xl lg:text-6xl`. A template that needs `md:text-*` on a heading is evidence the scale is wrong, not that the page is special. Line height and letter spacing travel with each step; **font weight deliberately does not**, so a heading can be re-weighted without leaving the scale.
 - **[2026-07-30]** **The measure is `--container-measure`, 39rem, about 69 characters at the `prose-lg` size.** Measured in a browser at 1440px rather than estimated; an initial 37rem measured 65.7ch and was widened to sit mid-range. The card and the measure are separate concerns: `.prose-card` sizes itself to `measure + 2 * gutter`, so reading width stays constant however the padding scales.
 - **[2026-07-30]** **Section rhythm is three mutually exclusive steps:** `.section-lg`, `.section`, `.section-tight`. They exist so consecutive bands can differ rather than stacking identically, which was the specific complaint about the home page.
+- **[2026-07-30]** **The current palette fails WCAG 2.2 AA on nine measured pairs.** Measured against every foreground/background pair actually used in the templates, not estimated. Worst: CTA lede at 2.50:1, hero lede at 3.04:1, `btn-secondary` at 3.09:1. **`text-terracotta`, the most-used colour class in the codebase at 23 occurrences, reaches only 3.39:1 on cream and 3.84:1 on white**, so every link and card heading fails. Both button styles fail. This contradicts constraint 3.7, which lists AA as a release requirement. The `gray-200` divider at 1.24:1 is **not** counted: WCAG 1.4.11 governs boundaries needed to identify a control, and a decorative rule is exempt.
+- **[2026-07-30]** **Palette Direction B ("Garden") is chosen.** Owner decision. Green leads, clay supports. All sixteen role pairs validated against AA before selection: link 7.54:1, button 6.50:1, chip 5.85:1, body 14.59:1, focus ring 6.56:1. Values are in `TASK_SPEC.md`. The terracotta/sage/cream direction is retired and its tokens are to be deleted, not renamed.
+- **[2026-07-30]** **Colour is a two-layer token system.** Layer 1 is a **brand-inputs block**, the only block a reusing group edits. Layer 2 is **semantic roles** (`--color-surface`, `--color-ink`, `--color-brand`, `--color-brand-ink`, ...) which are the only thing templates consume. Rationale: the templates currently name colours literally about 119 times across 10 files, so a rebrand today means editing every template. **`--color-brand` (fills) and `--color-brand-ink` (text on light) must stay separate roles.** A brand colour that works as a fill usually fails as text; collapsing the two is precisely how the current palette came to fail.
+- **[2026-07-30]** **A contrast validation script is authorized and required**, as `npm run check:contrast`, in plain Node with **zero dependencies**. It must parse the tokens out of `src/styles/global.css` rather than carry a duplicate list, or it will silently drift from what ships. Rationale: documenting a rebrand without giving reusers a way to verify it merely relocates the accessibility failure downstream. It is also the standing guard against this project drifting back into the state measured above.
+- **[2026-07-30]** **Fonts are self-hosted; the Google Fonts CDN is removed.** It render-blocks and sends visitor IP addresses to a third party, which a mutual aid site has good reason to avoid. **`@fontsource-variable/inter` is authorized as a dependency**, satisfying constraint 3.6 for that package only - but the implementer must first check whether Astro 7.1.6 ships a **stable** built-in Fonts API and prefer that, since it needs no dependency at all. Inter stays as the single family; pairing a display face is a separate decision and is not part of Task 003.
+- **[2026-07-30]** **Task 004 must follow Task 003, not run alongside it.** Both edit `Header.astro` and `Footer.astro`. The earlier roadmap note that they could run in parallel was wrong and has been corrected.
 - **[2026-07-30]** **Heading case convention.** Title Case for page titles (`h1`) and section headings (`h2`); sentence case for sub-headings (`h3` and below), UI labels, buttons and links. Applied to the files in Task 002's scope. Headings inside the MDX documents still mix both and are corrected in Task 005, which rewrites that copy anyway.
 
 ### Verified repository state on 2026-07-30
@@ -195,16 +201,17 @@ A session repeating this verification must keep the browser out of the project t
 
 ### Current phase
 
-**Typographic system in place; palette and accessibility next.** The build contract is
-truthful and deterministic, the toolchain is current, and the editorial and hand-authored
-routes now share one type scale, one measure and one set of rhythm tokens. The repository is
-still a prototype whose public copy is invented scaffold data, and **it must not be
-deployed.**
+**Task 003 is active: brand system, palette and self-hosted fonts.** The build contract is
+truthful and deterministic, the toolchain is current, and the routes share one type scale,
+one measure and one set of rhythm tokens. The repository is still a prototype whose public
+copy is invented scaffold data, and **it must not be deployed.**
 
-Two tasks are unblocked and touch different files, so they may run in either order or in
-parallel: **Task 003** (palette and brand system, which needs an owner choice between
-palette directions) and **Task 004** (accessibility and shell correctness, which needs
-nothing). `ROADMAP.md` holds the ordered sequence through launch.
+The palette audit changed this task's character: the scaffold palette is **not accessible**,
+failing AA on nine measured pairs, so Task 003 is a correctness fix as much as a design pass.
+`TASK_SPEC.md` carries the full specification and the chosen Direction B values.
+
+**Task 004 follows Task 003**, not in parallel: both edit `Header.astro` and `Footer.astro`.
+`ROADMAP.md` holds the ordered sequence through launch.
 
 ### Open owner inputs
 
@@ -297,18 +304,16 @@ architecture unless a task explicitly creates them.
 
 ### Session role
 
-`ARCHITECT` to promote the next task. `IMPLEMENTER` once one has been promoted.
+`IMPLEMENTER`
 
 ### Active task
 
-**None is currently promoted.** Tasks 001, 001b, 001c and 002 are complete and merged to
-`main`. `TASK_SPEC.md` currently records Task 002's completion; **it does not authorize new
-code changes.**
+Execute `TASK_SPEC.md`. The current task is **Task 003 - Brand system, palette, and
+self-hosted fonts**. Tasks 001, 001b, 001c and 002 are complete and merged to `main`.
 
-Before any code is changed, a task must be promoted into `TASK_SPEC.md` with an explicit
-allowed-scope list. The two candidates are **Task 003** and **Task 004**; see `ROADMAP.md`.
-Task 003 additionally requires the owner to choose between palette directions, which is a
-product decision and must not be invented.
+All three owner decisions this task needed have been **answered** on 2026-07-30: palette
+**Direction B (Garden)**, commit the contrast script, self-host the fonts. Do not re-ask
+them; the values and rationale are in `TASK_SPEC.md` and in the dated decisions above.
 
 ### Required inputs
 

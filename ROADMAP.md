@@ -104,15 +104,18 @@ is the second bug of this exact shape in this repository. Recorded as a dated de
 
 ## Task 003 - Brand system and palette selection
 
-**Status:** queued, and structurally unblocked as of 2026-07-30.
-**Blocked on:** an owner decision between palette directions. That is a product choice and
-must not be invented.
+**Status: ACTIVE**, promoted 2026-07-30. Specified in `TASK_SPEC.md`.
+**Blocked on:** nothing. All three owner decisions were answered on 2026-07-30 - palette
+**Direction B (Garden)**, commit the contrast script, self-host the fonts.
+
+**This turned out to be a correctness fix, not a design preference.** An audit of every
+foreground/background pair actually used in the templates found **nine WCAG AA failures**,
+including `text-terracotta` at 3.39:1 - the most-used colour class in the codebase, covering
+every link and card heading - and both button styles. The roadmap had predicted two.
 
 Task 002 is complete, so the type scale this task depended on already exists. **Do not
-redesign the scale here.** This task is the palette, the font strategy and the page
-templates. The type scale, spacing rhythm and measure tokens now sit in the same `@theme`
-block as the colours, so the two token sets should be kept visually distinct and separately
-commented when the palette is replaced.
+redesign the scale here.** The type scale, spacing rhythm and measure tokens sit in the same
+`@theme` block as the colours and must be left untouched.
 
 ### Why
 
@@ -152,9 +155,11 @@ and expensive after real content and imagery exist.
 
 ## Task 004 - Accessibility and shell correctness
 
-**Status:** queued. Fully unblocked, and the cheapest task on the board.
-**Blocked on:** nothing at all. May run in parallel with Task 003; the two touch different
-files, since 004 is the components and shell while 003 is the theme and templates.
+**Status:** queued, and next after Task 003.
+**Blocked on:** Task 003. **Correction, 2026-07-30:** an earlier version of this file said
+004 could run in parallel with 003. That was wrong - both edit `Header.astro` and
+`Footer.astro`. Task 003 changes colour classes there; this task changes roles, focus
+behaviour and links. Run them in sequence.
 
 Note that Task 002 already verified two things this task would otherwise have to establish:
 every route has exactly one `h1` and no route skips a heading level, measured in a browser
