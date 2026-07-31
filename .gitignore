@@ -29,3 +29,6 @@ Thumbs.db
 # Temporary
 *.tmp
 *.temp
+
+# Local verification cache (scripts/verify-baseline.sh)
+.verify-cache/

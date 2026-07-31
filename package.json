@@ -12,6 +12,7 @@
     "prebuild": "npm run fetch-mastodon",
     "build": "astro build",
     "preview": "astro preview",
+    "verify": "bash scripts/verify-baseline.sh",
     "astro": "astro"
   },
   "dependencies": {
