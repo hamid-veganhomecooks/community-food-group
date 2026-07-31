@@ -8,119 +8,121 @@
 
 ### Status
 
-Not started. Specified 2026-07-30, immediately after Tasks 001, 001b and 001c closed.
+**COMPLETE**, 2026-07-30. Committed as `e2f1dc5`, merged to `main` as `8ad91ad`.
 
-### Goal
+> **No task is currently promoted.** This file is a completion record. It does **not**
+> authorize code changes. See "Next task" at the end before starting work.
+
+### Goal, as specified
 
 Fix the reported problem that the content pages are "all compressed, with no space between
-the paragraphs, no title case, and no room for design", by installing the missing
-typography plugin and establishing a shared type and spacing system.
+the paragraphs, no title case, and no room for design", by installing the missing typography
+plugin and establishing a shared type and spacing system.
 
-This task does **not** rewrite copy and does **not** choose a new palette. Those are Tasks
-005 and 003.
+The task did not rewrite copy and did not choose a palette. Those remain Tasks 005 and 003.
 
-### Verified starting conditions
+---
 
-Confirm before starting; if any has changed, stop and report the mismatch.
+## What was done
 
-- The stack is Astro 7.1.6 and Tailwind 4.3.3. **There is no `tailwind.config.mjs`**, and
-  recreating one is wrong: Tailwind 4 is configured in CSS. The theme is an `@theme` block
-  in `src/styles/global.css`.
-- `npm run check` reports 0 errors and 0 warnings. 12 hints from the `astro:content` zod
-  deprecation are expected and out of scope.
-- `npm audit` reports 0 vulnerabilities. Keep it that way.
-- The compiled stylesheet contains **zero** `prose` rules. That is the defect.
-- `.container` is declared outside any cascade layer, deliberately. Moving it into a layer
-  reintroduces a fixed bug.
+1. **Installed and registered the plugin.** `@tailwindcss/typography@0.5.20`, registered
+   with `@plugin '@tailwindcss/typography';` in `src/styles/global.css`. This was the whole
+   of the missing-dependency defect: the compiled stylesheet went from **zero** `prose`
+   occurrences to 661.
 
-### Allowed scope
+2. **Discovered and worked around a cascade-layer trap.** The plugin registers `prose` in
+   the **utilities** layer, not components. The first `.prose` customization was written
+   inside `@layer components`, compiled without error, and **silently did nothing** - both
+   the palette inheritance and the heading spacing were discarded. The prose theme is now
+   declared **outside any cascade layer**, next to `.container`, and must stay there. This
+   is the second defect of this shape in the repository and is recorded as a dated decision
+   in `PROJECT_CONTEXT.md`.
 
-- `package.json`
-- `package-lock.json`
-- `src/styles/global.css`
-- `src/layouts/BaseLayout.astro`
-- `src/pages/about.astro`
-- `src/pages/join.astro`
-- `src/pages/donate.astro`
-- `src/pages/index.astro`
-- `src/pages/locations.astro`
-- `src/pages/posts.astro`
-- `README.md` (type scale documentation only)
+3. **Fixed the editorial pages.** The card and the measure were separated: `.prose-card`
+   sizes itself to `measure + 2 * gutter`, so reading width is constant however padding
+   scales. `max-w-4xl` was removed from the article.
 
-Do **not** edit the MDX documents, `src/data/locations.json`, `Header.astro`,
-`Footer.astro`, or `MastodonFeed.astro` in this task.
+4. **Fixed the hand-authored pages.** `/`, `/locations` and `/posts` get nothing from
+   `prose`, so they were addressed through section and stack spacing. The home page now
+   uses three distinct band paddings instead of four identical ones.
 
-### Required changes
+5. **Established the type scale** as fluid `@theme` tokens, replacing the
+   `text-4xl md:text-5xl lg:text-6xl` strings in `index.astro`, `locations.astro` and
+   `posts.astro`.
 
-1. **Install and register the typography plugin**
-   - Add `@tailwindcss/typography`, authorized in `PROJECT_CONTEXT.md` on 2026-07-30.
-   - Register it with `@plugin '@tailwindcss/typography';` in `src/styles/global.css`.
+6. **Documented** the scale, the rhythm tokens, the measure, the unlayered-prose rule and
+   the heading case convention in `README.md`.
 
-2. **Fix the editorial pages**
-   - Paragraphs, headings and lists must have real vertical spacing, and lists must show
-     markers.
-   - Constrain body copy to a readable measure of roughly 65-75 characters. The current
-     `max-w-4xl` is too wide for prose. Note that the card wrapper and the measure are
-     different concerns and may need different widths.
-   - Customize the `prose` theme so it inherits the project's colours rather than
-     Tailwind's default gray.
-   - Space headings deliberately: generous space above, tighter below, so a heading groups
-     with the text it introduces rather than floating between blocks.
+### Files changed
 
-3. **Fix the hand-authored pages**
-   - `/`, `/locations` and `/posts` are not MDX and get nothing from `prose`. Their rhythm
-     comes from section and stack spacing, and they must be addressed separately. Fixing
-     only the editorial pages leaves half the site cramped.
+`package.json`, `package-lock.json`, `src/styles/global.css`,
+`src/pages/{index,about,join,donate,locations,posts}.astro`, `README.md`.
 
-4. **Establish a shared type scale**
-   - Define the scale as `@theme` custom properties, consistent with how the palette is
-     declared.
-   - Replace the ad hoc `text-4xl md:text-5xl lg:text-6xl` strings currently repeated
-     across `index.astro`, `locations.astro` and `posts.astro`.
-   - Verify heading order on every route; do not skip levels to obtain a size.
+`src/layouts/BaseLayout.astro` was in the allowed scope but needed no change.
 
-5. **Establish vertical rhythm**
-   - Define section spacing tokens and apply them through the `.section` helper.
-   - Give the pages room to breathe: the current home page is four near-identical stacked
-     bands with the same padding.
+---
 
-6. **Document a heading case convention**
-   - Decide and document it: title case for page and section headings, sentence case for
-     sub-headings and UI labels, or another explicit rule.
-   - Apply it to headings **in the files in scope**. Headings inside the MDX documents are
-     out of scope here and will be brought into line during Task 005.
+## Verification record
 
-### Implementation constraints
+Run from a clean `rm -rf node_modules dist` on Node v22.23.2.
 
-- Do not choose a new palette. Task 003 owns that. Keep the existing colours.
-- Do not rewrite page copy.
-- Do not recreate `tailwind.config.mjs`.
-- Do not move `.container` into a cascade layer.
-- Do not add any dependency other than `@tailwindcss/typography`.
-- Do not change routes, navigation or the Mastodon component.
+| Acceptance criterion | Result |
+| --- | --- |
+| 1. `npm ci` succeeds, `npm run check` reports 0 errors | **Pass.** exit 0; 0 errors, 0 warnings, 12 expected zod hints |
+| 2. `npm audit` reports 0 vulnerabilities | **Pass.** 0 vulnerabilities |
+| 3. `npm run build` emits the same six routes | **Pass.** 6 pages |
+| 4. Compiled stylesheet contains `prose` rules | **Pass.** 661 occurrences in `dist/_astro/*.css`, previously 0 |
+| 5. Paragraph spacing non-zero and list markers visible on the three editorial routes | **Pass**, measured in a browser |
+| 6. Exactly one `.container` definition wins at every breakpoint | **Pass.** Resolves to 1280px at 375px and 1440px |
+| 7. No heading size hardcoded outside the shared scale | **Pass.** Every heading in scope uses a scale token |
+| 8. Scale, spacing tokens and case convention documented | **Pass.** `README.md` |
+| 9. Reviewed in a browser at mobile and desktop width | **Pass.** 375px and 1440px, screenshots read |
 
-### Acceptance criteria
+No criterion failed.
 
-1. `npm ci` succeeds and `npm run check` reports 0 errors.
-2. `npm audit` reports 0 vulnerabilities.
-3. `npm run build` emits the same six routes.
-4. The compiled stylesheet contains `prose` rules, verified by grepping `dist/_astro/`.
-5. On `/about`, `/join` and `/donate`, paragraph spacing is non-zero and list markers are
-   visible, verified in the built output rather than asserted.
-6. Exactly one `.container` definition wins at every breakpoint.
-7. No heading size is hardcoded outside the shared scale in any file in scope.
-8. The type scale, spacing tokens and heading case convention are documented.
-9. The result is reviewed in a browser at a mobile and a desktop width. Spacing is a visual
-   problem and cannot be signed off from a CSS diff alone.
+### How criteria 5, 6 and 9 were measured
 
-### Reviewer focus
+Spacing cannot be signed off from a CSS diff, and no browser was installed. Playwright and
+Chromium were installed **outside the repository**, in a scratch directory, with a missing
+`libasound2` extracted locally because there is no sudo. `package.json` therefore gained
+only `@tailwindcss/typography`. **Repeat this pattern; do not add a browser to the project.**
 
-- Whether the hand-authored pages actually improved, or only the MDX ones.
-- Whether the measure is genuinely readable rather than merely narrower.
-- Heading hierarchy and case consistency.
-- Any reintroduction of the `.container` layering bug.
+Measured across all six routes at both widths: paragraph spacing non-zero on every
+non-terminal paragraph, `list-style-type: disc` with sage markers, headings rendering
+`rgb(168, 85, 59)` rather than Tailwind's default gray, prose `h2` margins 66px above and
+16.5px below, measure 69.2 characters, `.container` at 1280px, one `h1` per route, no
+skipped heading levels.
 
-### Out of scope / queued work
+One correction worth recording: the first version of that check reported paragraphs with
+`margin-bottom: 0`. That was a **false positive in the check**, not a defect - the plugin's
+`> :last-child` rule. The assertion was narrowed to non-terminal paragraphs rather than
+weakened.
 
-See `ROADMAP.md`. Next up: Task 003 (palette and brand system), Task 004 (accessibility and
-shell correctness), then the content tasks once the owner inputs land.
+---
+
+## Deviations from the specification
+
+Both were reported at the time and are recorded here so they are not mistaken for drift.
+
+1. **Two README edits went beyond "type scale documentation only."** The stack line said
+   "Astro 5, Tailwind CSS 3" and was corrected to "Astro 7, Tailwind CSS 4"; the Known-gaps
+   entry for the content-spacing defect was removed. Both were statements that had become
+   false.
+2. **`--container-measure` was widened from 37rem to 39rem** after the first browser
+   measurement returned 65.7 characters, the floor of the 65-75 target. The final value
+   measures about 69.
+
+---
+
+## Next task
+
+Nothing is promoted. Two candidates, both recorded in `ROADMAP.md`:
+
+- **Task 003 - Brand system and palette selection.** Structurally unblocked now that the
+  type scale exists, but **blocked on an owner decision** between palette directions. Do not
+  invent one. Do not redesign the type scale.
+- **Task 004 - Accessibility and shell correctness.** Fully unblocked, needs no owner input,
+  and touches different files than 003, so the two can run in parallel.
+
+Promoting one means replacing this file with a specification carrying an explicit
+allowed-scope list, per `PROJECT_CONTEXT.md` section 1.

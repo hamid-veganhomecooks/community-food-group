@@ -18,18 +18,18 @@ You are participating in a modular, multi-session software-development workflow.
 
 - **Project:** Community Food Group public information site
 - **Repository:** `hamid-veganhomecooks/community-food-group`
-- **Framework / language:** Astro 5, TypeScript, Astro components, MDX
+- **Framework / language:** Astro 7, TypeScript, Astro components, MDX
 - **Rendering:** Static output only; no application server or database
 - **Hosting target:** Cloudflare Pages, output directory `dist/`
 - **Content:** Astro content collection for editorial MDX pages
 - **Structured data:** JSON for distribution/meetup sites and the generated Mastodon cache
-- **Styling / UI:** Tailwind CSS 4 through `@tailwindcss/vite`; `lucide-astro` icons. Configured in CSS via an `@theme` block in `src/styles/global.css`. There is no `tailwind.config.mjs`.
+- **Styling / UI:** Tailwind CSS 4 through `@tailwindcss/vite`, with `@tailwindcss/typography` supplying `prose` for the editorial routes; `lucide-astro` icons. Configured in CSS via an `@theme` block in `src/styles/global.css`, which holds the palette, the type scale, the spacing rhythm and the measure. There is no `tailwind.config.mjs`.
 - **External data:** Optional Mastodon account feed fetched by a Node build-time utility
 - **Architecture:** Static-first Jamstack. JavaScript is used only where interaction requires it, currently the mobile navigation toggle.
 - **Package manager:** npm with a committed `package-lock.json`
 - **Node contract:** Node 22 LTS (>= 22.18). Decided 2026-07-30. See section 4.
 
-### Installed versions verified on 2026-07-30, after the Astro 7 migration
+### Installed versions verified on 2026-07-30, after Task 002
 
 Read from `npm ls` in the working tree, not from the `package.json` ranges.
 
@@ -39,6 +39,7 @@ Read from `npm ls` in the working tree, not from the `package.json` ranges.
 | `@astrojs/mdx` | `^7.0.5` | 7.0.5 |
 | `tailwindcss` | `^4.3.3` | 4.3.3 |
 | `@tailwindcss/vite` | `^4.3.3` | 4.3.3 |
+| `@tailwindcss/typography` | `^0.5.20` | 0.5.20 |
 | `@astrojs/check` | `^0.9.4` | 0.9.x |
 | `lucide-astro` | `^0.468.0` | 0.468.0 |
 
@@ -116,11 +117,17 @@ R2, or deployment assumptions.
 - **[2026-07-30]** **Migrated to Astro 7 and Tailwind 4.** Driven by 8 security advisories against astro 5.18.2. None of the affected features (`define:vars`, server islands, view transitions, spread props) were in use, so there was no live exposure, but nothing is deployed and this was the cheapest moment to move. The upgrade **forced** dropping `@astrojs/tailwind`, which does not support Astro 7, so Tailwind 4 via `@tailwindcss/vite` came with it. Secondary benefit: the typography and palette work in Tasks 002-003 is now built on Tailwind 4 once rather than twice.
 - **[2026-07-30]** **Tailwind is configured in CSS.** `tailwind.config.mjs` is deleted. The theme lives in an `@theme` block in `src/styles/global.css`. Do not recreate a JS config; Tailwind 4 does not read one by default.
 - **[2026-07-30]** **The `.container` collision is fixed.** The custom `.container` is declared **outside any cascade layer** so it beats Tailwind's own layered `.container` utility. Preserve that. Moving it into `@layer components` would silently reintroduce the bug where the intended `max-w-7xl` was overridden to 96rem at the 2xl breakpoint.
+- **[2026-07-30]** **Task 002 is complete.** `@tailwindcss/typography` is installed and registered with `@plugin '@tailwindcss/typography';` in `src/styles/global.css`. This closed the content-spacing defect, which was a missing dependency rather than a matter of tuning margins.
+- **[2026-07-30]** **`prose` lives in the UTILITIES layer, so `.prose` customization must be declared outside any cascade layer.** Verified against the compiled stylesheet, not assumed: the plugin emits its rules inside `@layer utilities`, which begins after `@layer components` ends. A `.prose` override written inside `@layer components` therefore loses on **layer order regardless of specificity** - it compiles without error, ships, and does nothing at all. The first attempt at this task did exactly that, and both the palette inheritance and the heading spacing were silently discarded. The project's prose theme is consequently unlayered, next to `.container`. This is the **second** defect of this exact shape; treat "my Tailwind override is being ignored" as a cascade-layer question before a specificity one. The same fact is why a single `.prose` block also governs `prose-lg`.
+- **[2026-07-30]** **The type scale is semantic and fluid.** Steps are named for role, not size: `--text-display`, `--text-title`, `--text-heading`, `--text-subheading`, `--text-lead`, `--text-body`, `--text-label`. Each is a `clamp()`, so one class replaces a breakpoint chain and `text-title` supersedes `text-4xl md:text-5xl lg:text-6xl`. A template that needs `md:text-*` on a heading is evidence the scale is wrong, not that the page is special. Line height and letter spacing travel with each step; **font weight deliberately does not**, so a heading can be re-weighted without leaving the scale.
+- **[2026-07-30]** **The measure is `--container-measure`, 39rem, about 69 characters at the `prose-lg` size.** Measured in a browser at 1440px rather than estimated; an initial 37rem measured 65.7ch and was widened to sit mid-range. The card and the measure are separate concerns: `.prose-card` sizes itself to `measure + 2 * gutter`, so reading width stays constant however the padding scales.
+- **[2026-07-30]** **Section rhythm is three mutually exclusive steps:** `.section-lg`, `.section`, `.section-tight`. They exist so consecutive bands can differ rather than stacking identically, which was the specific complaint about the home page.
+- **[2026-07-30]** **Heading case convention.** Title Case for page titles (`h1`) and section headings (`h2`); sentence case for sub-headings (`h3` and below), UI labels, buttons and links. Applied to the files in Task 002's scope. Headings inside the MDX documents still mix both and are corrected in Task 005, which rewrites that copy anyway.
 
 ### Verified repository state on 2026-07-30
 
-**Tasks 001 and 001b are complete**, followed by the Astro 7 / Tailwind 4 migration. All
-were verified by execution on Node v22.23.2, not by inspection.
+**Tasks 001, 001b, 001c and 002 are complete** and merged to `main` (`8ad91ad`). All were
+verified by execution on Node v22.23.2, not by inspection.
 
 Current green baseline, reproducible from a clean `npm ci`:
 
@@ -129,6 +136,20 @@ Current green baseline, reproducible from a clean `npm ci`:
   deprecation, below).
 - `npm run build` emits the same six routes.
 - `npm audit` reports **0 vulnerabilities**.
+- The compiled stylesheet contains `prose` rules: 661 occurrences in `dist/_astro/*.css`,
+  previously zero.
+
+Task 002 was **additionally verified in a real browser** at 375px and 1440px across all six
+routes, because spacing cannot be signed off from a CSS diff. Measured rather than asserted:
+paragraph spacing non-zero on every non-terminal paragraph, `list-style-type: disc` with
+sage markers, headings rendering `rgb(168, 85, 59)` rather than Tailwind's default gray,
+prose `h2` margins of 66px above and 16.5px below, `.container` resolving to 1280px at both
+widths, exactly one `h1` per route, and no skipped heading levels.
+
+No browser is installed in this environment and there is no sudo. That check was run with
+Playwright and Chromium installed **outside the repository**, in a scratch directory, with a
+missing `libasound2` extracted locally; `package.json` gained only `@tailwindcss/typography`.
+A session repeating this verification must keep the browser out of the project the same way.
 
 ### Defects resolved
 
@@ -142,18 +163,15 @@ Current green baseline, reproducible from a clean `npm ci`:
 - **`aria-expanded` type error** in `Header.astro`, fixed in Task 001b. The emitted value
   was always correct; only the type error and a misleading variable name were wrong.
 - **Double-encoded UTF-8** in the context files.
+- **Content spacing.** The editorial routes asked for `prose prose-lg` while
+  `@tailwindcss/typography` was not installed, so the compiled stylesheet contained zero
+  `prose` rules and preflight's margin reset stood unopposed. Fixed in Task 002 by
+  installing and registering the plugin. Note that the *first* fix attempt customized
+  `.prose` inside `@layer components` and silently had no effect; see the cascade-layer
+  decision above before touching prose styles.
 
 ### Open defects
 
-- **Content spacing defect. Still open; this is Task 002.** `src/pages/about.astro`,
-  `join.astro`, and `donate.astro` wrap rendered MDX in `class="prose prose-lg"`, but
-  `@tailwindcss/typography` is not installed, so the compiled stylesheet contains **zero**
-  `prose` rules. Preflight still zeroes every paragraph, heading, and list margin and
-  strips list markers, so the editorial pages render as an undifferentiated block. This is
-  a missing-dependency defect, not a matter of tuning margin values. Note that the
-  mechanism description has changed with Tailwind 4: there is no longer a
-  `tailwind.config.mjs` with `plugins: []`, so the plugin is registered with `@plugin` in
-  `src/styles/global.css`.
 - **`MastodonFeed` prints raw markup. Confirmed empirically on 2026-07-30**, not merely
   predicted: seeding the cache with one post containing `<p>` tags and building produced
   `...not erased&lt;/p&gt;` in `dist/index.html`. Visitors would see literal `</p>` on the
@@ -177,11 +195,16 @@ Current green baseline, reproducible from a clean `npm ci`:
 
 ### Current phase
 
-**Baseline stabilized; entering the design pass.** The build contract is now truthful and
-deterministic, and the toolchain is current. The repository is still a prototype whose
-public copy is invented scaffold data, and it must not be deployed. The next work is
-Task 002, the typographic system and the content-spacing fix. `ROADMAP.md` holds the
-ordered sequence through launch.
+**Typographic system in place; palette and accessibility next.** The build contract is
+truthful and deterministic, the toolchain is current, and the editorial and hand-authored
+routes now share one type scale, one measure and one set of rhythm tokens. The repository is
+still a prototype whose public copy is invented scaffold data, and **it must not be
+deployed.**
+
+Two tasks are unblocked and touch different files, so they may run in either order or in
+parallel: **Task 003** (palette and brand system, which needs an owner choice between
+palette directions) and **Task 004** (accessibility and shell correctness, which needs
+nothing). `ROADMAP.md` holds the ordered sequence through launch.
 
 ### Open owner inputs
 
@@ -214,7 +237,7 @@ leave the site with no working way to participate.
 /
 |-- .env.example                      # Scaffold Mastodon variables; values unverified
 |-- .gitignore
-|-- README.md                         # Incomplete; truncated mid-instruction
+|-- README.md                         # Repaired in Task 001; documents the type system
 |-- PROJECT_CONTEXT.md                # Project-level SSOT
 |-- TASK_SPEC.md                      # Active task-level SSOT
 |-- ROADMAP.md                        # Ordered backlog beyond the active task
@@ -252,7 +275,8 @@ leave the site with no working way to participate.
     |   |-- locations.astro
     |   `-- posts.astro
     |-- styles/
-    |   `-- global.css                # @import 'tailwindcss' plus the @theme block
+    |   `-- global.css                # tailwindcss import, @plugin typography, @theme
+    |                                 # tokens, and the UNLAYERED .container and .prose
     `-- types/
         `-- mastodon.ts
 ```
@@ -273,12 +297,18 @@ architecture unless a task explicitly creates them.
 
 ### Session role
 
-`IMPLEMENTER`
+`ARCHITECT` to promote the next task. `IMPLEMENTER` once one has been promoted.
 
 ### Active task
 
-Execute `TASK_SPEC.md`. The current task is **Task 002 - Typographic system and content
-spacing**. Tasks 001 and 001b are complete and committed.
+**None is currently promoted.** Tasks 001, 001b, 001c and 002 are complete and merged to
+`main`. `TASK_SPEC.md` currently records Task 002's completion; **it does not authorize new
+code changes.**
+
+Before any code is changed, a task must be promoted into `TASK_SPEC.md` with an explicit
+allowed-scope list. The two candidates are **Task 003** and **Task 004**; see `ROADMAP.md`.
+Task 003 additionally requires the owner to choose between palette directions, which is a
+product decision and must not be invented.
 
 ### Required inputs
 

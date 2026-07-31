@@ -82,62 +82,37 @@ the utilities Tailwind 4 removed. `npm audit` now reports 0 vulnerabilities.
 
 ## Task 002 - Typographic system and content spacing
 
-**Status: ACTIVE.** This is the fix for the reported "everything is compressed" problem.
-**Blocked on:** nothing. Tasks 001, 001b and 001c are complete.
+**Status: COMPLETE**, 2026-07-30. Merged to `main` as `8ad91ad`.
 
-### Why
+Installed `@tailwindcss/typography` and registered it with `@plugin`, which closed the
+content-spacing defect. Added a fluid, semantic type scale, a 39rem measure (about 69
+characters, measured in a browser rather than estimated), three mutually exclusive
+section-rhythm steps, and a documented heading case convention. Both halves of the defect
+were addressed: the MDX routes through `prose`, and `/`, `/locations` and `/posts` through
+section and stack spacing.
 
-The editorial pages are not under-styled by degree, they are unstyled by mechanism. The
-routes ask for `prose prose-lg`, no plugin supplies those classes, and preflight has already
-stripped every default margin. The result is a solid block of text with no paragraph
-separation and no list markers. See the verified findings in `PROJECT_CONTEXT.md` section 4.
+Verified in a real browser at 375px and 1440px across all six routes, not from the CSS diff.
+The scale and tokens are documented in `README.md`.
 
-Note that the defect has **two independent halves**, and fixing only the first will leave
-half the site still cramped:
-
-- `/about`, `/join`, `/donate` render MDX and depend entirely on `prose`.
-- `/`, `/locations`, `/posts` are hand-authored Astro markup whose rhythm comes from
-  section, container, and stack spacing. The typography plugin does nothing for them.
-
-### Planned scope
-
-- Add `@tailwindcss/typography` (authorized in `PROJECT_CONTEXT.md`, 2026-07-30). Under
-  Tailwind 4 it is registered with `@plugin '@tailwindcss/typography';` in
-  `src/styles/global.css`. There is no JS config to add it to.
-- Define an explicit type scale rather than accepting per-page ad hoc sizes. Current pages
-  hardcode `text-4xl md:text-5xl lg:text-6xl` in three places with no shared definition.
-- Set a **measure**: body copy constrained to roughly 65-75 characters. The editorial pages
-  currently allow `max-w-4xl` of full-width prose, which is too wide to read comfortably
-  even once spacing is fixed.
-- Customize the `prose` theme so it inherits the project palette instead of Tailwind's
-  default gray, and so heading spacing is deliberate: generous space **above** a heading,
-  tight space below it, so headings group with the text they introduce.
-- Establish vertical rhythm tokens for section padding, and fix the `.section` helper.
-- Define the type scale and spacing tokens as `@theme` custom properties, consistent with
-  how the palette is now declared, rather than as ad hoc utility strings in templates.
-- **Already done in Task 001c, do not redo:** the component classes have been moved out of
-  `@layer base`, and the `.container` collision is fixed by declaring the rule unlayered.
-  Leave `.container` outside any cascade layer or the bug returns.
-- Decide a **heading case convention** and document it: title case for page and section
-  headings, sentence case for sub-headings and UI labels. Apply consistently, since the
-  current content mixes both.
-
-### Acceptance
-
-- Compiled CSS contains `prose` rules; paragraph and list spacing is non-zero on all three
-  editorial routes.
-- Lists in `about.mdx` render with visible markers.
-- No page hardcodes a heading size outside the shared scale.
-- Type scale and spacing tokens are documented in the README or a short `docs/` note.
-- `npm run check` still reports 0 errors and `npm audit` still reports 0 vulnerabilities.
+**Carries one durable lesson.** The plugin registers `prose` in the **utilities** layer, so
+the first `.prose` customization - written inside `@layer components` - compiled cleanly and
+did nothing whatever. The project's prose theme is now unlayered, next to `.container`. That
+is the second bug of this exact shape in this repository. Recorded as a dated decision in
+`PROJECT_CONTEXT.md`.
 
 ---
 
 ## Task 003 - Brand system and palette selection
 
-**Status:** queued. Owner chose a new palette plus a full type system on 2026-07-30.
-**Blocked on:** Task 002 for the type scale; the palette portion needs an owner decision
-between proposed directions, but not the content facts.
+**Status:** queued, and structurally unblocked as of 2026-07-30.
+**Blocked on:** an owner decision between palette directions. That is a product choice and
+must not be invented.
+
+Task 002 is complete, so the type scale this task depended on already exists. **Do not
+redesign the scale here.** This task is the palette, the font strategy and the page
+templates. The type scale, spacing rhythm and measure tokens now sit in the same `@theme`
+block as the colours, so the two token sets should be kept visually distinct and separately
+commented when the palette is replaced.
 
 ### Why
 
@@ -177,8 +152,14 @@ and expensive after real content and imagery exist.
 
 ## Task 004 - Accessibility and shell correctness
 
-**Status:** queued.
-**Blocked on:** nothing; may run in parallel with 002 and 003 if scoped to different files.
+**Status:** queued. Fully unblocked, and the cheapest task on the board.
+**Blocked on:** nothing at all. May run in parallel with Task 003; the two touch different
+files, since 004 is the components and shell while 003 is the theme and templates.
+
+Note that Task 002 already verified two things this task would otherwise have to establish:
+every route has exactly one `h1` and no route skips a heading level, measured in a browser
+at two widths. Heading **order** is therefore sound; what remains here is roles, focus
+behaviour and the dead links.
 
 ### Planned scope
 
@@ -191,13 +172,15 @@ and expensive after real content and imagery exist.
   "is hidden", and the negation cancels the confusion out. Rename it for the next reader,
   but do not "fix" the logic. What is genuinely missing is Escape-to-close, returning focus
   to the toggle on close, and closing the menu when focus leaves it.
-- Remove the React-style `key={...}` props in `locations.astro` and `MastodonFeed.astro`,
-  which Astro emits as invalid DOM attributes.
+- **Already done in Task 001b, do not redo:** the React-style `key={...}` props were removed
+  from `locations.astro` and `MastodonFeed.astro`.
 - Replace the two `href="#"` dead links in `Footer.astro` with real destinations or remove
   them. Dead links in a footer are a trust problem for a mutual aid group.
 - Audit focus-visible styling across all interactive elements.
-- Verify heading order on every route: `/` currently opens with an `h1` inside the hero but
-  several sections jump levels.
+- **Heading order is already verified, do not re-derive it.** Task 002 measured every route
+  in a browser at two widths: each has exactly one `h1` and none skips a level. The earlier
+  claim in this roadmap that "several sections jump levels" was wrong and has been withdrawn.
+  Re-check only if new markup is added.
 - Respect `prefers-reduced-motion` for the transition utilities used throughout.
 
 ### Acceptance
@@ -206,6 +189,11 @@ and expensive after real content and imagery exist.
   completes without a trap.
 - No invalid attributes in built HTML.
 - No `href="#"` remains.
+
+Note on verification: this task's acceptance is behavioural and cannot be signed off from a
+diff. Task 002 established a workable pattern for that here - Playwright and Chromium
+installed **outside** the repository, in a scratch directory, so no browser dependency
+enters `package.json`. See the verification note in `PROJECT_CONTEXT.md` section 4.
 
 ---
 

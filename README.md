@@ -194,7 +194,9 @@ Recorded so they are not mistaken for finished work. Details and sequencing are 
 - `MastodonFeed.astro` renders post HTML as escaped text, which would display literal markup
   once the cache is populated. Tracked as Task 006.
 - Accessibility is a project **target**, not a verified state. No audit has been run and no
-  conformance is claimed.
+  conformance is claimed. Task 002 did measure heading structure in a browser - every route
+  has exactly one `h1` and none skips a level - but that is one check, not an audit.
+  `Header.astro` still applies application-menu ARIA roles to ordinary site navigation.
 - There is no CI, test suite, linter, or formatter.
 - No deployment exists. Cloudflare Pages has not been configured.
 
