@@ -58,22 +58,35 @@ cannot be signed off from a CSS diff and must be measured in a real browser.
 
 ### One-time setup
 
-Run once, by hand. Verified state as of 2026-07-30: the Chromium binaries are present, the
-npm driver and `libasound.so.2` are **not** - steps 2 and 3 below are still outstanding.
+Run once, by hand. Verified state as of 2026-07-30: the Chromium binaries persist, and the
+npm driver plus the Task 002 harness survive in a **previous session's scratchpad** under
+`/tmp`, which does not survive a reboot or `wsl --shutdown`. Step 2 rescues them. Only
+`libasound.so.2` (step 3) genuinely has to be rebuilt.
 
 **Chromium binaries** live in `~/.cache/ms-playwright/` (chromium-1234,
 chromium_headless_shell-1234, ffmpeg-1011). These persist and are already installed.
 
-**Step 2 - the `playwright` npm driver.** It lives in its own directory, deliberately outside the
-project and outside any nvm version directory so that switching Node does not lose it:
+**Step 2 - the `playwright` npm driver and the harness.** They live in their own directory,
+deliberately outside the project and outside any nvm version directory so that switching
+Node does not lose them. Move rather than reinstall - the existing copy is complete, and
+this needs no network:
 
 ```bash
-mkdir -p ~/.local/share/playwright-runner
-cd ~/.local/share/playwright-runner
-npm init -y
-npm i playwright
-npx playwright install chromium
+mkdir -p ~/.local/share
+mv /tmp/claude-1000/-home-mbenhuri-github-community-food-group/56be5e55-*/scratchpad/browser \
+   ~/.local/share/playwright-runner
 ```
+
+If that scratchpad is already gone, rebuild it instead - but `verify.mjs` is not
+recoverable this way and would have to be rewritten:
+
+```bash
+mkdir -p ~/.local/share/playwright-runner && cd ~/.local/share/playwright-runner
+npm init -y && npm i playwright
+```
+
+The directory then holds `playwright@1.62.1`, `verify.mjs` (the Task 002 layout harness) and
+`shot.mjs` (screenshots at 1440px and 390px into `$SHOTS`).
 
 **Step 3 - `libasound.so.2`.** It is missing system-wide and cannot be apt-installed without sudo.
 Chromium will not start without it. Extract it into a user-local directory:
@@ -108,11 +121,35 @@ If that prints `libasound.so.2 => not found`, `LD_LIBRARY_PATH` was not inherite
 the line above in the current shell and continue. Do not re-extract, and do not fall back
 to a scratch-directory install.
 
-Drive it from the runner directory so the project's `node_modules` stays untouched:
+Serve the built site, then drive the harness from the runner directory so the project's
+`node_modules` stays untouched:
 
 ```bash
-cd ~/.local/share/playwright-runner && node your-script.mjs
+npm run build && npm run preview &                       # serves on :4321
+cd ~/.local/share/playwright-runner && node verify.mjs   # exits non-zero on any failure
+SHOTS=/some/dir node shot.mjs                            # screenshots, optional
 ```
+
+`verify.mjs` takes `BASE` (default `http://localhost:4321`).
+
+### `verify.mjs` and Task 003
+
+The harness asserts against the **pre-Direction-B** palette: it fails an `h2` whose colour
+is Tailwind's default gray (`rgb(55, 65, 81)` / `rgb(17, 24, 39)`) and fails body text at
+`gray-700`. Those checks stay valid after the repalette - they detect "the theme did not
+apply at all", not a specific hue - but any new colour assertion belongs in
+`npm run check:contrast`, which parses the tokens, rather than here.
+
+The layout assertions (measure in 60-80ch, `h2` margin-top > margin-bottom, exactly one
+`h1` per route, no skipped heading levels, `.container` at 1280px, at least three distinct
+section paddings on the home page) are palette-independent and should keep passing
+throughout Task 003. Treat a regression in those as a real defect, not as harness drift.
+
+Whether this script moves into the repository under `scripts/` is an open decision: it is
+project-specific and would benefit from version control alongside the CSS it asserts
+against, but it imports `playwright`, which is deliberately not a project dependency.
+Running it from the repo would need `NODE_PATH=~/.local/share/playwright-runner/node_modules`.
+Raise it as a `TASK_SPEC.md` scope question rather than deciding it silently.
 
 ### Rules
 

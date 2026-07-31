@@ -20,32 +20,21 @@ deleted.
 Two tracks are independent and can proceed in parallel:
 
 - **Track A (unblocked today):** Tasks 001-004. Purely structural. Requires no owner facts.
-- **Track B (blocked on owner input):** Tasks 005-007. Cannot start until the inputs table
-  in `PROJECT_CONTEXT.md` section 4 is filled in.
+- **Track B (blocked on owner input):** Tasks 005-007.
 
 Tasks 008-009 close out the release and depend on both tracks.
 
 ---
 
-## Owner inputs still required
+## Owner inputs
 
-Track B is blocked until these are supplied. Nothing in this roadmap authorizes inventing
-them, and a session that cannot obtain them must stop rather than substitute plausible text.
+**The single copy of this list is the table in `PROJECT_CONTEXT.md` section 4.** This file
+used to carry a second one; the two drifted - the roadmap went on blocking Track B for two
+questions the owner had already answered, while omitting the contact route entirely. Read
+the status from `PROJECT_CONTEXT.md` and do not restate it here.
 
-1. Final public organization name.
-2. Town or geographic scope, and how precisely the group wants it stated publicly.
-3. The cook-and-distribute rhythm: which days, roughly what times, how often.
-4. Where cooking happens and where food is distributed. For each: a name, whether the
-   address should be public, and whether a map link is wanted.
-5. One contact route the group actually monitors.
-6. Mastodon handle in `user@instance` form, or confirmation that no account exists yet.
-7. Which activities are **real today** versus **aspirational**. Specifically: have cooking
-   classes or cultural events actually happened, or are they intentions? Copy must not
-   describe an intention as an established program.
-8. Anything the group does **not** want published: exact addresses, organizer names,
-   distribution times that could attract harassment.
-9. Logo or wordmark, if one exists.
-10. Whether a Cloudflare Pages project exists yet, and any intended domain.
+Nothing in this roadmap authorizes inventing an owner fact. A session that cannot obtain one
+must stop rather than substitute plausible text.
 
 ---
 
@@ -102,54 +91,24 @@ is the second bug of this exact shape in this repository. Recorded as a dated de
 
 ---
 
-## Task 003 - Brand system and palette selection
+## Task 003 - Brand system, palette, and self-hosted fonts
 
-**Status: ACTIVE**, promoted 2026-07-30. Specified in `TASK_SPEC.md`.
-**Blocked on:** nothing. All three owner decisions were answered on 2026-07-30 - palette
-**Direction B (Garden)**, commit the contrast script, self-host the fonts.
+**Status: ACTIVE**, promoted 2026-07-30. **Specified in `TASK_SPEC.md`, which is the only
+authority on its scope and acceptance.**
+**Blocked on:** nothing. All three owner decisions were answered on 2026-07-30.
+**Touches:** `global.css`, `BaseLayout.astro`, `Header.astro`, `Footer.astro`,
+`MastodonFeed.astro`, all six pages, `README.md`, plus a new `scripts/check-contrast.mjs`.
 
 **This turned out to be a correctness fix, not a design preference.** An audit of every
 foreground/background pair actually used in the templates found **nine WCAG AA failures**,
 including `text-terracotta` at 3.39:1 - the most-used colour class in the codebase, covering
-every link and card heading - and both button styles. The roadmap had predicted two.
+every link and card heading - and both button styles. This roadmap had predicted two.
 
-Task 002 is complete, so the type scale this task depended on already exists. **Do not
-redesign the scale here.** The type scale, spacing rhythm and measure tokens sit in the same
-`@theme` block as the colours and must be left untouched.
-
-### Why
-
-The terracotta/sage/cream direction was generated, never chosen. Reopening it is cheap now
-and expensive after real content and imagery exist.
-
-### Planned scope
-
-- Propose **two or three complete palette directions**, each as a token set rather than a
-  list of swatches: surface, raised surface, primary text, secondary text, brand, brand
-  hover, accent, border, focus ring, and inverse-surface pairings.
-- Validate every foreground/background pair against WCAG 2.2 AA (4.5:1 body, 3:1 large text
-  and UI boundaries) **before** presenting, and state the measured ratios. Several current
-  combinations are unverified; `text-cream/90` on the terracotta gradient and the
-  `sage-light/20` feature chips are the likeliest failures.
-- Present the directions to the owner and record the chosen one as a dated decision.
-- Implement the winner as semantic `@theme` tokens (`--color-surface`, `--color-ink`,
-  `--color-brand`) rather than literal colour names, so a future palette change does not
-  require editing every template. The current `@theme` block still uses the literal
-  terracotta/sage/cream names inherited from the scaffold; replacing them is part of this
-  task.
-- Decide font strategy. `BaseLayout.astro` currently loads Inter from the Google Fonts CDN,
-  which adds two preconnects and a render-blocking request, and sends visitor IPs to a
-  third party. Self-hosting is the likely recommendation and requires an explicit
-  dependency decision.
-- Define the "room for design" the current pages lack: an editorial page template with a
-  real header zone, and a home page with distinct section rhythm rather than four
-  near-identical stacked bands.
-
-### Acceptance
-
-- Chosen palette recorded as a dated decision in `PROJECT_CONTEXT.md`.
-- Every text/background pair in the shipped design has a recorded contrast ratio meeting AA.
-- No literal palette hex values remain in component markup.
+The planned scope that stood here has been **cut into `TASK_SPEC.md`**, not copied. It was
+still written as forward-looking - "propose two or three directions", "present to the
+owner", "self-hosting is the likely recommendation" - after all of it had been decided, and
+it also called for home-page section rhythm that **Task 002 already shipped**. A queued
+entry that survives promotion becomes a stale second spec; promote by moving.
 
 ---
 
@@ -196,16 +155,19 @@ behaviour and the dead links.
 - No `href="#"` remains.
 
 Note on verification: this task's acceptance is behavioural and cannot be signed off from a
-diff. Task 002 established a workable pattern for that here - Playwright and Chromium
-installed **outside** the repository, in a scratch directory, so no browser dependency
-enters `package.json`. See the verification note in `PROJECT_CONTEXT.md` section 4.
+diff. Playwright and Chromium are installed **outside** the repository so that no browser
+dependency enters `package.json`. The setup is now persistent and documented in
+`docs/ENVIRONMENT.md`; `verify.mjs` there already covers heading order and focus-visible
+traversal groundwork.
 
 ---
 
 ## Task 005 - Real content, on-model
 
 **Status:** queued. **Track B.**
-**Blocked on:** owner inputs 1-8 above. Do not start otherwise.
+**Blocked on:** the organization name, the geographic scope, and the locations answer in
+`PROJECT_CONTEXT.md` section 4. Do not start otherwise. The contact route is **no longer a
+blocker** - it is email to `info@GROUP_DOMAIN`, and no chat link goes on the site.
 
 ### Why
 
@@ -220,6 +182,9 @@ donations" statistic. This is a rewrite against a new model, not a find-and-repl
   status the owner confirms - as intentions if they are intentions.
 - Rewrite `join.mdx` for an affinity group: how someone actually shows up for a cook
   session. Remove the invented time commitments, role tiers, and "member-only" benefits.
+  The call to action is **email `info@GROUP_DOMAIN`**, and a person replies. Per the
+  2026-07-30 decision: no chat link anywhere, do not promise an instant join or a published
+  schedule, and do not frame the reply as an application or a screening step.
 - Replace `donate.mdx` with **Ways to Help**, per the 2026-07-30 decision: concrete needs
   such as ingredients, containers, kitchen time, transport. The 90% claim is withdrawn and
   must not reappear in any form.
@@ -245,7 +210,8 @@ donations" statistic. This is a rewrite against a new model, not a find-and-repl
 ## Task 006 - Mastodon integration, wired end to end
 
 **Status:** queued. **Track B.**
-**Blocked on:** owner input 6, and Task 001 for the runtime and the honest-config work.
+**Blocked on:** the Mastodon handle in `PROJECT_CONTEXT.md` section 4, and Task 001 for the
+runtime and the honest-config work.
 
 ### Why
 
@@ -290,7 +256,7 @@ print raw HTML markup to visitors.
 ## Task 007 - Brand assets and metadata
 
 **Status:** queued. **Track B.**
-**Blocked on:** Task 003 palette, owner input 9.
+**Blocked on:** Task 003 palette, and the logo/wordmark in `PROJECT_CONTEXT.md` section 4.
 
 ### Planned scope
 
@@ -307,7 +273,9 @@ print raw HTML markup to visitors.
 ## Task 008 - Deployment
 
 **Status:** queued.
-**Blocked on:** owner input 10, and Tasks 001-007 for anything publishable.
+**Blocked on:** the domain purchase and the Cloudflare Pages URL in `PROJECT_CONTEXT.md`
+section 4, and Tasks 001-007 for anything publishable. The domain also fills the
+`GROUP_DOMAIN` token in the contact address, so it gates the pre-publication token check.
 
 ### Planned scope
 

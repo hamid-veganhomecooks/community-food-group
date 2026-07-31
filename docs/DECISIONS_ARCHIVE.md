@@ -105,9 +105,12 @@ mutual aid site has good reason to avoid.
 
 The exact schedule is set by committee close to the date and genuinely changes, so
 publishing a specific time in advance would be **inaccurate**, not merely a safety
-tradeoff. Copy should therefore present the Signal chat as the way to get current details,
-not as a gate or a screening step, since framing it as security would misrepresent an
-ordinary coordination problem.
+tradeoff. That reasoning still holds and is why the site publishes only the monthly rhythm.
+
+**Partly superseded the same day.** The original decision routed people to a Signal chat for
+current details. The owner then decided **no chat link appears on the site at all**, and the
+single contact route is email. The live rule is in `PROJECT_CONTEXT.md`; the surviving part
+of the rationale is the accuracy argument above, not the Signal mechanism.
 
 ---
 

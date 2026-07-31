@@ -207,10 +207,15 @@ what `brand-ink` is for will not collapse it.
 
 ### How to run criterion 10
 
-No browser is installed and there is **no sudo**. Task 002 established the working pattern:
-install Playwright and Chromium **outside the repository**, in a scratch directory, and
-extract the missing `libasound2` locally with `apt-get download` plus `dpkg -x`, setting
-`LD_LIBRARY_PATH`. **Do not add a browser to `package.json`.**
+The browser setup is **already installed and persistent**. Do not rebuild it in a scratch
+directory, and **do not add a browser to `package.json`**. See `docs/ENVIRONMENT.md` for the
+commands; in short, build and preview the site, then run `verify.mjs` from
+`~/.local/share/playwright-runner`.
+
+That harness already checks heading order, the measure, and `.container` resolution at both
+widths. Its two colour assertions detect "the theme did not apply at all" rather than a
+specific hue, so they remain valid after the repalette. **New colour assertions belong in
+`npm run check:contrast`**, which parses the tokens, not in the browser harness.
 
 ---
 
@@ -230,5 +235,8 @@ extract the missing `libasound2` locally with `apt-get download` plus `dpkg -x`,
 `Footer.astro`; the earlier roadmap note suggesting they could run concurrently was wrong and
 has been corrected.
 
-Then Tasks 005 to 007 once the owner inputs in `PROJECT_CONTEXT.md` section 4 land. The
-Signal invite link remains the one blocker that no placeholder token may substitute for.
+Then Tasks 005 to 007 once the owner inputs in `PROJECT_CONTEXT.md` section 4 land. **The
+Signal invite link is no longer a blocker and is withdrawn:** on 2026-07-30 the owner decided
+the site publishes no chat link at all, and the single contact route is email to
+`info@GROUP_DOMAIN`. Track B now waits on the organization name, the geographic scope, the
+locations answer and the Mastodon handle.

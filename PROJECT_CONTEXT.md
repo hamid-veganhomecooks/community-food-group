@@ -7,10 +7,28 @@ You are participating in a modular, multi-session software-development workflow.
 - Every session is isolated and stateless.
 - Treat this file as the project-level single source of truth.
 - Treat `TASK_SPEC.md` as the single source of truth for the active task.
-- Treat `ROADMAP.md` as the ordered backlog. It is planning material, not authorization to change code.
+- `ROADMAP.md` is the ordered backlog. It is planning material, not authorization to change code, and an `IMPLEMENTER` **does not need to load it** - everything binding on the active task is here or in `TASK_SPEC.md`. It is an `ARCHITECT` and owner document.
 - Do not rely on conversational memory, inferred files, or an earlier task embedded in a prompt.
 - Before changing code, compare the task's relevant-file list with the repository. If they disagree, stop and report the mismatch.
 - The session role will be one of `ARCHITECT`, `IMPLEMENTER`, `REVIEWER`, or `DEBUGGER`.
+
+### One owner per fact
+
+Every fact lives in exactly one file. Other files **point** to it rather than restating it.
+
+| Fact | Owner | Written by |
+| --- | --- | --- |
+| Durable rules, decisions, current state, open defects, owner inputs | `PROJECT_CONTEXT.md` | `MEMORY SYNC` |
+| Order, blocking relationships, files each queued task touches | `ROADMAP.md` | `ARCHITECT` at promotion time only |
+| Full scope and acceptance for the **one** active task | `TASK_SPEC.md` | `ARCHITECT` at promotion time |
+
+Promotion **moves** detail, it does not copy it: a task's scope is cut from `ROADMAP.md`
+into `TASK_SPEC.md`, and on completion cut into `PROJECT_CONTEXT.md` as dated decisions
+while its roadmap entry collapses to a status line. A queued entry that survives promotion
+becomes a second, stale spec competing with the real one. This has already happened once,
+on 2026-07-30, to both the owner-inputs list and the Task 003 entry.
+
+An `IMPLEMENTER` never writes `ROADMAP.md`, so it cannot drift mid-task.
 
 ### Files you do not need to read
 
@@ -114,8 +132,21 @@ to `docs/DECISIONS_ARCHIVE.md`.
   rather than a donation-platform flow. The invented "90% of all donations" transparency
   claim is withdrawn and must not reappear in any form.
 - **Distribution cadence is monthly; precise scheduling happens off-site.** The site states
-  the monthly rhythm and directs people to get in touch to join a Signal chat. Present the
-  chat as the way to get current details, never as a gate or a screening step.
+  the monthly rhythm and nothing more precise. The exact schedule is set close to the date
+  and genuinely changes, so publishing a time in advance would be **inaccurate**, not merely
+  a safety tradeoff.
+- **[2026-07-30] The single public contact route is email, and no chat link appears on the
+  site.** Owner decision, superseding the earlier plan to publish a Signal invite. People
+  write to `info@GROUP_DOMAIN`; a person replies and handles onboarding off-site.
+  Consequences for copy, all binding on Tasks 004-007:
+  - **No Signal, WhatsApp, Telegram or other chat link may appear anywhere on the site.**
+    This is a deliberate owner choice, not a missing asset awaiting a value. A future session
+    must not "helpfully" add a join-the-chat button.
+  - Invite people to write in, and say plainly that a person will get back to them.
+  - Do **not** frame the reply step as an application, a screening, or a vetting process -
+    and do not imply it is instant or automatic either. It is a person answering an email.
+    Both exaggerations are constraint 1 problems in opposite directions.
+  - What happens after someone writes in is **internal** and is not site content.
 - **Cooking classes get a real section now**, written as forming or upcoming, never as an
   established program with a history. Cultural events and other activities are deferred
   until they are real.
@@ -123,10 +154,16 @@ to `docs/DECISIONS_ARCHIVE.md`.
   labels, buttons and links. Headings inside the MDX documents still mix both and are
   corrected in Task 005, which rewrites that copy anyway.
 - **Owner-fill placeholder tokens are permitted in content, under conditions.** Content work
-  may use literal uppercase tokens such as `GROUP NAME`, `CITY`, and `CONTACT`. All
+  may use literal uppercase tokens such as `GROUP NAME`, `CITY`, and `GROUP_DOMAIN`. All
   conditions are mandatory:
   - Tokens are `SCREAMING_CASE` or spaced uppercase so they are unmistakably unfilled to any
     reader, including a non-technical one reviewing a preview.
+  - **A token must never be spelled as a plausible real value.** The contact address is
+    written `info@GROUP_DOMAIN`, never `info@domain.com` or `info@example.com`: the local
+    part is a real decision, the domain is the blank. A plausible-looking address reads as
+    genuine to a reviewer, and `domain.com` is a real registered domain belonging to someone
+    else, so a `mailto:` pointing at it would be both dishonest presence and a live link to
+    a third party.
   - Every token is greppable by a single documented pattern, and the pre-publication check
     in Task 009 fails the build while any remain.
   - Tokens stand in only for **identifiers the owner will supply**: name, city, contact
@@ -204,7 +241,9 @@ reports **0 errors, 0 warnings** and 12 hints (all the zod deprecation below);
   `/images/og-default.jpg`, so both 404 on every route.
 - `Header.astro` applies `role="menubar"` and `role="menuitem"` to ordinary site
   navigation, which contradicts constraint 3.7.
-- `Footer.astro` contains two `href="#"` dead links, for Mastodon and for email.
+- `Footer.astro` contains two `href="#"` dead links, for Mastodon and for email. The email
+  one now has a destination: `mailto:info@GROUP_DOMAIN`. The Mastodon one is still blocked
+  on the handle, and must be removed rather than left dead if there is no account.
 - `Footer.astro`, the MDX documents, and `src/data/locations.json` contain invented contact
   information, locations, social links, history, schedules, and impact claims. They are
   scaffold content and are not approved public facts.
@@ -228,6 +267,10 @@ carries the full specification and the chosen Direction B values; the audit figu
 
 ### Open owner inputs
 
+**This table is the only copy of this list.** `ROADMAP.md` used to carry a second one; it
+drifted and has been removed in favour of a pointer here. Do not reintroduce a duplicate in
+any other file.
+
 These are product-content decisions and must not be invented by an implementation model.
 Work that depends on them is blocked, not deferrable by guessing.
 
@@ -235,21 +278,26 @@ Work that depends on them is blocked, not deferrable by guessing.
 | --- | --- | --- |
 | Final public organization name | Deferred; use `GROUP NAME` token | Branding, page copy, metadata |
 | Town / geographic scope | Deferred; use `CITY` token | About copy, metadata |
-| Signal chat invite link, or how people request it | **Required, not yet supplied.** No token may substitute | Join page, footer, distribution page |
+| Domain name; not yet purchased | Deferred; use `GROUP_DOMAIN` token | Contact address, canonical URLs, deployment |
 | Whether cook-session and distribution places are named publicly at all | **Required.** May be "none are named" | `src/data/locations.json` replacement |
-| One contact route the group actually monitors | Deferred; use `CONTACT` token | Footer, join page |
 | Mastodon account handle, or confirmation there is none | **Required before Task 006** | Mastodon ingestion, feed routes, footer |
 | Approved food-safety language, if any is wanted | Open | About or ways-to-help content |
 | Logo, favicon, social image | Deferred | `public/` assets, brand pass |
-| Confirmed Cloudflare Pages project URL and production domain | Deferred | `astro.config.mjs`, deployment |
+| Confirmed Cloudflare Pages project URL | Deferred | `astro.config.mjs`, deployment |
 
-Answered on 2026-07-30 and recorded above, do not re-ask: cadence (monthly, details via
-Signal), which programs are real (cooking classes forming; others deferred), palette
-(Direction B), commit the contrast script, self-host the fonts.
+Answered on 2026-07-30 and recorded above. **Do not re-ask, and do not treat any of these as
+still open:**
 
-The Signal link is called out as non-tokenizable on purpose. It is the site's only real call
-to action once distribution times are deliberately unpublished, so a placeholder there would
-leave the site with no working way to participate.
+- Cadence: monthly; no precise time is published.
+- **Contact route: email to `info@GROUP_DOMAIN`. The Signal invite link is withdrawn** - the
+  owner decided no chat link goes on the site at all. This was previously the one blocker
+  marked non-tokenizable; it is now resolved, and the token covers only the unpurchased
+  domain.
+- Which programs are real: cooking classes forming; other activities deferred.
+- Palette Direction B; commit the contrast script; self-host the fonts.
+
+Nothing on the remaining list blocks Task 003 or Task 004. Track B (Tasks 005-007) needs the
+organization name, the geographic scope, the locations answer and the Mastodon handle.
 
 ---
 
