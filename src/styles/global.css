@@ -170,6 +170,38 @@
   a {
     @apply text-brand-ink hover:text-brand-hover transition-colors duration-200;
   }
+
+  /*
+   * One rule covers every interactive element - links, buttons, the skip
+   * link, the mobile toggle - so a future component inherits the indicator
+   * instead of forgetting it. :focus-visible, not :focus, so pointer users
+   * do not get a ring on click. .btn-primary / .btn-secondary already define
+   * their own focus:ring-* that satisfies this, so this rule does not
+   * compete with them there - it only draws for elements with no ring of
+   * their own.
+   */
+  a:focus-visible,
+  button:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+}
+
+/*
+ * The project animates only colour and shadow today, so this is preventive
+ * hygiene rather than the removal of an observed vestibular trigger: it
+ * guarantees the next component that adds a transform is covered by
+ * default.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 /*

@@ -405,6 +405,47 @@ Green baseline, reproducible with `npm run verify`: unchanged mechanics from the
 `scripts/verify-baseline.sh` was not edited in Task 003 and does not yet run
 `check:contrast` (see the styling notes above).
 
+**[2026-07-31] Task 004 (accessibility and shell correctness) is complete, implemented in
+the working tree and not yet committed to `main`.** Verified by execution on Node v22.23.2:
+
+- `npm run check` reports **0 errors**, 0 warnings, 12 hints (the zod deprecation, unchanged).
+- `npm run verify` exits 0. `npm run check:contrast` now runs inside it, in the **uncached**
+  half alongside `astro check` and `astro build` - confirmed to re-run after touching only
+  `global.css` even when the dependency half is a cache hit. All sixteen role pairs still
+  pass; no colour moved.
+- `npm run build` emits the same six routes.
+- `grep -rn 'role="menubar"\|role="menuitem"\|role="none"' src/` returns nothing. The
+  application-menu ARIA pattern is gone from both navigation lists in `Header.astro`, and the
+  `aria-label="Main navigation"` that mis-named the `<header>` landmark is removed. The mobile
+  menu is now a labelled `<nav>`, not a labelled `<ul>` with an inert label.
+- `grep -rn 'href="#"' src/` returns nothing. The footer email link now points at
+  `mailto:info@GROUP_DOMAIN` (owner-fill token, deliberately still unfilled); the Mastodon
+  link is **removed entirely** rather than pointed at a guessed instance - it returns in Task
+  006 or 007 with `rel="me"` once the handle exists.
+- The footer's three redundant `aria-label`s (`"Mastodon"` against "Follow us on Mastodon",
+  `"Email"` against "Email us", `"Volunteer"` against "Volunteer") are deleted rather than
+  lengthened, closing the WCAG 2.5.3 failure; decorative emoji are wrapped `aria-hidden`.
+- A single `:focus-visible` rule in `global.css` (`a, button, [tabindex]`, using the existing
+  `--color-focus` role) supplies the project's focus indicator. `.btn-primary` /
+  `.btn-secondary` keep their own rings, which win on specificity, so nothing double-rings.
+- The mobile menu's keyboard contract is complete: Escape closes it from a link inside or from
+  the toggle and returns focus to the toggle; tabbing past the last link closes it without
+  stranding focus; all four close paths (toggle click, link click, Escape, focus-leaving)
+  share one `closeMenu()` function. **No focus trap was added.** The pre-existing, already-
+  correct `isHidden` `aria-expanded` inversion was left untouched, as instructed.
+- A `prefers-reduced-motion: reduce` block was added to `global.css` as preventive hygiene -
+  the project animates only colour and shadow today, so this closes no observed defect and is
+  reported as such, not as a fix.
+- The Task 002 type scale, the spacing tokens, and the **unlayered** `.container` / `.prose`
+  blocks are confirmed byte-for-byte unchanged by targeted diff.
+- Browser-verified with the Playwright harness (`docs/ENVIRONMENT.md`). **The harness's own
+  claim to already have "focus-visible traversal groundwork" did not hold up** - it had none -
+  so it was extended rather than trusted; see the correction logged in `docs/ENVIRONMENT.md`.
+  It now tabs through every focusable element on all six routes at both 375px and 1440px,
+  asserting a visible `outline` or `box-shadow` from computed style, and separately drives the
+  mobile menu's full keyboard contract (Escape from inside, Escape from the toggle,
+  tab-past-last-link, focus return, and an explicit no-trap assertion). All checks pass.
+
 ### Open defects
 
 - **`MastodonFeed` prints raw markup. Confirmed empirically on 2026-07-30**, not merely
@@ -418,15 +459,17 @@ Green baseline, reproducible with `npm run verify`: unchanged mechanics from the
   constraint 3.6. `zod@4.4.3` is currently present only as a transitive dependency of astro,
   so importing it directly today would rely on hoisting and is not safe.
 - `public/` contains no files. `BaseLayout.astro` references `/favicon.svg` and
-  `/images/og-default.jpg`, so both 404 on every route.
-- `Header.astro` applies `role="menubar"` and `role="menuitem"` to ordinary site
-  navigation, which contradicts constraint 3.7.
-- `Footer.astro` contains two `href="#"` dead links, for Mastodon and for email. The email
-  one now has a destination: `mailto:info@GROUP_DOMAIN`. The Mastodon one is still blocked
-  on the handle, and must be removed rather than left dead if there is no account.
-- `Footer.astro`, the MDX documents, and `src/data/locations.json` contain invented contact
-  information, locations, social links, history, schedules, and impact claims. They are
-  scaffold content and are not approved public facts.
+  `/images/og-default.jpg`, so both 404 on every route. Tracked as Task 007.
+- **[2026-07-31] Resolved by Task 004, removed from this list:** the `role="menubar"` /
+  `role="menuitem"` / `role="none"` application-menu pattern in `Header.astro`, the
+  `aria-label="Main navigation"` mismatch on `<header>`, both `Footer.astro` dead `href="#"`
+  links, and the three redundant `aria-label`s that failed WCAG 2.5.3. See the dated decision
+  above for the verification record.
+- The MDX documents and `src/data/locations.json` still contain invented locations, history,
+  schedules and impact claims - scaffold content, not approved public facts, and the target of
+  Task 005. `Footer.astro`'s share of this is resolved: its invented social link and
+  mismatched labels are gone. Its hardcoded organization name is a separate, still-open thing,
+  tracked in the owner-inputs table below and gated on Task 004b, not this defect.
 - There is no CI workflow, automated test suite, formatter, or lint command.
 - Cloudflare Pages configuration and a production URL have not been verified.
 
@@ -434,18 +477,42 @@ Green baseline, reproducible with `npm run verify`: unchanged mechanics from the
 
 **Task 003 is complete and merged** (`faf489e`). The palette now passes AA on every checked
 pair instead of failing nine, the toolchain is current, and the routes share one type scale,
-one measure, one set of rhythm tokens, and one colour token system. The repository is still a
-prototype whose public copy is invented scaffold data, and **it must not be deployed.**
+one measure, one set of rhythm tokens, and one colour token system.
 
-**[2026-07-31] Task 004 (accessibility and shell correctness) is now the active task**,
-promoted into `TASK_SPEC.md`, which is the only authority on its scope and acceptance. Task
-003's `ROADMAP.md` entry has been collapsed to a status line and Task 004's planned scope was
-**moved** out of the roadmap rather than copied. The staleness warning that stood here - that
-`TASK_SPEC.md` still described Task 003 - is **resolved** and has been removed.
+**[2026-07-31] Task 004 (accessibility and shell correctness) is complete**, implemented in
+the working tree and **not yet committed to `main`** - see the dated decision above for the
+full verification record. It picked up the two things Task 003 could not: wiring
+`npm run check:contrast` into `npm run verify`, and the two dead footer links.
 
-Task 004 also picks up two things Task 003 could not: wiring `npm run check:contrast` into
-`npm run verify`, which needed `scripts/verify-baseline.sh` and was out of scope, and the two
-dead footer links. `ROADMAP.md` holds the ordered sequence through launch.
+The repository is still a prototype whose public copy is invented scaffold data, and **it
+must not be deployed.**
+
+**No task is currently promoted into `TASK_SPEC.md`.** Its status header now reads Task 004
+complete; its scope-and-acceptance body is a historical record of finished work, not a live
+authorization. **The next step is an `ARCHITECT` session promoting Task 004b** (site config
+and the fork-and-adopt surface - Track A, unblocked, needs no owner facts) out of
+`ROADMAP.md` and into `TASK_SPEC.md`. `ROADMAP.md`'s Task 004b entry already holds the
+planned scope; promotion **moves** it, it does not re-derive it.
+
+**Coordination note, Track A sequencing.** Task 004b and Task 004 both edit `Header.astro`
+and `Footer.astro` - the same collision `ROADMAP.md` already flags as the reason 003 and 004
+ran in sequence rather than parallel. Committing Task 004's working-tree changes before
+starting Task 004b avoids two tasks' edits landing in one undifferentiated uncommitted pile.
+This is a recommendation for whoever holds the git workflow, not an action taken in this
+session - git operations here are user-driven by standing instruction.
+
+**Track B (Task 005) remains blocked on exactly one input: the organization name**, in the
+owner-inputs table below. Task 004b does not resolve this - it moves the name into one config
+field (`site.config.ts`) rather than nine files, but Task 005's prose still has to be written
+knowing what the group is called. Nothing else blocks Task 005: the contact route, the
+geographic scope, and the garden are all settled.
+
+**Aside, not acted on here:** `ROADMAP.md`'s Task 004c entry still reads "implemented ... and
+not yet committed," but `git log` shows it landed in `bcef6db` ("Updated roadmap and added
+license"). `ROADMAP.md` is ARCHITECT-owned, not MEMORY SYNC's to correct; flagging it here for
+whoever next writes that file.
+
+`ROADMAP.md` holds the ordered sequence through launch.
 
 ### Open owner inputs
 
@@ -557,14 +624,27 @@ architecture unless a task explicitly creates them.
 
 ### Session role
 
-`IMPLEMENTER`
+**None currently promoted.** The prior session ran as `IMPLEMENTER` for Task 004, now
+complete. The next session's role is `ARCHITECT`, to promote Task 004b's planned scope (in
+`ROADMAP.md`) into `TASK_SPEC.md`.
 
 ### Active task
 
-**Task 004 - Accessibility and shell correctness**, promoted into `TASK_SPEC.md` on
-2026-07-31. **`TASK_SPEC.md` is the only authority on its scope and acceptance;** read it in
-full. Tasks 001, 001b, 001c, 002 and 003 are complete and merged to `main`, Task 003 as
-`faf489e`.
+**None.** Task 004 - Accessibility and shell correctness, promoted into `TASK_SPEC.md` on
+2026-07-31, is now **complete** - implemented in the working tree, not yet committed to
+`main`. Its verification record is the dated decision in section 4 above; `TASK_SPEC.md`'s
+status header reflects completion, and its body is left as a historical spec rather than live
+scope.
+
+Tasks 001, 001b, 001c, 002, 003 and 004c are also complete. 003 is merged to `main` as
+`faf489e`; 004c (`LICENSE`) is merged as `bcef6db`, though `ROADMAP.md`'s own entry for it is
+stale and still says otherwise - see the aside in the Current Phase section above. Task 004
+is implemented but **not yet committed**. **Do not infer commit state from a status word in
+this file - check `git log` / `git status`.**
+
+**Next:** an `ARCHITECT` session promotes Task 004b (Track A, unblocked, needs no owner
+facts) from `ROADMAP.md` into `TASK_SPEC.md`. Task 005 (Track B) stays blocked until the
+owner supplies the organization name - see the owner-inputs table in section 4.
 
 ### Required inputs
 
@@ -586,4 +666,6 @@ The implementer must return:
 4. Any acceptance criterion that did not pass
 5. Newly discovered repository facts that should be added during `MEMORY SYNC`
 
-Do not begin a later task, fill in owner inputs, or silently expand scope.
+This contract applies once a task is next promoted. With none active, an `IMPLEMENTER`
+session should stop and report rather than start Task 004b or Task 005 unpromoted, fill in
+owner inputs, or silently expand scope.

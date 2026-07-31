@@ -8,9 +8,21 @@
 
 ### Status
 
-**ACTIVE.** Promoted 2026-07-31. Task 003 is complete and merged to `main` as `faf489e`; its
-dated decisions are in `PROJECT_CONTEXT.md` section 4 and its roadmap entry is now a status
-line.
+**COMPLETE.** Promoted 2026-07-31, implemented and verified the same day. **Implemented in
+the working tree; not yet committed to `main`.** All eleven acceptance criteria below passed
+by execution, including the browser-driven keyboard and focus-visible checks. The full
+verification record is the dated decision in `PROJECT_CONTEXT.md` section 4, which is now
+the authoritative summary - this file's body below is retained as the historical scope and
+acceptance record, not as live authorization for further work.
+
+**This file is not yet re-promoted.** The next task to occupy it is Task 004b (site config
+and the fork-and-adopt surface), per `ROADMAP.md`. Promoting it is an `ARCHITECT` action, not
+performed in this session; nothing below authorizes starting Task 004b or Task 005 against
+this document.
+
+Task 003 is complete and merged to `main` as `faf489e`; its dated decisions are in
+`PROJECT_CONTEXT.md` section 4 and its roadmap entry is a status line. Task 004c (`LICENSE`)
+is also complete and merged, as `bcef6db`.
 
 ### Goal
 

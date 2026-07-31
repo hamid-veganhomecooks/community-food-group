@@ -84,10 +84,27 @@ cannot be signed off from a CSS diff and must be measured in a real browser.
 
 All three are user-local and sit outside both the project and any nvm version directory, so
 switching Node does not lose them. `~/.local/share/playwright-runner/` holds
-`playwright@1.62.1`, `verify.mjs` (the Task 002 layout harness) and `shot.mjs` (screenshots
-at 1440px and 390px into `$SHOTS`). It was rescued out of a session scratchpad under `/tmp`;
-do not let it drift back there. Reinstalling the npm package would **not** reproduce
-`verify.mjs` - that file exists only here.
+`playwright@1.62.1`, `verify.mjs` (the Task 002 layout harness, **extended in Task 004** -
+see below) and `shot.mjs` (screenshots at 1440px and 390px into `$SHOTS`). It was rescued out
+of a session scratchpad under `/tmp`; do not let it drift back there. Reinstalling the npm
+package would **not** reproduce `verify.mjs` - that file exists only here.
+
+**[2026-07-31] `verify.mjs` now also covers accessibility, not just layout.** A prior version
+of `TASK_SPEC.md` claimed it already had "focus-visible traversal groundwork" going into Task
+004; reading the file on that date showed it did not - it was layout- and heading-only, with
+zero keyboard or focus assertions. It was extended in place rather than trusted: it now runs
+a focus-visible sweep (tabs through every focusable element on all six routes at both 375px
+and 1440px, asserting a visible `outline` or `box-shadow` from computed style) and a full
+mobile-menu keyboard-contract check (Escape from a link inside the menu, Escape from the
+toggle, tabbing past the last link, focus return to the toggle, and an explicit assertion
+that focus is never stranded inside a closed menu). All of it passed against Task 004's
+implementation. A future task changing the header/footer markup or the focus styles should
+expect this harness to catch a regression, not just the layout assertions below.
+
+**Stale preview servers can steal port 4321.** A `astro preview` process left running (even
+suspended, job-control state `T`) from an earlier session still holds the port. `npm run
+preview` then silently falls back to 4322 and prints which port it actually bound - read that
+line rather than assuming 4321, and pass the real port to `verify.mjs` via `BASE=`.
 
 **Outstanding - `libasound.so.2`.** Missing system-wide and not apt-installable without sudo.
 Chromium will not start without it. Extract it into a user-local directory:

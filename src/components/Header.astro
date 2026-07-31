@@ -2,7 +2,7 @@
 import { Menu, X } from 'lucide-astro';
 ---
 
-<header class="bg-surface-raised shadow-xs sticky top-0 z-50" role="banner" aria-label="Main navigation">
+<header class="bg-surface-raised shadow-xs sticky top-0 z-50" role="banner">
   <nav class="container flex items-center justify-between h-16" aria-label="Primary navigation">
     <!-- Logo -->
     <a href="/" class="flex items-center space-x-2 text-xl font-bold text-brand-ink hover:text-brand-hover transition-colors" aria-label="Community Food Group Home">
@@ -11,29 +11,29 @@ import { Menu, X } from 'lucide-astro';
     </a>
 
     <!-- Desktop Navigation -->
-    <ul class="hidden md:flex items-center space-x-6" role="menubar">
-      <li role="none">
-        <a href="/" class="text-ink-muted hover:text-brand-ink transition-colors font-medium" role="menuitem">
+    <ul class="hidden md:flex items-center space-x-6">
+      <li>
+        <a href="/" class="text-ink-muted hover:text-brand-ink transition-colors font-medium">
           Home
         </a>
       </li>
-      <li role="none">
-        <a href="/about" class="text-ink-muted hover:text-brand-ink transition-colors font-medium" role="menuitem">
+      <li>
+        <a href="/about" class="text-ink-muted hover:text-brand-ink transition-colors font-medium">
           About
         </a>
       </li>
-      <li role="none">
-        <a href="/locations" class="text-ink-muted hover:text-brand-ink transition-colors font-medium" role="menuitem">
+      <li>
+        <a href="/locations" class="text-ink-muted hover:text-brand-ink transition-colors font-medium">
           Locations
         </a>
       </li>
-      <li role="none">
-        <a href="/join" class="text-ink-muted hover:text-brand-ink transition-colors font-medium" role="menuitem">
+      <li>
+        <a href="/join" class="text-ink-muted hover:text-brand-ink transition-colors font-medium">
           Join
         </a>
       </li>
-      <li role="none">
-        <a href="/donate" class="btn-primary text-sm" role="menuitem">
+      <li>
+        <a href="/donate" class="btn-primary text-sm">
           Donate
         </a>
       </li>
@@ -55,64 +55,101 @@ import { Menu, X } from 'lucide-astro';
   </nav>
 
   <!-- Mobile Navigation -->
-  <div id="mobile-menu" class="md:hidden hidden bg-surface-raised border-t border-border" data-mobile-menu>
-    <ul class="container py-4 space-y-3" role="menubar" aria-label="Mobile navigation">
-      <li role="none">
-        <a href="/" class="block text-ink-muted hover:text-brand-ink transition-colors font-medium" role="menuitem">
+  <nav id="mobile-menu" class="md:hidden hidden bg-surface-raised border-t border-border" aria-label="Mobile navigation" data-mobile-menu>
+    <ul class="container py-4 space-y-3">
+      <li>
+        <a href="/" class="block text-ink-muted hover:text-brand-ink transition-colors font-medium">
           Home
         </a>
       </li>
-      <li role="none">
-        <a href="/about" class="block text-ink-muted hover:text-brand-ink transition-colors font-medium" role="menuitem">
+      <li>
+        <a href="/about" class="block text-ink-muted hover:text-brand-ink transition-colors font-medium">
           About
         </a>
       </li>
-      <li role="none">
-        <a href="/locations" class="block text-ink-muted hover:text-brand-ink transition-colors font-medium" role="menuitem">
+      <li>
+        <a href="/locations" class="block text-ink-muted hover:text-brand-ink transition-colors font-medium">
           Locations
         </a>
       </li>
-      <li role="none">
-        <a href="/join" class="block text-ink-muted hover:text-brand-ink transition-colors font-medium" role="menuitem">
+      <li>
+        <a href="/join" class="block text-ink-muted hover:text-brand-ink transition-colors font-medium">
           Join
         </a>
       </li>
-      <li role="none">
-        <a href="/donate" class="inline-block btn-primary text-sm w-full text-center" role="menuitem">
+      <li>
+        <a href="/donate" class="inline-block btn-primary text-sm w-full text-center">
           Donate
         </a>
       </li>
     </ul>
-  </div>
+  </nav>
 </header>
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const toggle = document.querySelector('[data-mobile-toggle]');
-    const menu = document.querySelector('[data-mobile-menu]');
+    const toggle = document.querySelector<HTMLButtonElement>('[data-mobile-toggle]');
+    const menu = document.querySelector<HTMLElement>('[data-mobile-menu]');
     const iconOpen = document.querySelector('[data-icon-open]');
     const iconClose = document.querySelector('[data-icon-close]');
 
-    if (toggle && menu && iconOpen && iconClose) {
-      toggle.addEventListener('click', () => {
-        // classList.toggle returns whether the class is now present, so this is
-        // "is the menu hidden", the inverse of expanded. The old name said the
-        // opposite of what it held.
-        const isHidden = menu.classList.toggle('hidden');
-        toggle.setAttribute('aria-expanded', String(!isHidden));
-        iconOpen.classList.toggle('hidden');
-        iconClose.classList.toggle('hidden');
-      });
+    if (!(toggle && menu && iconOpen && iconClose)) return;
 
-      // Close mobile menu when clicking a link
-      menu.querySelectorAll('a').forEach((link) => {
-        link.addEventListener('click', () => {
-          menu.classList.add('hidden');
-          toggle.setAttribute('aria-expanded', 'false');
-          iconOpen.classList.remove('hidden');
-          iconClose.classList.add('hidden');
-        });
+    const isOpen = () => !menu.classList.contains('hidden');
+
+    const openMenu = () => {
+      menu.classList.remove('hidden');
+      toggle.setAttribute('aria-expanded', 'true');
+      iconOpen.classList.add('hidden');
+      iconClose.classList.remove('hidden');
+    };
+
+    // Single close path for every trigger (toggle click, link click, Escape,
+    // focus leaving) so aria-expanded, the hidden class and the two icon
+    // states can never drift out of sync between call sites.
+    const closeMenu = ({ returnFocus = false } = {}) => {
+      if (!isOpen()) return;
+      menu.classList.add('hidden');
+      toggle.setAttribute('aria-expanded', 'false');
+      iconOpen.classList.remove('hidden');
+      iconClose.classList.add('hidden');
+      if (returnFocus) {
+        toggle.focus();
+      }
+    };
+
+    toggle.addEventListener('click', () => {
+      if (isOpen()) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+    });
+
+    // Close mobile menu when clicking a link. The browser is navigating away,
+    // so focus is not redirected.
+    menu.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        closeMenu();
       });
-    }
+    });
+
+    // Escape closes the menu from anywhere inside it, or from the toggle,
+    // and returns focus to the toggle.
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || !isOpen()) return;
+      closeMenu({ returnFocus: true });
+    };
+    toggle.addEventListener('keydown', handleEscape);
+    menu.addEventListener('keydown', handleEscape);
+
+    // Tabbing (or clicking) focus away from the toggle and the menu closes
+    // it, so it is never left open with focus somewhere unrelated. This is a
+    // disclosure close, not a focus trap: focus is free to land anywhere.
+    menu.addEventListener('focusout', (event: FocusEvent) => {
+      const next = event.relatedTarget as Node | null;
+      if (next && (menu.contains(next) || next === toggle)) return;
+      closeMenu();
+    });
   });
 </script>

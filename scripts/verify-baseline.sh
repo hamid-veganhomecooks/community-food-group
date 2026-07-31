@@ -73,6 +73,9 @@ fi
 step "npm run check"
 npm run check
 
+step "npm run check:contrast"
+npm run check:contrast
+
 step "npm run build"
 npm run build
 
