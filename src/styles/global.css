@@ -1,34 +1,81 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+/*
+ * Tailwind 4 is configured in CSS. The former tailwind.config.mjs has been
+ * removed; these custom properties are the equivalent of its theme.extend
+ * block. Tailwind derives utilities from the namespace, so --color-sage
+ * produces bg-sage, text-sage, border-sage and so on.
+ */
+@theme {
+  --color-terracotta: #c26a4f;
+  --color-terracotta-light: #d98266;
+  --color-terracotta-dark: #a8553b;
+
+  --color-sage: #7a9b7a;
+  --color-sage-light: #9ab89a;
+  --color-sage-dark: #5c7a5c;
+
+  --color-cream: #f5f0e8;
+  --color-cream-dark: #e8e0d4;
+
+  --color-earthy-50: #faf6f0;
+  --color-earthy-100: #f5ede1;
+  --color-earthy-200: #e8dbc8;
+  --color-earthy-300: #dbc9af;
+  --color-earthy-400: #ceb796;
+  --color-earthy-500: #c1a57d;
+  --color-earthy-600: #b49364;
+  --color-earthy-700: #a7814b;
+  --color-earthy-800: #9a6f32;
+  --color-earthy-900: #8d5d19;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
 
 @layer base {
   html {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: var(--font-sans);
   }
 
   body {
     @apply bg-cream text-gray-900 antialiased;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-bold text-terracotta-dark;
   }
 
   a {
     @apply text-terracotta hover:text-terracotta-dark transition-colors duration-200;
   }
+}
 
-  .container {
-    @apply mx-auto px-4 max-w-7xl;
-  }
+/*
+ * These are component classes, not base styles. Tailwind 3 had them in
+ * @layer base, which was the wrong layer for them.
+ *
+ * .container is deliberately declared outside any cascade layer. Tailwind
+ * ships its own .container utility, and layered utilities would otherwise
+ * override this one, which is what silently widened the intended max-width
+ * under Tailwind 3. Unlayered rules win over layered ones, so this definition
+ * now holds at every breakpoint.
+ */
+.container {
+  @apply mx-auto px-4 max-w-7xl;
+}
 
+@layer components {
   .btn-primary {
-    @apply bg-terracotta text-white px-6 py-3 rounded-lg font-semibold hover:bg-terracotta-dark transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-terracotta focus:ring-offset-2;
+    @apply bg-terracotta text-white px-6 py-3 rounded-lg font-semibold hover:bg-terracotta-dark transition-colors duration-200 focus:outline-hidden focus:ring-2 focus:ring-terracotta focus:ring-offset-2;
   }
 
   .btn-secondary {
-    @apply bg-sage text-white px-6 py-3 rounded-lg font-semibold hover:bg-sage-dark transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-sage focus:ring-offset-2;
+    @apply bg-sage text-white px-6 py-3 rounded-lg font-semibold hover:bg-sage-dark transition-colors duration-200 focus:outline-hidden focus:ring-2 focus:ring-sage focus:ring-offset-2;
   }
 
   .card {
