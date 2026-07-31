@@ -1,6 +1,6 @@
 # TASK SPECIFICATION
 
-## Task 003 : Brand system, palette, and self-hosted fonts
+## Task 004 : Accessibility and shell correctness
 
 ### Role
 
@@ -8,235 +8,264 @@
 
 ### Status
 
-**ACTIVE.** Specified 2026-07-30. Task 002 is complete and merged; see its completion record
-in git history and the dated decisions in `PROJECT_CONTEXT.md`.
+**ACTIVE.** Promoted 2026-07-31. Task 003 is complete and merged to `main` as `faf489e`; its
+dated decisions are in `PROJECT_CONTEXT.md` section 4 and its roadmap entry is now a status
+line.
 
 ### Goal
 
-Replace the scaffold palette with a **two-layer semantic token system**, implement the
-owner-chosen **Direction B (Garden)**, commit a **contrast validation script**, and **remove
-the Google Fonts CDN dependency** by self-hosting the typeface.
+Make the site shell correct for keyboard and screen reader users: remove the
+application-menu ARIA pattern from `Header.astro`, complete the mobile menu's keyboard
+contract, give every interactive element a visible project-defined focus indicator, resolve
+the two dead footer links, and honour `prefers-reduced-motion`.
 
-This task does **not** rewrite page copy (Task 005) and does **not** fix the ARIA roles or
-the mobile menu behaviour (Task 004), even though it edits the same two components.
+This task does **not** rewrite page copy (Task 005), does **not** touch the colour tokens or
+the type scale (Task 003, complete), and does **not** replace the emoji logo (Task 007), even
+though it edits the same components.
 
 ---
 
 ## Why this is not a cosmetic task
 
-The current palette **fails WCAG 2.2 AA on nine measured pairs**. This was measured, not
-estimated, on 2026-07-30 against every foreground/background pair actually used in the
-templates:
+Constraint 3.7 makes WCAG 2.2 AA a release requirement and specifically forbids
+application-menu ARIA patterns for ordinary site navigation. Four defects here are
+**Level A or AA failures**, measured against the current `main`, not predicted:
 
-| Pair, as used today | Measured | Needs |
+| Defect | Where | Criterion |
 | --- | --- | --- |
-| CTA lede `cream/90` on sage | 2.50:1 | 4.5 |
-| Hero lede `cream/90` on terracotta | 3.04:1 | 4.5 |
-| `btn-secondary`, white on sage | 3.09:1 | 4.5 |
-| Link `text-terracotta` on cream | 3.39:1 | 4.5 |
-| Footer `gray-500` on `gray-900` | 3.67:1 | 4.5 |
-| `btn-primary`, white on terracotta | 3.84:1 | 4.5 |
-| Link `text-terracotta` on white card | 3.84:1 | 4.5 |
-| Hero lede on gradient end | 4.05:1 | 4.5 |
-| Feature chip, `sage-dark` on `sage-light/20` | 4.16:1 | 4.5 |
+| `role="menubar"` / `role="menuitem"` on site nav | `Header.astro`, both nav lists | 4.1.2 Name, Role, Value |
+| `aria-label` shorter than the visible link text | `Footer.astro`, two links | 2.5.3 Label in Name (A) |
+| No project focus indicator on links | `global.css` base `a` rule | 2.4.11 Focus Appearance / 1.4.11 |
+| Two `href="#"` dead links | `Footer.astro` | Trust, not a WCAG failure |
 
-`text-terracotta` is the **most-used colour class in the codebase**, 23 occurrences. Constraint
-3.7 lists WCAG 2.2 AA as a release requirement, so the palette currently contradicts a stated
-project constraint.
-
-Note for the record: the `gray-200` divider measures 1.24:1 but is **not** counted as a
-failure. WCAG 1.4.11 governs boundaries required to identify a control; a decorative rule is
-exempt. Do not "fix" it.
+The `menubar` pattern is the load-bearing one. It tells a screen reader that the header is
+an application menu, which changes the interaction contract: users are told to expect arrow
+key navigation, a roving tabindex, and Home/End support, none of which exist here. A `nav`
+containing a list of links is both correct and what users expect on a website.
 
 ---
 
 ## Verified starting conditions
 
-Confirm before starting. If any has changed, stop and report the mismatch.
+Confirmed by reading the repository on 2026-07-31. If any has changed, stop and report the
+mismatch rather than adapting silently.
 
-- Astro 7.1.6, Tailwind 4.3.3, `@tailwindcss/typography` 0.5.20. **There is no
-  `tailwind.config.mjs`**; Tailwind 4 is configured in CSS.
-- `npm run check` reports 0 errors, 0 warnings, 12 expected zod hints.
-- `npm audit` reports 0 vulnerabilities.
-- `.container` **and** `.prose` are declared **outside any cascade layer** in
-  `src/styles/global.css`. Moving either into a layer reintroduces a fixed bug. The
-  typography plugin registers `prose` in the **utilities** layer, which is why a
-  components-layer override silently does nothing.
-- The type scale, spacing rhythm and measure tokens added in Task 002 live in the same
-  `@theme` block as the colours. **Do not modify them.** This task changes colour only.
+- `Header.astro` carries `role="menubar"` on **two** `ul` elements (desktop and mobile),
+  `role="none"` on **ten** `li` elements, and `role="menuitem"` on **ten** `a` elements.
+- `<header>` also carries `role="banner"` **and** `aria-label="Main navigation"`. The role is
+  redundant on `<header>` but harmless; the label is wrong - it names the banner landmark
+  after the navigation it contains, so a landmark list shows a banner called "Main
+  navigation". The inner `<nav>` is already correctly labelled "Primary navigation".
+- **The mobile toggle's `aria-expanded` logic is already correct and the variable is already
+  renamed to `isHidden`, with a comment explaining the inversion.** An earlier roadmap entry
+  asked for that rename; it landed before this promotion. **Do not "fix" the logic and do not
+  redo the rename.** What is genuinely missing is Escape-to-close, focus return, and
+  close-on-focus-leaving.
+- `BaseLayout.astro` **already has a working skip link** to `#main-content`, styled with
+  `sr-only focus:not-sr-only`. Do not add a second one.
+- `global.css` has **no `outline: none` reset**, so browser default focus rings currently
+  survive. It also has **no `:focus-visible` rule of its own**: `.btn-primary` and
+  `.btn-secondary` define `focus:ring-*`, and the mobile toggle defines its own, but the base
+  `a` rule at line 171 styles hover only. Link focus therefore depends entirely on the UA
+  default against the new Direction B surfaces.
+- `--color-focus` already exists as a semantic role and `npm run check:contrast` already
+  validates two focus-ring pairs at the 3.0:1 threshold. Use the role; do not introduce a new
+  colour.
+- **There is no `prefers-reduced-motion` block anywhere in `src/`.** All 21 motion utilities
+  are `transition-colors` / `transition-shadow` at `duration-200`, in `Header.astro`,
+  `Footer.astro` and `global.css`. **There is no transform, translate, or keyframe animation
+  in the project.** State that honestly: this change is preventive hygiene, not the removal
+  of a vestibular trigger. Do not describe it as fixing a motion defect.
+- Task 002 verified in a browser at two widths that every route has exactly one `h1` and no
+  route skips a heading level. **Heading order is settled. Do not re-derive it.** Re-check
+  only if this task adds new headings, which it should not.
+- Task 001b already removed the React-style `key={...}` props from `locations.astro` and
+  `MastodonFeed.astro`. **Do not look for them again.**
 
 ---
 
 ## Allowed scope
 
-- `package.json`, `package-lock.json`
-- `src/styles/global.css`
-- `src/layouts/BaseLayout.astro`
-- `src/components/Header.astro` - **colour classes and font loading only**
-- `src/components/Footer.astro` - **colour classes only**
-- `src/components/MastodonFeed.astro` - **colour classes only**
-- `src/pages/index.astro`, `about.astro`, `join.astro`, `donate.astro`, `locations.astro`,
-  `posts.astro` - **colour classes only**
-- `scripts/check-contrast.mjs` - **new file**
-- `README.md` - palette and rebranding documentation
+- `src/components/Header.astro`
+- `src/components/Footer.astro`
+- `src/styles/global.css` - **focus-visible and reduced-motion only.** The colour tokens, the
+  type scale, the spacing rhythm, and the unlayered `.container` / `.prose` blocks are
+  untouchable.
+- `scripts/verify-baseline.sh` - **to add the contrast check only** (see required change 6)
 
 **Explicitly out of scope**, despite touching the same files:
 
-- `role="menubar"` / `role="menuitem"` in `Header.astro`, the mobile toggle behaviour, and
-  the two `href="#"` dead links in `Footer.astro`. **All of that is Task 004.** Change only
-  colour-bearing classes in those two components.
-- Page copy, the MDX documents, `src/data/locations.json`.
-- The type scale and spacing tokens from Task 002.
+- Page copy, the MDX documents, `src/data/locations.json`. **All Task 005.**
+- Any colour token value, any type-scale or spacing token. **Task 003, complete.**
+- The emoji logo in `Header.astro` and the missing `favicon.svg` / OG image. **Task 007.**
+- Supplying a Mastodon URL. The handle is still an open owner input; see change 4.
+- The zod deprecation and CI. **Task 009.**
 
 ---
 
 ## Required changes
 
-### 1. Two-layer token architecture
+### 1. Remove the application-menu pattern from `Header.astro`
 
-The templates currently name colours literally (`text-terracotta`, `bg-sage`, `bg-cream`)
-about 119 times across 10 files. Replace this with two layers.
+Delete every `role="menubar"`, `role="none"` and `role="menuitem"` from both the desktop and
+the mobile navigation lists. A `<nav>` wrapping a `<ul>` of `<a>` elements needs no ARIA at
+all - the implicit semantics are already correct, and adding roles back is a regression.
 
-**Layer 1 - brand inputs.** A single clearly commented block at the top of the `@theme`
-declaration. This is the **only** block a reusing group edits. Fourteen values in two groups:
-six brand/accent values that a rebrand actually changes, and eight neutrals that most groups
-will leave alone.
+Remove `aria-label="Main navigation"` from the `<header>` element. Keep `role="banner"`;
+it is redundant but not incorrect, and removing it is a separate judgement call not worth
+bundling here.
 
-**Layer 2 - semantic roles.** Every role references an input. Templates consume **only**
-these:
+The mobile list carries `aria-label="Mobile navigation"`. Once `role="menubar"` is gone that
+label sits on a plain `ul`, where it is inert. Move the labelling to a `<nav>` element
+wrapping the mobile menu, or drop it - **do not leave a label on an element that cannot
+carry one.**
 
-| Role | Direction B value |
-| --- | --- |
-| `--color-surface` | `#f7f5ef` |
-| `--color-surface-raised` | `#ffffff` |
-| `--color-surface-sunken` | `#ece9df` |
-| `--color-surface-inverse` | `#1c241e` |
-| `--color-ink` | `#1c241e` |
-| `--color-ink-muted` | `#4d564f` |
-| `--color-ink-inverse` | `#f2f5f0` |
-| `--color-ink-inverse-muted` | `#bcc7bd` |
-| `--color-brand` | `#2c6244` |
-| `--color-brand-hover` | `#224e35` |
-| `--color-brand-ink` | `#28583d` |
-| `--color-accent` | `#a8481f` |
-| `--color-accent-ink` | `#8f3d1a` |
-| `--color-accent-soft` | `#f3e2d6` |
-| `--color-border` | `#ddd8ca` |
-| `--color-focus` | `#2c6244` |
+### 2. Complete the mobile menu keyboard contract
 
-**The load-bearing distinction:** `--color-brand` is for **fills**, `--color-brand-ink` is
-for **text on a light surface**. A brand colour that works as a fill usually fails as text.
-Collapsing these two roles is exactly how the current palette came to fail. Keep them
-separate even when their values are close.
+The toggle currently opens and closes on click and closes when a link is activated. Three
+behaviours are missing:
 
-Delete the `terracotta`, `sage`, `cream` and `earthy-*` tokens. No literal colour name may
-survive in any component.
+- **Escape closes the menu** while focus is anywhere inside it, or on the toggle.
+- **Focus returns to the toggle** when the menu closes via Escape. Do not move focus on the
+  link-click close path - the browser is navigating away.
+- **The menu closes when focus leaves it**, so a user tabbing past the last link does not
+  leave an open menu behind them with focus somewhere unrelated.
 
-### 2. Direction B (Garden) - the chosen palette
+All three close paths must keep `aria-expanded`, the `hidden` class, and the two icon states
+in sync. Factor the close behaviour into one function rather than repeating the four-line
+reset at each call site; it is currently duplicated once already and this task would make it
+four copies.
 
-Owner decision, 2026-07-30. Green leads, clay supports. All sixteen role pairs were validated
-against AA **before** presentation. Representative measured ratios:
+**Do not add a focus trap.** This is a disclosure menu, not a modal dialog. Trapping focus in
+site navigation is itself an accessibility defect, and criterion 1 below tests for exactly
+that.
 
-- Link `brand-ink` on surface - **7.54:1**
-- Button `ink-inverse` on brand fill - **6.50:1**
-- Chip `accent-ink` on `accent-soft` - **5.85:1**
-- Body `ink` on surface - **14.59:1**
-- Focus ring against surface - **6.56:1**
+### 3. Define a project focus indicator
 
-### 3. Contrast validation script
+Add a `:focus-visible` rule so every interactive element - links, buttons, the skip link, the
+mobile toggle - shows a visible indicator against every surface the site uses. Use
+`--color-focus`, which is already validated by `npm run check:contrast`.
 
-Create `scripts/check-contrast.mjs`, wired as `npm run check:contrast`.
+Prefer one rule that covers `a`, `button`, and `[tabindex]` over per-component styles, so a
+future component inherits the indicator instead of forgetting it. Use `:focus-visible`, not
+`:focus`, so pointer users do not get a ring on click.
 
-- **Plain Node, zero dependencies.** Constraint 3.6 is therefore not triggered.
-- It must **parse the token values out of `src/styles/global.css`**, not hardcode a second
-  copy of them. A script carrying its own duplicate list will silently drift from what ships,
-  which defeats the purpose.
-- It must compute WCAG 2.2 relative luminance correctly: sRGB gamma expansion, then
-  `0.2126R + 0.7152G + 0.0722B`. Handle alpha compositing on the sRGB values if any
-  translucent pair remains.
-- It must check **every** role pair listed in the acceptance table below and **exit non-zero**
-  if any drops below its threshold: 4.5:1 for body text, 3.0:1 for large text and UI
-  boundaries.
-- Output must name each pair and print the measured ratio, so a failure is actionable.
+Keep the existing `.btn-primary` / `.btn-secondary` rings if they already satisfy the
+indicator; do not end up with two competing rings on one element.
 
-### 4. Self-hosted fonts
+### 4. Resolve the two dead footer links
 
-Remove the Google Fonts CDN from `BaseLayout.astro`: the stylesheet link and both
-`preconnect` hints. It render-blocks and sends visitor IP addresses to a third party, which a
-mutual aid site has good reason to avoid.
+Owner decision, 2026-07-31:
 
-**Verify before choosing the mechanism** - do not assume:
+- **The email link gets its real destination:** `mailto:info@GROUP_DOMAIN`. This is a
+  sanctioned owner-fill token under section 4 of `PROJECT_CONTEXT.md`. **Do not substitute a
+  plausible domain.** `GROUP_DOMAIN` stays literal until the domain is purchased, and Task
+  009's pre-publication check fails the build while it remains.
+- **The Mastodon link is removed entirely**, markup and all. The handle is still an open owner
+  input, and `PROJECT_CONTEXT.md` is explicit that a dead social link must be removed rather
+  than left dangling. **Task 006 or 007 re-adds it with `rel="me"` once the handle exists.**
+  Do not leave a commented-out placeholder and do not invent an instance URL.
 
-1. Check whether Astro 7.1.6 ships a **stable** built-in Fonts API. If it does, prefer it;
-   it needs no new dependency.
-2. If it is still experimental or absent, use `@fontsource-variable/inter`, authorized as a
-   dependency in `PROJECT_CONTEXT.md` on 2026-07-30.
+### 5. Fix Label in Name in `Footer.astro`
 
-Keep **Inter** as the single family. Pairing a display face is a separate design decision and
-is deliberately **not** part of this task.
+Both remaining social links violate WCAG 2.5.3: `aria-label="Mastodon"` against visible text
+"Follow us on Mastodon", and `aria-label="Email"` against "Email us". The accessible name must
+**contain** the visible label text, and neither does. Speech-input users saying the words they
+can see will fail to activate the link.
 
-Ensure `font-display: swap` and that no network request to `fonts.googleapis.com` or
-`fonts.gstatic.com` remains in the built output.
+The visible text is already descriptive, so the correct fix is to **delete the redundant
+`aria-label` attributes**, not to lengthen them. The `aria-label="Volunteer"` on the third link
+matches its visible text and is merely redundant; removing it is consistent and safe.
 
-### 5. Documentation
+Wrap the decorative emoji (`🐘`, `📧`, `🤝`) in `aria-hidden="true"` spans or remove them, so
+a screen reader does not announce "elephant" as part of a link name. The header's `🍲` is
+**out of scope** - Task 007 replaces it with a real wordmark.
 
-Add a **Rebranding this site** section to `README.md` covering: which block to edit, what
-each semantic role is for, why `brand` and `brand-ink` are separate, and how to run
-`npm run check:contrast`. Explain the roles, not just the values - a group that understands
-what `brand-ink` is for will not collapse it.
+### 6. Honour `prefers-reduced-motion`
+
+Add a `@media (prefers-reduced-motion: reduce)` block to `global.css` that neutralizes
+transition and animation duration site-wide. Because the project currently animates only
+colour and shadow, this is preventive: it guarantees the next component that adds a transform
+is covered by default. **Report it as such.** Do not claim it fixed an observed motion
+problem.
+
+### 7. Wire the contrast check into `npm run verify`
+
+`scripts/check-contrast.mjs` shipped in Task 003 but `scripts/verify-baseline.sh` was outside
+that task's scope, so the guard is currently a manual step. Add `npm run check:contrast` to
+the **uncached** half of the baseline, alongside `astro check` and `astro build`.
+
+The cache key is `package-lock.json` + `package.json` + the Node version, and the script's
+result depends on `src/styles/global.css`, which is source. Putting it in the cached
+dependency half would let a palette regression pass a stale stamp. Read the comment at the
+top of the script before editing it.
 
 ---
 
 ## Acceptance criteria
 
-1. `npm ci` succeeds; `npm run check` reports **0 errors**.
-2. `npm audit` reports **0 vulnerabilities**.
+Every criterion is executed, not inspected. Constraint 3.10 forbids reporting success from a
+diff.
+
+1. `npm run verify` exits 0, and its output shows `check:contrast` running as part of the
+   uncached half. Confirm it re-runs after touching only `global.css`.
+2. `npm run check` reports **0 errors** (12 zod hints remain expected).
 3. `npm run build` emits the same **six** routes.
-4. `npm run check:contrast` **exits 0**, and prints a measured ratio for every role pair.
-5. **The guard is proven to work:** temporarily set one token to a failing value, confirm
-   `npm run check:contrast` exits **non-zero** and names that pair, then restore. Report the
-   actual failing output. A validator that has never been seen to fail is not yet a validator.
-6. No literal palette name (`terracotta`, `sage`, `cream`, `earthy`) remains anywhere in
-   `src/`. Verify by grep and paste the result.
-7. No hex colour value appears in any component or page file; all colour comes from roles.
-8. No request to `fonts.googleapis.com` or `fonts.gstatic.com` in `dist/`. Verify by grep.
-9. `.container` and `.prose` remain **outside any cascade layer**, and the Task 002 type
-   scale and spacing tokens are unchanged.
-10. Reviewed in a browser at a mobile and a desktop width across all six routes. Focus rings
-    must be visible on every interactive element against the new surfaces.
+4. `grep -rn 'role="menubar"\|role="menuitem"\|role="none"' src/` returns **nothing**. Paste
+   the result.
+5. `grep -rn 'href="#"' src/` returns **nothing**. Paste the result.
+6. `grep -rn 'GROUP_DOMAIN' src/` shows the footer `mailto:` and no plausible-domain
+   substitute anywhere.
+7. **Keyboard-only traversal of every route completes without a trap**, including opening the
+   mobile menu, tabbing through it, closing it with Escape, and confirming focus lands back
+   on the toggle. Tabbing past the last item closes the menu rather than stranding focus.
+8. **A visible focus indicator appears on every interactive element** on every route, at both
+   widths, against every surface. Confirm by computed style, not by eye alone - the Task 003
+   precedent is reading `box-shadow` / `outline` off the focused element.
+9. No invalid or redundant-and-misleading ARIA in the built HTML.
+10. `npm run check:contrast` still exits 0 with all sixteen pairs passing. This task must not
+    move a colour.
+11. The Task 002 type scale, the spacing tokens, and the **unlayered** `.container` and
+    `.prose` blocks are byte-for-byte unchanged. Confirm by targeted diff.
 
-### How to run criterion 10
+### How to run criteria 7 and 8
 
-The browser setup is **already installed and persistent**. Do not rebuild it in a scratch
-directory, and **do not add a browser to `package.json`**. See `docs/ENVIRONMENT.md` for the
-commands; in short, build and preview the site, then run `verify.mjs` from
-`~/.local/share/playwright-runner`.
+The Playwright and Chromium setup is **already installed, persistent, and outside the
+repository**. Do not rebuild it in a scratch directory and **do not add a browser to
+`package.json`**. See `docs/ENVIRONMENT.md`; in short, build and preview, then run
+`verify.mjs` from `~/.local/share/playwright-runner`.
 
-That harness already checks heading order, the measure, and `.container` resolution at both
-widths. Its two colour assertions detect "the theme did not apply at all" rather than a
-specific hue, so they remain valid after the repalette. **New colour assertions belong in
-`npm run check:contrast`**, which parses the tokens, not in the browser harness.
+That harness already covers heading order, the measure, and `.container` resolution at both
+widths, plus focus-visible traversal groundwork. Extend it for the Escape and focus-return
+assertions if it does not already reach them.
 
 ---
 
 ## Reviewer focus
 
-- Whether any component still carries a literal colour or a raw hex.
-- Whether `brand` and `brand-ink` stayed separate roles.
-- Whether the contrast script reads the real tokens or a drifting duplicate.
-- Whether Task 004's concerns leaked into `Header.astro` or `Footer.astro`.
-- Whether the Task 002 type scale survived untouched.
+- Whether any ARIA was **added back** in the process of removing the menubar pattern. The
+  correct end state for site navigation is no ARIA at all.
+- Whether the mobile menu grew a focus trap. It must not.
+- Whether the toggle's already-correct `aria-expanded` logic was "fixed" into a bug.
+- Whether the four close paths share one function or duplicate the reset.
+- Whether `mailto:info@GROUP_DOMAIN` survived intact, or a plausible domain was substituted.
+- Whether the Mastodon link was removed rather than pointed at a guessed instance.
+- Whether `check:contrast` landed in the uncached half of `verify-baseline.sh`.
+- Whether any colour, type-scale or spacing token moved. None should have.
 
 ---
 
 ## Out of scope / queued work
 
-**Task 004 must follow this task, not run in parallel.** Both edit `Header.astro` and
-`Footer.astro`; the earlier roadmap note suggesting they could run concurrently was wrong and
-has been corrected.
+**Task 005 follows this task.** It is Track B and is now blocked on **only** the organization
+name in `PROJECT_CONTEXT.md` section 4.
 
-Then Tasks 005 to 007 once the owner inputs in `PROJECT_CONTEXT.md` section 4 land. **The
-Signal invite link is no longer a blocker and is withdrawn:** on 2026-07-30 the owner decided
-the site publishes no chat link at all, and the single contact route is email to
-`info@GROUP_DOMAIN`. Track B now waits on the organization name, the geographic scope, the
-locations answer and the Mastodon handle.
+Two owner inputs landed on 2026-07-31, after this task was promoted: **the geographic scope is
+Tucson, Arizona** and the `CITY` token is retired, and **the garden is settled in full** - a
+rented plot at Presidio Garden, operated by Community Gardens of Tucson. The garden decision
+changes the `locations.json` **schema**, not just its values. Both are recorded in
+`PROJECT_CONTEXT.md` section 4, with the consequences on the Task 005 entry in `ROADMAP.md`.
+
+**Nothing about either is in scope here.** This task does not touch `locations.json`,
+`locations.astro`, or any MDX document. If you find yourself writing the word "Tucson", you
+have left the task.

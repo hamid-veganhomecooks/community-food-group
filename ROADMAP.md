@@ -19,7 +19,8 @@ deleted.
 
 Two tracks are independent and can proceed in parallel:
 
-- **Track A (unblocked today):** Tasks 001-004. Purely structural. Requires no owner facts.
+- **Track A (unblocked today):** Tasks 001-004 and 004b. Purely structural. Requires no owner
+  facts - 004b centralizes the identity values without filling them.
 - **Track B (blocked on owner input):** Tasks 005-007.
 
 Tasks 008-009 close out the release and depend on both tracks.
@@ -93,81 +94,180 @@ is the second bug of this exact shape in this repository. Recorded as a dated de
 
 ## Task 003 - Brand system, palette, and self-hosted fonts
 
-**Status: ACTIVE**, promoted 2026-07-30. **Specified in `TASK_SPEC.md`, which is the only
-authority on its scope and acceptance.**
-**Blocked on:** nothing. All three owner decisions were answered on 2026-07-30.
-**Touches:** `global.css`, `BaseLayout.astro`, `Header.astro`, `Footer.astro`,
-`MastodonFeed.astro`, all six pages, `README.md`, plus a new `scripts/check-contrast.mjs`.
+**Status: COMPLETE**, 2026-07-31. Merged to `main` as `faf489e`.
 
-**This turned out to be a correctness fix, not a design preference.** An audit of every
-foreground/background pair actually used in the templates found **nine WCAG AA failures**,
-including `text-terracotta` at 3.39:1 - the most-used colour class in the codebase, covering
-every link and card heading - and both button styles. This roadmap had predicted two.
+Replaced the scaffold palette with a two-layer token system - fourteen brand inputs feeding
+sixteen semantic roles - and implemented Direction B (Garden). Closed **nine measured WCAG AA
+failures**, including `text-terracotta` at 3.39:1, which was the most-used colour class in the
+codebase and covered every link and card heading. This roadmap had predicted two, so the task
+was a correctness fix rather than the design preference it was queued as. Also shipped
+`scripts/check-contrast.mjs`, zero-dependency and parsing the real tokens rather than a
+duplicate list, and moved Inter off the Google Fonts CDN to Astro's built-in Fonts API, so no
+visitor IP reaches a third party.
 
-The planned scope that stood here has been **cut into `TASK_SPEC.md`**, not copied. It was
-still written as forward-looking - "propose two or three directions", "present to the
-owner", "self-hosting is the likely recommendation" - after all of it had been decided, and
-it also called for home-page section rhythm that **Task 002 already shipped**. A queued
-entry that survives promotion becomes a stale second spec; promote by moving.
+The dated decisions are in `PROJECT_CONTEXT.md` section 4, which is their only copy.
+
+**Carries one durable lesson.** `astro.config.mjs` turned out to be part of the design-system
+surface, not just deployment config, because self-hosting fonts is configured there. The
+task's allowed-scope list did not include it. That gap was hit mid-task and resolved by an
+explicit owner-approved scope expansion rather than a silent edit - which is the behaviour the
+protocol wants when scope and repository disagree.
 
 ---
 
 ## Task 004 - Accessibility and shell correctness
 
-**Status:** queued, and next after Task 003.
-**Blocked on:** Task 003. **Correction, 2026-07-30:** an earlier version of this file said
-004 could run in parallel with 003. That was wrong - both edit `Header.astro` and
-`Footer.astro`. Task 003 changes colour classes there; this task changes roles, focus
-behaviour and links. Run them in sequence.
+**Status: ACTIVE**, promoted 2026-07-31. **Specified in `TASK_SPEC.md`, which is the only
+authority on its scope and acceptance.**
+**Blocked on:** nothing. Task 003 is merged.
+**Touches:** `Header.astro`, `Footer.astro`, `global.css` (focus and reduced-motion only), and
+`scripts/verify-baseline.sh`.
 
-Note that Task 002 already verified two things this task would otherwise have to establish:
-every route has exactly one `h1` and no route skips a heading level, measured in a browser
-at two widths. Heading **order** is therefore sound; what remains here is roles, focus
-behaviour and the dead links.
+The planned scope that stood here has been **cut into `TASK_SPEC.md`**, not copied. Two of its
+items had already been overtaken by the repository before promotion: the mobile toggle's
+`isExpanded` variable was renamed in a prior commit, and the roadmap still asked for it. The
+promoted spec records both as already-done so a stateless session does not redo them.
+
+Two items were also **added** at promotion, from reading the current files rather than this
+entry: a WCAG 2.5.3 Label in Name failure on the footer's social links, and wiring
+`npm run check:contrast` into `npm run verify`, which Task 003 shipped but could not wire
+because `verify-baseline.sh` was outside its scope.
+
+---
+
+## Task 004b - Site config and the fork-and-adopt surface
+
+**Status:** queued, and next after Task 004. Unplanned; inserted 2026-07-31 on an owner
+decision to shape the repository for reuse by other groups. **Track A** - it needs no owner
+facts, because the values it centralizes may stay as tokens.
+**Blocked on:** Task 004. Both edit `Header.astro` and `Footer.astro`; this is the same
+collision that forced 003 and 004 into sequence. Do not run them in parallel.
+**Sequenced before Task 005** so that content work is not written and then immediately
+refactored into config.
+
+### Why
+
+The reuse model is recorded in `PROJECT_CONTEXT.md` section 2 and is the authority on it: this
+repository is a **template plus one group's instance**, adopted by forking, never
+multi-tenant.
+
+There is also a live defect to fix. **`"Community Food Group"` is hardcoded in 9 places across
+`src/`** - the header wordmark, the footer heading and copyright line, `siteTitle` in
+`BaseLayout.astro`, the `author` default in `content.config.ts`, the `index.astro`
+description, and a `MastodonFeed.astro` fallback - while `GROUP NAME` appears **zero** times.
+The owner input is still deferred, so the site is currently shipping a plausible-sounding
+invented organization name in its `<title>` and its copyright notice. That is precisely the
+"dishonest presence" that section 4 contrasts against an honest token: it is
+`info@example.com` wearing a different hat.
+
+**Why config rather than hardcoding real values and rebranding later with an editor or an AI.**
+Find-and-replace rebranding is *unverifiable*. There is no build-time assertion that every
+occurrence was caught, and the missed one will be in an `og:description` or an `aria-label`
+rather than in an `h1` where someone would notice. Section 4 already requires that every token
+be greppable by one documented pattern and that Task 009 fail the build while any remain;
+collapsing the identity constants into one object makes that check a validation of a single
+file instead of a regex fight across the tree. This is the same argument that produced
+`check-contrast.mjs`: a guard that reads the real source of truth beats a duplicate list and
+beats human vigilance.
 
 ### Planned scope
 
-- Remove `role="menubar"` and `role="menuitem"` from `Header.astro`. These are
-  application-menu patterns and contradict constraint 3.7; a `nav` with a list of links is
-  correct and is what screen reader users expect on a website.
-- Improve the mobile toggle. The `aria-expanded` value it emits is **correct** - this was
-  checked by simulating both clicks, not by reading. The variable is merely misnamed:
-  `isExpanded` holds the result of `classList.toggle('hidden')`, so it actually means
-  "is hidden", and the negation cancels the confusion out. Rename it for the next reader,
-  but do not "fix" the logic. What is genuinely missing is Escape-to-close, returning focus
-  to the toggle on close, and closing the menu when focus leaves it.
-- **Already done in Task 001b, do not redo:** the React-style `key={...}` props were removed
-  from `locations.astro` and `MastodonFeed.astro`.
-- Replace the two `href="#"` dead links in `Footer.astro` with real destinations or remove
-  them. Dead links in a footer are a trust problem for a mutual aid group.
-- Audit focus-visible styling across all interactive elements.
-- **Heading order is already verified, do not re-derive it.** Task 002 measured every route
-  in a browser at two widths: each has exactly one `h1` and none skips a level. The earlier
-  claim in this roadmap that "several sections jump levels" was wrong and has been withdrawn.
-  Re-check only if new markup is added.
-- Respect `prefers-reduced-motion` for the transition utilities used throughout.
+- **Create `site.config.ts`** at the repository root, holding only identity constants: group
+  name, city, region, domain, contact email, and social accounts. Typed with an exported
+  interface and `as const satisfies SiteConfig`, so `npm run check` validates it at build with
+  **zero new dependencies**. This deliberately avoids the zod decision still open in Task 009.
+- **Model deliberate absence in the type, not in a comment.** A social account is
+  `{ handle: string } | null`, where `null` means *this group has chosen not to have one* -
+  not *unknown, awaiting a value*. Section 4 warns that a future session must not "helpfully"
+  add a chat link; a type with no third state makes that structural rather than advisory. The
+  withdrawn Signal link is the precedent.
+- **Replace all 9 hardcoded occurrences** with config reads, in `Header.astro`,
+  `Footer.astro`, `BaseLayout.astro`, `content.config.ts`, `index.astro` and
+  `MastodonFeed.astro`. The name becomes the `GROUP NAME` token *in one place*.
+- **Create `scripts/check-config.mjs`**, wired as `npm run check:config` and added to the
+  uncached half of `verify-baseline.sh` alongside `check:contrast`. Zero dependencies, same
+  shape as the contrast script: scan for surviving `SCREAMING_CASE` tokens by the single
+  documented pattern, print each with its location, exit non-zero if any remain. **Prove it
+  fails** before declaring it works - a validator never seen to fail is not yet a validator.
+  This becomes the mechanism for Task 009's pre-publication check.
+- **Broaden `README.md`'s existing `## Rebranding this site` section** into the four adoption
+  surfaces. It currently documents colour only. Colour becomes one of four, not a competing
+  section - **do not add a second rebranding heading.** State plainly which surfaces an adopter
+  edits and, more importantly, that **prose is rewritten rather than tokenized**, so a forking
+  group does not try to parameterize the MDX and ship mad-libs.
+
+### Explicitly out of scope
+
+- **Any interpolation of config into the MDX documents.** Section 2 forbids it. If a sentence
+  needs a token to make sense, it belongs to the adopting group.
+- Filling `GROUP NAME` or `GROUP_DOMAIN` with real values. Both are still owner inputs.
+- `src/data/locations.json` and page copy. **Task 005.**
+- Any colour token, the type scale, or the accessibility work from Task 004.
+- Licence choice and contributor guidance for adopters. Real questions, but not this task.
 
 ### Acceptance
 
-- Keyboard-only traversal of every route, including opening and closing the mobile menu,
-  completes without a trap.
-- No invalid attributes in built HTML.
-- No `href="#"` remains.
+- `grep -rn 'Community Food Group' src/` returns **nothing**. Paste the result.
+- `site.config.ts` is the only file in the repository containing an unfilled identity token.
+- `npm run check` reports 0 errors; a deliberately wrong config field is proven to fail it.
+- `npm run check:config` exits non-zero while `GROUP NAME` is unfilled, and its output names
+  the field. This is the expected state today - **the task ships with the check failing on
+  purpose**, because the name genuinely is not known. Do not weaken the check to make it pass.
+- `npm run build` still emits the same six routes, and the rendered `<title>`, footer and
+  header show the token rather than an invented name.
+- `README.md` has exactly one rebranding section, covering four surfaces.
 
-Note on verification: this task's acceptance is behavioural and cannot be signed off from a
-diff. Playwright and Chromium are installed **outside** the repository so that no browser
-dependency enters `package.json`. The setup is now persistent and documented in
-`docs/ENVIRONMENT.md`; `verify.mjs` there already covers heading order and focus-visible
-traversal groundwork.
+---
+
+## Task 004c - Licence
+
+**Status: COMPLETE**, 2026-07-31, implemented in the working tree and **not yet committed**.
+Unplanned; inserted on an owner decision to make the repository a public resource. Executed
+directly rather than queued, on explicit owner authorization, because it touches no source
+file and therefore cannot collide with the active Task 004. Recorded here rather than done
+silently, following the Task 003 precedent for owner-approved scope grants.
+
+Dedicated the repository to the public domain under **CC0 1.0 Universal**. The canonical legal
+text was fetched from `creativecommons.org` rather than reproduced from memory, and verified
+complete (all four sections plus the Statement of Purpose) and pure ASCII, which satisfies
+constraint 3.13.
+
+**Why a dedication rather than a permissive licence.** The owner wanted the broadest possible
+grant, with no attribution and no use restrictions. A licence grants rights while retaining
+copyright; CC0 waives it as far as law allows and carries a fallback unconditional licence for
+jurisdictions where copyright cannot be abandoned. CC0 also covers prose and documentation as
+well as it covers code, which matters here - `PROJECT_CONTEXT.md`, this file, and the
+accessibility reasoning are a large part of what an adopting group gets. The tradeoff accepted
+knowingly: CC0 is **not OSI-approved** and expressly does not waive patent rights. `0BSD` was
+the alternative considered and rejected, on the grounds that a static site has no patent
+surface worth the loss of documentation coverage.
+
+**Three carve-outs are documented in `README.md`**, because CC0 cannot give away what the
+project never owned: the group's name and identity (trademark is not waived by CC0), the Inter
+typeface (**SIL OFL 1.1**, verified at source - bundling is permitted, the notice travels with
+the build, and a modified font may not keep the reserved name), and the truthfulness of the
+page copy, which describes a real group and would be false if republished unchanged.
+
+Files: `LICENSE` (new), `package.json` (`"license": "CC0-1.0"`), `README.md` (the `## Licence`
+section, previously "Not yet chosen").
+
+**Still open, and deliberately not done here:** contributor guidance. CC0 only covers what the
+owner holds, so if contributors arrive, a `CONTRIBUTING.md` stating that contributions are
+dedicated under CC0 is needed. Cheap now, painful to retrofit once patches have landed.
 
 ---
 
 ## Task 005 - Real content, on-model
 
-**Status:** queued. **Track B.**
-**Blocked on:** the organization name, the geographic scope, and the locations answer in
-`PROJECT_CONTEXT.md` section 4. Do not start otherwise. The contact route is **no longer a
-blocker** - it is email to `info@GROUP_DOMAIN`, and no chat link goes on the site.
+**Status:** queued. **Track B.** Next after Task 004b.
+**Blocked on:** the organization name in `PROJECT_CONTEXT.md` section 4. Do not start
+otherwise. *Note: Task 004b reduces this blocker but does not remove it - the name will live
+in one config field rather than nine files, but the prose still has to be written knowing what
+the group is called.* Three former blockers cleared: the contact route is email to `info@GROUP_DOMAIN`
+with no chat link anywhere, the **geographic scope is Tucson, Arizona** and the `CITY` token
+is retired, and the **garden is settled in full**. Whether the cook and distribution sites are
+named publicly is still open, but that gates only those records - the garden record can be
+written today.
 
 ### Why
 
@@ -175,11 +275,44 @@ Every current MDX page describes a different organization than the real one: far
 collection, three staffed locations, membership benefits, and a fabricated "90% of all
 donations" statistic. This is a rewrite against a new model, not a find-and-replace.
 
+### The garden changes the data model, not just the copy
+
+Owner input, 2026-07-31. **The full decision, the verified third-party details and the exact
+permitted framing live in `PROJECT_CONTEXT.md` section 4, which is their only copy. Read it
+before writing garden copy.** Summarized here only insofar as it changes the shape of this
+task:
+
+**It is a schema change, not a values change.** This entry previously assumed one flat shape
+for every site, with `hours` collapsed into a cook-and-distribute rhythm. That is wrong. A
+distribution point deliberately publishes **no** time, because the schedule is set close to
+the date and publishing it in advance would be inaccurate. The garden has a real cadence and a
+real street address, but must **not** get a directions link, because the site requires a
+membership the reader does not have. One flat shape forces one of them to carry a falsehood or
+a dead field. Use a `kind` discriminator - garden, distribution, cook-session - make the Zod
+schema a discriminated union rather than one optional-heavy object, and make the address, the
+map link and the cadence render per `kind`.
+
+**The card affordance survives; the record does not.** The existing `community-garden` entry
+in `src/data/locations.json` is scaffold: `789 Garden Lane, Springfield`, `(555) 456-7890`,
+`garden@communityfood.org`, and seven days of 8:00-6:00 hours. Every one of those is invented
+and every one falls under constraint 1. **"Keep the community garden card" means keep the card
+for the real plot, not keep the row.**
+
+**Two phrases will fail review if they reach the page.** "Our community garden" - the group
+rents a plot at a garden run by someone else - and "members", which now means three
+incompatible things. Section 4 explains both.
+
+**"Community Garden" is currently also a feature chip on `main-hub`.** There is one plot. The
+chip vocabulary - "Workshop Space", "Learning Center", "Community Outreach" - is invented
+alongside the rest and is not a naming problem to fix in place.
+
 ### Planned scope
 
-- Rewrite `about.mdx` around the actual model: people gather, cook together, and hand food
-  directly to neighbors. Cooking classes and cultural events are described at whatever
-  status the owner confirms - as intentions if they are intentions.
+- Rewrite `about.mdx` around the actual model: people in Tucson gather, cook together, and
+  hand food directly to neighbors. Cooking classes and cultural events are described at
+  whatever status the owner confirms - as intentions if they are intentions. **The garden
+  belongs in this page, not only on the locations card**: produce from the plot feeds the
+  distribution effort, which is the one place the two activities connect.
 - Rewrite `join.mdx` for an affinity group: how someone actually shows up for a cook
   session. Remove the invented time commitments, role tiers, and "member-only" benefits.
   The call to action is **email `info@GROUP_DOMAIN`**, and a person replies. Per the
@@ -189,12 +322,17 @@ donations" statistic. This is a rewrite against a new model, not a find-and-repl
   such as ingredients, containers, kitchen time, transport. The 90% claim is withdrawn and
   must not reappear in any form.
 - Replace `src/data/locations.json` with a data file matching the real model, per the
-  2026-07-30 decision. The schema changes, not just the values: `phone` and `email` per site
-  are removed because they do not exist, and staffed `hours` become a cook-and-distribute
-  rhythm.
-- Add a Zod schema for that data file. It is currently imported raw with no validation.
-- Update `locations.astro` to the new shape and rename the route if the owner prefers
-  different language.
+  2026-07-30 and 2026-07-31 decisions. The schema changes, not just the values: `phone` and
+  `email` per site are removed because they do not exist, staffed `hours` become a
+  cook-and-distribute rhythm for distribution sites, and a `kind` discriminator separates the
+  garden from them. See the garden note above.
+- Add a Zod schema for that data file, as a **discriminated union on `kind`**. It is currently
+  imported raw with no validation.
+- Update `locations.astro` to the new shape. It currently renders address, a map link,
+  `Object.entries(hours)`, `phone` and `email` for every record; under the new schema those
+  blocks become conditional on `kind`. Rename the route if the owner prefers different
+  language - the page's `h1` is "Find Us" and its lede reads "Visit any of our locations to
+  get involved, pick up food", which is storefront framing that outlives a data-only fix.
 - Consider a food-safety note, if the owner wants one. Groups handing out home-cooked food
   often want to state their practices plainly.
 
@@ -203,7 +341,14 @@ donations" statistic. This is a rewrite against a new model, not a find-and-repl
 - No fabricated address, phone number, email, statistic, or founding date remains anywhere
   in `src/`.
 - Every factual claim traces to a specific owner input.
-- Aspirational programs are worded as intentions.
+- Aspirational programs are worded as intentions. The garden plot is **not** one of these - it
+  is established and is described in the present tense.
+- **The garden copy survives the two framing traps**: no "our community garden" anywhere, and
+  no use of "member" to describe who receives food.
+- **No `CITY` token remains anywhere in `src/`.** Verify by grep. The city is Tucson and is
+  written out.
+- The garden record has an address and **no** map link; the distribution records have a
+  cadence and **no** published time. Confirm both in the built HTML, not in the JSON.
 
 ---
 
@@ -305,7 +450,10 @@ section 4, and Tasks 001-007 for anything publishable. The domain also fills the
 - A link checker, given how many dead and invented links the scaffold shipped with.
 - An automated accessibility pass on built HTML.
 - Dependency update automation.
-- A pre-publication checklist asserting no fabricated data remains.
+- A pre-publication checklist asserting no fabricated data remains. **Task 004b builds the
+  mechanical half of this** as `npm run check:config`, which fails while any owner-fill token
+  is unfilled. What remains here is the judgement half: fabricated data that is not a token
+  and therefore cannot be caught by a pattern.
 
 ---
 

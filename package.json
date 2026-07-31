@@ -1,6 +1,7 @@
 {
   "name": "community-food-group",
   "version": "0.0.1",
+  "license": "CC0-1.0",
   "type": "module",
   "engines": {
     "node": ">=22.18.0"

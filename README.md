@@ -259,4 +259,19 @@ Recorded so they are not mistaken for finished work. Details and sequencing are 
 
 ## Licence
 
-Not yet chosen.
+Dedicated to the public domain under [CC0 1.0 Universal](LICENSE). No attribution is required
+and no use is restricted. Fork it, change it, deploy it - nothing is asked in return.
+
+Three things CC0 does not cover, because they were never this project's to give:
+
+- **The group's name and identity.** CC0 waives copyright, not trademark. A fork should
+  publish under its own name rather than this one.
+- **The Inter typeface.** Inter is licensed under the
+  [SIL Open Font License 1.1](https://github.com/rsms/inter). It is fetched at build time and
+  emitted into `dist/`, so a deployed fork redistributes it. Bundling and redistributing the
+  font with a site is expressly permitted, but the OFL notice travels with it, and a modified
+  font may not keep the reserved name "Inter".
+- **The truthfulness of the page copy.** The prose in `src/content/pages/` describes a
+  specific real group, including a rented plot at a garden operated by another organization.
+  You are free to copy it, but publishing it unchanged would make false claims about your own
+  group. Rewrite it - see [Rebranding this site](#rebranding-this-site).

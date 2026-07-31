@@ -85,6 +85,20 @@ This model matters for content architecture:
   building hours.
 - Programs beyond food distribution are **planned or emerging**, and must not be described
   as established until the owner confirms they have happened.
+- **The group operates in Tucson, Arizona.** Confirmed 2026-07-31. This is a published fact,
+  not a token; see the retirement of `CITY` in section 4.
+- **One exception to "no fixed places": the group maintains a rented garden plot.** Confirmed
+  by the group executive on 2026-07-31. It is established rather than emerging and may be
+  written in the present tense. It is **not** a staffed site and does not get a phone number
+  or a per-site email.
+  **The group does not own or run a garden.** It rents a large plot at Presidio Garden, which
+  is operated by a separate organization, Community Gardens of Tucson. Copy must never say
+  "our community garden" or otherwise imply the group runs the site, partners with CGT, or is
+  affiliated with it beyond holding a plot. See section 4 for the verified details and the
+  exact permitted framing.
+- **The garden feeds the distribution effort.** Produce from the plot is either incorporated
+  into the food the group cooks and distributes, or given directly to people in the group and
+  to neighbors who need it. This is a real, publishable link between the two activities.
 
 Any scaffold content describing farm pickups, multiple staffed locations, membership tiers,
 or donation-efficiency statistics is off-model and must be replaced, not merely renamed.
@@ -92,6 +106,62 @@ or donation-efficiency statistics is off-model and must be replaced, not merely 
 Important distinction: this is a separate Astro project. It is not the Hugo-based
 `veganhomecooks` site and must not inherit that repository's Hugo theme, recipes, Worker,
 R2, or deployment assumptions.
+
+### Reuse model
+
+**[2026-07-31] This repository is a template plus one group's instance of it.** Owner
+decision. The accessibility, verification and token work has value beyond this group, and the
+repository is deliberately shaped so another mutual aid group in another city can adopt it.
+
+**The model is fork-and-self-host. It is explicitly not multi-tenant.** Each adopting group
+forks the repository, edits four documented surfaces, and deploys its own build. There is no
+tenant routing, no per-group runtime data, no shared deployment, and no service operated on
+behalf of other groups. Constraint 3.11 continues to forbid the Worker, database and
+request-time infrastructure that multi-tenancy would require, and this decision does **not**
+relax it. A future session proposing "support multiple groups from one deployment" is
+proposing to reverse this decision and needs a new one.
+
+**The four adoption surfaces**, and nothing else:
+
+| Surface | What an adopter does | Status |
+| --- | --- | --- |
+| `site.config.ts` | Fills identity constants: name, city, contact, social | **Task 004b** |
+| `:root` brand inputs in `src/styles/global.css` | Edits fourteen colour values | Shipped, Task 003 |
+| `src/data/locations.json` | Replaces the records wholesale | Task 005 |
+| `src/content/pages/*.mdx` | **Rewrites the prose wholesale** | Task 005 |
+
+**[2026-07-31] The repository is dedicated to the public domain under CC0 1.0 Universal.**
+Owner decision; `LICENSE` holds the canonical text. No attribution is required and no use is
+restricted. CC0 was chosen over `0BSD` because it covers this repository's substantial prose
+and documentation as well as its code; the accepted tradeoff is that CC0 is not OSI-approved
+and does not waive patent rights, which a static site has no meaningful surface for.
+
+**CC0 does not cover three things, and copy must not imply otherwise:**
+
+- **Trademark is not waived.** An adopting fork publishes under its own name. This is the
+  legal half of the problem that Task 004b solves mechanically by extracting the name into
+  `site.config.ts`.
+- **Inter is SIL OFL 1.1**, verified at source. It is fetched at build time and emitted into
+  `dist/`, so every deployed fork redistributes it. Bundling is expressly permitted, the OFL
+  notice travels with the build, and a modified font may not use the reserved name "Inter".
+  **A future task that changes the typeface must re-check the new font's licence** - this is
+  not a one-time clearance.
+- **The truthfulness of the page copy.** The prose describes a real group in Tucson and a
+  rented plot at a garden run by another organization. It is freely copyable and would be
+  false if republished unchanged. This is constraint 1 reaching an adopter rather than an
+  implementer, and it is why the reuse model says prose is rewritten, not interpolated.
+
+**Open:** contributor guidance. CC0 covers only what the owner holds, so a `CONTRIBUTING.md`
+dedicating contributions under CC0 is needed before outside patches are accepted.
+
+**The load-bearing distinction is between chrome and prose.** Config drives chrome - header,
+footer, `<title>`, OG and Twitter metadata, the copyright line, the content-collection author
+default. Prose is **replaced, not interpolated**. A group in another city does not need this
+group's sentences with their city injected into them; they have a different model, different
+programs, and no garden plot at Presidio. Templating prose produces grammatically brittle copy
+that is confidently wrong, which is the exact failure mode constraint 1 exists to prevent.
+**Do not add config interpolation into the MDX documents.** If a sentence needs a token to
+make sense, that sentence belongs to the adopting group, not to the template.
 
 ---
 
@@ -128,6 +198,59 @@ to `docs/DECISIONS_ARCHIVE.md`.
   where it hands out food, with day/time and an optional map destination. Per-site phone
   numbers and per-site email addresses are removed from the data model, because they do not
   exist.
+- **[2026-07-31] The group rents a garden plot, and it is published as a real place.** Owner
+  input from the group executive, amending the organizational model in section 2. **The
+  third-party details below were verified against the operator's own site on 2026-07-31, not
+  taken on trust**, because publishing another organization's name and address is exactly the
+  case constraint 1 governs.
+
+  **Verified facts.** `Presidio Garden`, `3440 E Presidio Rd`, listed under that exact name and
+  address as one of eighteen gardens operated by **Community Gardens of Tucson**
+  (`https://www.communitygardensoftucson.org/garden-locations`). CGT is at 5049 E Broadway
+  Blvd, Suite 300, Tucson AZ. Its stated model is that a person pays a plot fee and becomes a
+  member of CGT, which grants access to the garden.
+
+  **Owner-supplied facts.** The group rents a **large plot** there, meets **every other week
+  during the growing season** to maintain it - sometimes more often, sometimes less - and the
+  produce is either incorporated into the cooking-and-distribution effort or given directly to
+  people in the group and to neighbors who need it.
+
+  Rulings, all binding on Task 005:
+  - **Never "our community garden."** The permitted framing is that the group maintains a plot
+    at Presidio Garden, one of the Community Gardens of Tucson. The group does not run the
+    garden, is not a partner of CGT, and is not affiliated with it beyond renting a plot. This
+    is the single most likely sentence for a future session to smooth into something false,
+    because the short phrase is more natural English than the true one.
+  - **Name CGT and link to them**, with `rel="noopener noreferrer"`. Honest attribution, and it
+    lets a reader verify the plot is real.
+  - **Publish the address; do not publish a map link.** Access requires a CGT membership and a
+    plot fee, so a `Get Directions` affordance is a promise the site cannot keep - it would
+    route neighbors to a garden they cannot enter. This is why the card's directions link is
+    conditional on `kind` rather than rendered for every record. Involvement routes through
+    email, as everywhere else on the site.
+  - **Cadence is "every other week during the growing season," with the variability stated.**
+    The owner's original word was "bi-weekly", which means both *twice a week* and *every two
+    weeks* in English and therefore cannot ship under constraint 1. **Do not name months or a
+    date range for the growing season** - that was not supplied, and Tucson's is not the
+    single-summer season most writers would assume.
+  - **Beware the word "member".** It now carries three incompatible senses: a CGT plot-holder,
+    a person in the group, and the scaffold's invented membership tiers that Task 005 is under
+    orders to delete. Prefer "people in the group" and "neighbors". Copy saying food goes to
+    "members" will be read as the third sense.
+  - **The existing `community-garden` record in `src/data/locations.json` is scaffold and is
+    replaced, not edited.** `789 Garden Lane, Springfield`, `(555) 456-7890`,
+    `garden@communityfood.org` and its seven days of 8:00-6:00 hours are all invented. What
+    survives is the **card affordance**, not the row. A future session must not read "keep the
+    community garden card" as authorization to leave that data in place.
+  - **This is a schema change.** A distribution point deliberately publishes no time; the
+    garden has a real cadence and a real address but no map link. One flat shape forces one of
+    them to carry a falsehood or a dead field. `locations.json` gets a `kind` discriminator and
+    a Zod discriminated union. Recorded on the Task 005 entry in `ROADMAP.md`.
+  - The garden does **not** reopen the "staffed sites" question. It has no phone number and no
+    per-site email; the single contact route is still email to `info@GROUP_DOMAIN`.
+  - **Standing dependency:** these are facts about a third party and about a rental that can
+    lapse. If the plot is given up, the card and the about-page claim both go stale. Re-verify
+    the CGT listing before publication rather than assuming this entry still holds.
 - **`/donate` is a "Ways to Help" page.** It presents concrete material and time needs
   rather than a donation-platform flow. The invented "90% of all donations" transparency
   claim is withdrawn and must not reappear in any form.
@@ -154,8 +277,20 @@ to `docs/DECISIONS_ARCHIVE.md`.
   labels, buttons and links. Headings inside the MDX documents still mix both and are
   corrected in Task 005, which rewrites that copy anyway.
 - **Owner-fill placeholder tokens are permitted in content, under conditions.** Content work
-  may use literal uppercase tokens such as `GROUP NAME`, `CITY`, and `GROUP_DOMAIN`. All
-  conditions are mandatory:
+  may use literal uppercase tokens; the two still unfilled are `GROUP NAME` and `GROUP_DOMAIN`.
+
+  **On `CITY`, which two entries here could be read as contradicting.** A token and a config
+  field are different things, and the distinction is the whole point of this rule:
+  - **`CITY` as an unfilled placeholder is retired**, on 2026-07-31. This group's city is
+    Tucson, Arizona. Once the garden card publishes a Tucson street address, a `CITY` token
+    elsewhere on the site is not honest absence, it is theatre. **Do not reintroduce it as a
+    placeholder in this instance's content.**
+  - **`city` survives as a config field** in the `site.config.ts` that Task 004b creates,
+    holding the filled value `'Tucson'`. That is data, not a placeholder. An adopting group
+    forking this template edits that field; see the reuse model in section 2.
+
+  A filled config field is honest presence. An unfilled token is honest absence. A token left
+  standing next to a fact that gives it away is neither. All conditions are mandatory:
   - Tokens are `SCREAMING_CASE` or spaced uppercase so they are unmistakably unfilled to any
     reader, including a non-technical one reviewing a preview.
   - **A token must never be spelled as a plausible real value.** The contact address is
@@ -244,9 +379,11 @@ to `docs/DECISIONS_ARCHIVE.md`.
 
 **Tasks 001, 001b, 001c and 002 are complete** and merged to `main` (`8ad91ad`).
 
-**Task 003 (brand system, palette, self-hosted fonts) is implemented and fully verified in
-the working tree, but not yet committed or merged** - `git status` still shows it as
-uncommitted changes as of this entry. Verified by execution on Node v22.23.2:
+**Task 003 (brand system, palette, self-hosted fonts) is complete and merged to `main` as
+`faf489e`.** The working tree is clean. *(Corrected 2026-07-31 at Task 004 promotion: this
+paragraph previously said the work was uncommitted, which was true when written and stale by
+the time it was read. Verify commit state against `git log`, not against this file.)* Verified
+by execution on Node v22.23.2:
 
 - `npm ci` exits 0, `npm audit` reports **0 vulnerabilities**.
 - `npm run check` reports **0 errors, 0 warnings**, 12 hints (the zod deprecation below).
@@ -295,20 +432,20 @@ Green baseline, reproducible with `npm run verify`: unchanged mechanics from the
 
 ### Current phase
 
-**Task 003 is complete** (implemented and verified as above; not yet committed). The palette
-now passes AA on every checked pair instead of failing nine, the toolchain is current, and
-the routes share one type scale, one measure, one set of rhythm tokens, and one colour token
-system. The repository is still a prototype whose public copy is invented scaffold data, and
-**it must not be deployed.**
+**Task 003 is complete and merged** (`faf489e`). The palette now passes AA on every checked
+pair instead of failing nine, the toolchain is current, and the routes share one type scale,
+one measure, one set of rhythm tokens, and one colour token system. The repository is still a
+prototype whose public copy is invented scaffold data, and **it must not be deployed.**
 
-`TASK_SPEC.md` still describes Task 003 as active; promoting Task 004 into it, and collapsing
-Task 003's `ROADMAP.md` entry to a status line, is an `ARCHITECT` action at promotion time and
-was **not** performed by this `MEMORY SYNC` - only this file was updated, on request. Until
-that promotion happens, `TASK_SPEC.md` is stale and should not be treated as the active task
-by a future session; this section is the authority on what is actually done.
+**[2026-07-31] Task 004 (accessibility and shell correctness) is now the active task**,
+promoted into `TASK_SPEC.md`, which is the only authority on its scope and acceptance. Task
+003's `ROADMAP.md` entry has been collapsed to a status line and Task 004's planned scope was
+**moved** out of the roadmap rather than copied. The staleness warning that stood here - that
+`TASK_SPEC.md` still described Task 003 - is **resolved** and has been removed.
 
-**Task 004 follows Task 003**, not in parallel: both edit `Header.astro` and `Footer.astro`.
-`ROADMAP.md` holds the ordered sequence through launch.
+Task 004 also picks up two things Task 003 could not: wiring `npm run check:contrast` into
+`npm run verify`, which needed `scripts/verify-baseline.sh` and was out of scope, and the two
+dead footer links. `ROADMAP.md` holds the ordered sequence through launch.
 
 ### Open owner inputs
 
@@ -321,10 +458,10 @@ Work that depends on them is blocked, not deferrable by guessing.
 
 | Input | Status | Blocks |
 | --- | --- | --- |
-| Final public organization name | Deferred; use `GROUP NAME` token | Branding, page copy, metadata |
-| Town / geographic scope | Deferred; use `CITY` token | About copy, metadata |
+| Final public organization name | Deferred; use `GROUP NAME` token. **Currently hardcoded as the plausible-sounding "Community Food Group" in 9 places across `src/`, which is a live constraint 1 violation. Task 004b removes it.** | Branding, page copy, metadata |
+| Town / geographic scope | **ANSWERED 2026-07-31: Tucson, Arizona.** `CITY` token retired | *(unblocked)* |
 | Domain name; not yet purchased | Deferred; use `GROUP_DOMAIN` token | Contact address, canonical URLs, deployment |
-| Whether cook-session and distribution places are named publicly at all | **Required.** May be "none are named" | `src/data/locations.json` replacement |
+| Whether cook-session and distribution places are named publicly at all | **Required.** May be "none are named". *The garden is settled and is no longer part of this row; this now covers only the cook and distribution sites.* | `src/data/locations.json` replacement |
 | Mastodon account handle, or confirmation there is none | **Required before Task 006** | Mastodon ingestion, feed routes, footer |
 | Approved food-safety language, if any is wanted | Open | About or ways-to-help content |
 | Logo, favicon, social image | Deferred | `public/` assets, brand pass |
@@ -341,8 +478,21 @@ still open:**
 - Which programs are real: cooking classes forming; other activities deferred.
 - Palette Direction B; commit the contrast script; self-host the fonts.
 
-Nothing on the remaining list blocks Task 003 or Task 004. Track B (Tasks 005-007) needs the
-organization name, the geographic scope, the locations answer and the Mastodon handle.
+Answered on 2026-07-31. **Do not re-ask these either:**
+
+- **Geographic scope: Tucson, Arizona.** Written out; the `CITY` token is retired.
+- **The garden is settled in full** - Presidio Garden, 3440 E Presidio Rd, a rented plot in a
+  Community Gardens of Tucson site, every other week through the growing season, address
+  published without a map link, CGT named and linked. Details and the exact permitted framing
+  are in the dated decision above.
+- The Mastodon footer link is **removed** in Task 004 rather than left dead. This does not
+  answer the handle question - it defers the link until Task 006 or 007, when the handle
+  exists.
+
+Nothing on the remaining list blocks Task 004. **Track B is now down to two blockers:** the
+organization name, which gates Task 005, and the Mastodon handle, which gates Task 006. The
+locations row still gates the cook and distribution records, but the garden record can be
+written today.
 
 ---
 
@@ -352,7 +502,8 @@ organization name, the geographic scope, the locations answer and the Mastodon h
 /
 |-- .env.example                      # Scaffold Mastodon variables; values unverified
 |-- .nvmrc                            # Pins Node 22.23.2
-|-- README.md                         # Documents the type system
+|-- LICENSE                           # CC0 1.0 Universal, canonical text (Task 004c)
+|-- README.md                         # Documents the type system; licence and OFL carve-outs
 |-- PROJECT_CONTEXT.md                # Project-level SSOT
 |-- TASK_SPEC.md                      # Active task-level SSOT
 |-- ROADMAP.md                        # Ordered backlog beyond the active task
@@ -410,12 +561,10 @@ architecture unless a task explicitly creates them.
 
 ### Active task
 
-**Task 003 - Brand system, palette, and self-hosted fonts - is complete**, verified in the
-working tree (see section 4). `TASK_SPEC.md` still describes it as active; it has not been
-re-promoted for Task 004 because that is an `ARCHITECT` action at promotion time, out of
-scope for the `MEMORY SYNC` that produced this entry. A session that loads `TASK_SPEC.md`
-before an `ARCHITECT` has promoted Task 004 into it is looking at a stale spec - trust this
-section instead. Tasks 001, 001b, 001c and 002 are complete and merged to `main`.
+**Task 004 - Accessibility and shell correctness**, promoted into `TASK_SPEC.md` on
+2026-07-31. **`TASK_SPEC.md` is the only authority on its scope and acceptance;** read it in
+full. Tasks 001, 001b, 001c, 002 and 003 are complete and merged to `main`, Task 003 as
+`faf489e`.
 
 ### Required inputs
 
