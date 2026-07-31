@@ -95,8 +95,11 @@ import { Menu, X } from 'lucide-astro';
 
     if (toggle && menu && iconOpen && iconClose) {
       toggle.addEventListener('click', () => {
-        const isExpanded = menu.classList.toggle('hidden');
-        toggle.setAttribute('aria-expanded', !isExpanded);
+        // classList.toggle returns whether the class is now present, so this is
+        // "is the menu hidden", the inverse of expanded. The old name said the
+        // opposite of what it held.
+        const isHidden = menu.classList.toggle('hidden');
+        toggle.setAttribute('aria-expanded', String(!isHidden));
         iconOpen.classList.toggle('hidden');
         iconClose.classList.toggle('hidden');
       });
