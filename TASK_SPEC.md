@@ -1,6 +1,6 @@
 # TASK SPECIFICATION
 
-## Task 004b : Site config and the fork-and-adopt surface
+## Task 005 : Real content, on-model
 
 ### Role
 
@@ -8,362 +8,455 @@
 
 ### Status
 
-**ACTIVE.** Promoted 2026-07-31 by an `ARCHITECT` session. This document is the only
-authority on this task's scope and acceptance. Its planned scope has been **cut** from
-`ROADMAP.md`, whose entry is now a status line pointing here.
+**ACTIVE.** Promoted 2026-07-31 by an `ARCHITECT` session. This document is the only authority
+on this task's scope and acceptance. Its planned scope has been **cut** from `ROADMAP.md`,
+whose entry is now a status line pointing here.
 
-Task 004 is complete and merged to `main` as `15dd164`; the working tree is clean. Tasks 001,
-001b, 001c, 002, 003 and 004c are also complete and merged. Nothing in Task 004's former spec
-body survives in this file - see `PROJECT_CONTEXT.md` section 4 for its verification record.
+Every Track A task is complete and merged to `main`. `HEAD` is `00ca0c7` and the working tree
+is clean. Nothing of Task 004b's spec survives in this file - see `docs/DECISIONS_ARCHIVE.md`
+under `## Verification history` for its record.
 
 ### Goal
 
-Collapse this group's identity constants into one typed config file, replace every hardcoded
-occurrence with a config read, and ship a zero-dependency validator that fails the build while
-any owner-fill token remains unfilled.
+Replace every invented public fact in `src/` with owner-approved content describing the real
+group, and change `src/data/locations.json` from a flat storefront shape into a validated,
+`kind`-discriminated data collection so the garden plot can be described truthfully without
+forcing a falsehood or a dead field.
 
-This is the first of the four adoption surfaces in `PROJECT_CONTEXT.md` section 2, and it is
-also a **live constraint 1 fix**: the site currently ships a plausible-sounding invented
-organization name in its `<title>`, its copyright notice, and its Open Graph metadata.
+This is the task that makes the site honest. Until it lands, the repository ships a
+description of an organization that does not exist.
 
 ---
 
-## Why this is not a refactor
+## Why this is a rewrite, not a find-and-replace
 
-Constraint 1 permits owner-fill tokens as the *one* exception to zero invented facts, and
-draws the line precisely: a visible `GROUP_NAME` token is **honest absence**, a plausible
-invented name is **dishonest presence**. Only the first is ever acceptable.
+Every MDX page describes a different organization than the real one: farm-surplus collection,
+three staffed storefronts with phone numbers and opening hours, membership tiers with
+"member-only" benefits, a founding date, and a fabricated "90% of all donations" statistic.
+None of it is a naming problem. Renaming it produces the same false site with better nouns.
 
-The repository currently sits on the wrong side of that line. `"Community Food Group"` is not
-a token and was never an owner input - it is scaffold text that reads as a real decision. It
-is in the `<title>` of all six routes, in the copyright line, and in `og:description`.
+The real model, from `PROJECT_CONTEXT.md` section 2: people in Tucson gather, **cook food
+together, and hand it directly to people in town**, including at street locations such as bus
+stops. Cooking classes are forming. There is one named place - a rented garden plot - and no
+storefronts, no staffed sites, and no per-location phone numbers, because none exist.
 
-**Why config rather than hardcoding real values and rebranding later.** Find-and-replace
-rebranding is *unverifiable*. There is no build-time assertion that every occurrence was
-caught, and the missed one will be in an `og:description` or an `aria-label` rather than in an
-`h1` where someone would notice.
+---
 
-That is not hypothetical. **The `ROADMAP.md` entry this task was promoted from enumerated
-seven occurrences in six files while claiming a total of nine, and the two it missed were an
-`aria-label` and an MDX heading** - exactly the failure mode it was describing. The correct
-inventory is below, derived by grep rather than from that entry.
+## Owner inputs answered at promotion, 2026-07-31
+
+All six were supplied by the owner in the promoting session. **These are verified owner input,
+not inference. Do not re-ask them, and do not soften them.**
+
+| Input | Answer |
+| --- | --- |
+| **Organization name** | **`Vegans Against Fascism`.** Fills `GROUP_NAME`. See the naming ruling below - it is filled in config and **must not appear in prose**. |
+| **Tagline** | **`a counter-cultural, total liberation collective`.** Fills `GROUP_TAGLINE`. |
+| **Are cook and distribution sites named publicly?** | **No. None are named.** The garden is the only record. |
+| **Is the food vegan, and may the site say so?** | **Yes - say so plainly.** Confirmed owner input; state it directly. |
+| **`/donate` route** | **Renamed to `/help`**, label "Ways to help", per the 2026-07-30 Ways-to-Help decision. |
+| **Food-safety language** | **Omitted for now.** Still an open owner input; write none. Do not invent a practices statement. |
+
+---
+
+## The naming ruling, which is the subtlest thing in this task
+
+**A name change is anticipated.** The group is always evaluating new ways of presenting
+itself, and its funding sources are dynamic, so the owner wants the site to stay rebrandable
+as a standing property of the codebase rather than a one-off migration. Treat a name change
+as expected; the timing is unknown. The group's internal circumstances are deliberately not
+recorded here - the ruling below does not depend on them.
+
+Two consequences, and they pull in opposite directions unless you follow both:
+
+1. **Fill `groupName` in `site.config.ts` with the real name.** `PROJECT_CONTEXT.md` section 4
+   is explicit that a token means *unknown, awaiting owner input*. The name is known. Leaving
+   `GROUP_NAME` unfilled would misrepresent the world state exactly as writing `null` for an
+   unknown would.
+
+2. **The literal name must not appear anywhere in `src/`.** Not in MDX prose, not in a page
+   heading, not in an `aria-label`, not in a comment. Write "the group", "we", "us". Task 004b
+   collapsed the name into one config field precisely so a rebrand is a **one-line edit**; a
+   name written into prose reintroduces the unverifiable find-and-replace that 004b exists to
+   prevent, and `PROJECT_CONTEXT.md` section 2 forbids interpolating config into prose as a
+   fix. A sentence that needs the group's name to work is a sentence to rewrite.
+
+This is enforced by acceptance criterion 8. `site.config.ts` is the only file in the
+repository that may contain the string.
 
 ---
 
 ## Verified starting conditions
 
-Confirmed by reading the repository on 2026-07-31, after Task 004 was merged. If any has
-changed, stop and report the mismatch rather than adapting silently.
+Confirmed by reading the repository on 2026-07-31 at `00ca0c7`, and by executing every check
+below on Node v22.23.2. **If any has changed, stop and report the mismatch rather than
+adapting silently.**
 
-### The real inventory: 9 occurrences across 7 files
+### The green baseline this task starts from
 
-`grep -rn 'Community Food Group' src/`:
+| Check | Observed |
+| --- | --- |
+| `npm run check` | 0 errors, 0 warnings, **12 hints** (the zod deprecation) |
+| `npm run check:contrast` | exits 0, all sixteen role pairs pass |
+| `npm run check:config` | **exits 1**, naming **6** token occurrences |
+| `npm run build` | **6** routes: `/`, `/about`, `/donate`, `/join`, `/locations`, `/posts` |
 
-| File | Line | Occurrence | In scope? |
-| --- | --- | --- | --- |
-| `src/components/Header.astro` | 8 | `aria-label="Community Food Group Home"` | Yes |
-| `src/components/Header.astro` | 10 | Visible wordmark `<span>` | Yes |
-| `src/components/Footer.astro` | 6 | `<h3>` footer heading | Yes |
-| `src/components/Footer.astro` | 52 | Copyright line | Yes |
-| `src/layouts/BaseLayout.astro` | 15 | `const siteTitle` | Yes |
-| `src/content.config.ts` | 18 | `author` schema default | Yes |
-| `src/pages/index.astro` | 9 | `description` prop | Yes |
-| `src/components/MastodonFeed.astro` | 47 | Display-name fallback | Yes |
-| `src/content/pages/about.mdx` | 9 | `# About Our Community Food Group` | **No - Task 005** |
+### The invented facts to be removed, by grep
 
-**Eight of the nine are in scope. The ninth is MDX prose and must be left alone** - see the
-scope fence below. `GROUP NAME` appears zero times anywhere.
+- `src/data/locations.json` - all three records. `123 Main Street, Springfield`,
+  `456 Oak Avenue, Springfield`, `789 Garden Lane, Springfield`; `(555) 123-4567`,
+  `(555) 987-6543`, `(555) 456-7890`; `main@`, `south@`, `garden@communityfood.org`; three
+  sets of invented opening hours; invented `coordinates`; and the invented `features`
+  vocabulary ("Workshop Space", "Learning Center", "Community Outreach").
+- `src/content/pages/about.mdx:9` - `# About Our Community Food Group`, the one occurrence
+  Task 004b deliberately left behind.
+- `src/content/pages/about.mdx:11` - `Founded in 2024`.
+- `src/content/pages/donate.mdx:55` - `**90% of all donations**`.
+- `src/content/pages/join.mdx:18,25,32` - invented time commitments; `:36-44` invented
+  membership tiers and "member-only" benefits.
+- `src/pages/posts.astro:18` - "our community food group", a **lowercase** echo of the invented
+  name that Task 004b's case-sensitive grep did not catch.
+- `src/pages/locations.astro:16,19` - `Find Us` and "Visit any of our locations to get
+  involved, pick up food" - storefront framing.
+- `src/components/Footer.astro:12` - the prose blurb opening "Building food security through
+  community action", left by Task 004b on purpose.
 
-### The invented tagline is a second constraint 1 violation, and it is metadata
+### Four repository facts the `ROADMAP.md` entry for this task did not have
 
-Surfaced at promotion, not present in the roadmap entry. `"Building food security through
-community action"` appears three times:
+Found by grep at promotion, not inherited. This entry's own inventory has been wrong before.
 
-- `src/layouts/BaseLayout.astro:17` - the `metaDescription` default, which feeds
-  `<meta name="description">`, `og:description` and `twitter:description` on every route that
-  does not override it. **Chrome. In scope.**
-- `src/pages/index.astro:9` - concatenated with the group name in the `description` prop.
-  **Chrome. In scope.**
-- `src/components/Footer.astro:8` - the opening clause of a two-sentence footer blurb.
-  **Prose. Out of scope, Task 005.**
+1. **`src/pages/index.astro` imports `locations.json` directly** at line 4 and renders
+   `location.name`, `.address` and `.description` over `locations.slice(0, 3)`. The data
+   migration below **breaks this file**; it is not optional scope. Independently, its prose is
+   off-model scaffold: line 57 reads "Visit us at any of our community locations. We're here to
+   serve you," which is the identical storefront framing the roadmap flags in `locations.astro`
+   and puts in scope, and line 19 is a variant of the withdrawn tagline.
+2. **With one location record, the homepage's three-up grid is wrong.** `slice(0, 3)` over a
+   single record renders one lone card in a three-column grid under the heading "Our
+   Locations". This needs a deliberate replacement, not a data swap. See required change 8.
+3. **`README.md` contradicts itself, and one half is currently false.** Line 209 claims "This
+   group's records describe real places in Tucson, Arizona and are not sample data" - while
+   lines 11-14 of the same file say every record is invented scaffold. Line 209 was written by
+   Task 004b in anticipation of this task and becomes true only when it lands.
+4. **`heroDescription` and `heroImage` are declared in `src/content.config.ts:16,18` but
+   consumed by no page.** `about.astro`, `join.astro` and `donate.astro` read only `title`,
+   `description` and `heroTitle`. Dead frontmatter; this task rewrites that frontmatter anyway.
 
-Section 2 lists "OG and Twitter metadata" as config-driven chrome explicitly. An adopting fork
-inheriting this group's positioning statement in its social cards is the same defect as
-inheriting its name.
+### One invariant this task deliberately breaks
 
-**The trap:** the same words appear in a file this task edits (`Footer.astro`) in a role this
-task must not touch. Tokenize the metadata; leave the footer sentence exactly as it is.
+Task 004b's acceptance criterion 7 read "`site.config.ts` is the only file in the repository
+containing an unfilled identity token." **That was scoped to 004b's end state and this task
+ends it**, because the contact route is `info@GROUP_DOMAIN` and the domain is genuinely
+unpurchased, so the literal token belongs in the join and help copy.
 
-### Other verified facts
+This is permitted and correct. Constraint 1 allows owner-fill tokens **in content**; what
+section 2 forbids is config *interpolation* (`{siteConfig.contactEmail}`) into MDX, which is a
+different thing. Writing the literal token stays verifiable because `check:config` scans `src/`
+and will fail the build until every occurrence is filled.
 
-- **Root-level `.ts` files are type-checked.** `tsconfig.json` extends
-  `astro/tsconfigs/strict`, whose base sets `"include": ["${configDir}/.astro/types.d.ts",
-  "${configDir}/**/*"]` and excludes only `dist`. A `site.config.ts` at the repository root is
-  therefore covered by `npm run check` with no `tsconfig.json` edit. **Do not edit
-  `tsconfig.json`.**
-- **`verbatimModuleSyntax` is `true`.** Importing the interface requires
-  `import type { SiteConfig } from '...'`. A value-position import of a type will fail
-  `npm run check`. This is the most likely way to spend an hour on this task.
-- `scripts/verify-baseline.sh` has an **uncached** half that now runs `npm run check`,
-  `npm run check:contrast`, and `npm run build`, in that order. Task 004 wired
-  `check:contrast` in. The cache key is `package-lock.json` + `package.json` + the Node
-  version; read the comment at the top of the script before editing it.
-- `scripts/check-contrast.mjs` is the zero-dependency precedent to copy in shape: it parses
-  the real tokens out of source rather than duplicating a list.
-- `README.md` has **exactly one** `## Rebranding this site` section, at line 115, with three
-  `###` subsections (`Layer 1 - brand inputs`, `Layer 2 - semantic roles`, `Checking your
-  rebrand`). It documents colour only.
-- **`README.md:1` is `# Community Food Group`** - the invented name titling the template's own
-  documentation. In scope; see required change 6.
-- `package.json` already carries `check:contrast`. Add `check:config` beside it.
-- The owner inputs relevant here are all still open: the organization name and the domain are
-  deferred, the Mastodon handle is required before Task 006. **The city and region are
-  answered** - Tucson, Arizona - and the `CITY` token is retired.
+**`npm run check:config` reporting `GROUP_DOMAIN` inside `src/content/pages/*.mdx` after this
+task is the expected, correct result. It is not a regression, and it must not be "fixed" by
+inventing a domain or by deriving the address from config.**
 
 ---
 
 ## Allowed scope
 
-- `site.config.ts` - **new**, at the repository root
-- `scripts/check-config.mjs` - **new**
-- `scripts/verify-baseline.sh` - **to add `check:config` to the uncached half only**
-- `package.json` - **to add the `check:config` script only**
-- `src/components/Header.astro`
-- `src/components/Footer.astro` - **the two name occurrences and the mailto only**
-- `src/layouts/BaseLayout.astro`
-- `src/content.config.ts` - **the `author` default only**
-- `src/pages/index.astro` - **the `description` prop only**
-- `src/components/MastodonFeed.astro` - **the display-name fallback only**
-- `README.md` - **the title, the intro sentence, and the rebranding section only**
+- `site.config.ts` - **`groupName` and `tagline` only.** Do not touch `domain`,
+  `contactEmail`, or `social`.
+- `src/content/pages/about.mdx`
+- `src/content/pages/join.mdx`
+- `src/content/pages/donate.mdx` - **renamed to `help.mdx`**
+- `src/pages/donate.astro` - **renamed to `help.astro`**
+- `src/pages/index.astro`
+- `src/pages/locations.astro`
+- `src/pages/posts.astro` - **the lede sentence at line 18 only**
+- `src/components/Header.astro` - **the two `/donate` nav links only**
+- `src/components/Footer.astro` - **the line 12 blurb and the `/donate` quick link only**
+- `src/data/locations.json`
+- `src/content.config.ts` - **to add the locations collection, and to drop the two dead
+  frontmatter fields**
+- `README.md` - **the locations section and the line 209 contradiction only**
 
-**Explicitly out of scope**, despite touching some of the same files:
+**Explicitly out of scope**, despite adjacency:
 
-- **`src/content/pages/*.mdx`, including `about.mdx:9`.** Section 2 forbids interpolating
-  config into prose. The invented name in that heading is **Task 005's**, and it is the one
-  occurrence this task deliberately leaves behind.
-- **The `Footer.astro:8` blurb.** Prose. Task 005.
-- `src/data/locations.json` and every other page copy. **Task 005.**
-- Any colour token, the type scale, the spacing rhythm, the unlayered `.container` / `.prose`.
-- The accessibility work from Task 004. Do not re-derive it, do not "improve" it.
-- `tsconfig.json`, `astro.config.mjs`.
-- Filling `GROUP_NAME`, `GROUP_DOMAIN`, `GROUP_TAGLINE` or `MASTODON_HANDLE` with real values.
-  **All are open owner inputs.**
-- The zod deprecation and CI. **Task 009.**
-- `CONTRIBUTING.md`. A real gap, recorded in section 2, but not this task.
+- **`src/components/MastodonFeed.astro`.** Its raw-markup defect is real and is **Task 006's**.
+  Do not fix it here.
+- **`public/` assets, the emoji logo in `Header.astro:10`, favicon and OG image.** **Task 007.**
+- **Taking `zod` as a direct dependency, and the 12 zod hints.** **Task 009.** Use the `z`
+  re-exported from `astro:content`, as `content.config.ts` already does.
+- **CI, a link checker, the pre-publication judgement check.** **Task 009.**
+- Any colour token, the type scale, the spacing rhythm, the **unlayered** `.container` and
+  `.prose`. `src/styles/global.css` must not be touched.
+- The Task 004 accessibility work. Do not re-derive it, do not "improve" it.
+- `tsconfig.json`, `astro.config.mjs`, `package.json`, `scripts/`, `scripts/verify-baseline.sh`.
+- Filling `GROUP_DOMAIN` or the Mastodon tokens. **Both remain open owner inputs.**
+- Food-safety language. **Open owner input; write none.**
 
 ---
 
 ## Required changes
 
-### 1. Normalize the token vocabulary to `SCREAMING_SNAKE_CASE`
+### 1. Fill the two answered identity fields
 
-The project currently uses **two** token spellings: `GROUP NAME` with a space, and
-`GROUP_DOMAIN` with an underscore. Section 4 requires that every token be greppable by **one**
-documented pattern, and no single sane regex matches both.
+In `site.config.ts`, and nothing else in that file:
 
-**`GROUP NAME` becomes `GROUP_NAME`.** The documented pattern is:
+- `groupName: 'Vegans Against Fascism'`
+- `tagline: 'a counter-cultural, total liberation collective'`
 
-```
-/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b/g
-```
+`check:config` must drop from **6** token occurrences to **4** in that file
+(`GROUP_DOMAIN` twice, `MASTODON_HANDLE`, `MASTODON_URL`), plus whatever `GROUP_DOMAIN`
+occurrences the new MDX copy legitimately introduces.
 
-One uppercase run, at least one underscore, no spaces. `GROUP_DOMAIN` already conforms.
-This pattern is the contract between the tokens and `check-config.mjs`; state it in `README.md`
-and use the same literal in the script.
+### 2. Rewrite `about.mdx`
 
-### 2. Create `site.config.ts`
+Around the actual model. Required substance:
 
-At the repository root, holding **only** identity constants. Typed with an exported interface
-and `as const satisfies SiteConfig`, so `npm run check` validates it at build with **zero new
-dependencies**. This deliberately avoids the zod decision still open in Task 009.
+- People in Tucson gather, cook together, and hand food directly to neighbors.
+- **The food is vegan. Say so plainly** - confirmed owner input.
+- **Distribution cadence is monthly, and no precise time is published.** Per the 2026-07-30
+  decision this is an *accuracy* choice, not a safety one: the schedule is set close to the
+  date and genuinely changes.
+- **Cooking classes are forming or upcoming** - never an established program with a history.
+  Cultural events and other activities are deferred; do not describe them.
+- **The garden belongs on this page, not only on the locations card.** Produce from the plot is
+  either cooked into the food the group distributes or given directly to people in the group
+  and to neighbors who need it. This is the one place the two activities connect, and it is a
+  real, publishable link.
+- Delete the founding date, the farm-surplus collection, the "food justice policy advocacy"
+  claim, and the four-verb mission list.
+- Fix the `h1`, which currently carries the invented name.
 
-The shape, which you may adjust in detail but not in kind:
+### 3. Rewrite `join.mdx`
 
-```ts
-export interface SocialAccount {
-  handle: string;
-  url: string;
-}
+For an affinity group, not a volunteer program.
 
-export interface SiteConfig {
-  groupName: string;
-  tagline: string | null;
-  city: string;
-  region: string;
-  domain: string;
-  contactEmail: string;
-  social: {
-    mastodon: SocialAccount | null;
-    signal: SocialAccount | null;
-  };
-}
-```
+- How someone actually shows up for a cook session.
+- **The call to action is to email `info@GROUP_DOMAIN`**, written as that literal token, and a
+  person replies.
+- Delete every invented time commitment, role tier, and member-only benefit.
+- **No chat link of any kind** - no Signal, WhatsApp, Telegram. Owner decision, 2026-07-30.
+- **Do not frame the reply as an application, a screening, or a vetting step - and do not imply
+  it is instant or automatic either.** Both exaggerations are constraint 1 problems in opposite
+  directions. It is a person answering an email.
+- What happens after someone writes in is internal and is not site content.
 
-Fill it with today's truth, not with placeholders everywhere: **`city` is `'Tucson'` and
-`region` is `'Arizona'`**, because those are answered. The rest carry tokens.
+### 4. Replace `donate.mdx` with `help.mdx`, and rename the route
 
-**`contactEmail` is an explicit field, not derived from `domain`.** A computed
-`` `info@${domain}` `` would construct the token at runtime and hide it from a source-text
-scan, which is precisely the guard this task exists to build. Write the literal
-`'info@GROUP_DOMAIN'`.
+- `src/content/pages/donate.mdx` -> `src/content/pages/help.mdx`. The glob loader derives the
+  entry id from the filename, so the id becomes `help`.
+- `src/pages/donate.astro` -> `src/pages/help.astro`, and its `getEntry('pages', 'donate')`
+  becomes `getEntry('pages', 'help')`. Its `throw new Error` message must be updated to match.
+- Content is **Ways to Help**: concrete material and time needs - ingredients, containers,
+  kitchen time, transport. **Ingredient donations must be vegan; say so.**
+- **The 90% transparency claim is withdrawn and must not reappear in any form**, including
+  softened ("most of", "the vast majority of").
+- Do not invent a bank transfer route, a donation platform, or a drop-off address. There are
+  no staffed sites and no published hours to drop off during. Route material offers through
+  the same email.
+- Update the internal link at the old `donate.mdx:45` to `/join`, which is unchanged.
+- In `Header.astro` (both nav lists) and `Footer.astro` (quick links), `/donate` -> `/help` and
+  the label "Donate" -> **"Ways to help"** (sentence case, per the heading-case convention for
+  UI labels and links).
 
-### 3. Model absence in the type, and distinguish it from unknown
+### 5. Replace `src/data/locations.json`
 
-This is the part most likely to be got subtly wrong, and the roadmap entry left it unresolved.
+**One record. The garden.** The owner has answered that no cook or distribution site is named
+publicly, so there is nothing else to write.
 
-A social account is `SocialAccount | null`. **`null` means *this group has chosen not to have
-one*. It does not mean *unknown, awaiting a value*.** Section 4 warns that a future session
-must not "helpfully" add a chat link; a type with no third state makes that structural rather
-than advisory.
+The verified and owner-supplied facts, from `PROJECT_CONTEXT.md` section 4, which is their only
+copy - **read it before writing this copy**:
 
-The two states of the type carry three real states of the world, and the token system supplies
-the third:
+- `Presidio Garden`, `3440 E Presidio Rd`, Tucson, Arizona.
+- One of eighteen gardens operated by **Community Gardens of Tucson**. Name them and link to
+  `https://www.communitygardensoftucson.org/garden-locations` with
+  `rel="noopener noreferrer"`.
+- The group rents a **large plot** there.
+- Cadence: **every other week during the growing season**, sometimes more often, sometimes
+  less. State the variability.
+- **Publish the address. Do not publish a map link or a directions affordance.** Access
+  requires a CGT membership and a plot fee, so directions are a promise the site cannot keep.
+- **No phone number and no per-site email.** They do not exist. The single contact route is
+  email.
 
-| World state | Representation | Caught by `check:config`? |
-| --- | --- | --- |
-| Known and present | `{ handle: '@group@instance', url: 'https://...' }` | No |
-| **Unknown, awaiting owner input** | `{ handle: 'MASTODON_HANDLE', url: 'MASTODON_URL' }` | **Yes** |
-| Deliberately absent, by decision | `null` | No |
+**Standing dependency:** these are facts about a third party and a rental that can lapse.
+`PROJECT_CONTEXT.md` requires the CGT listing to be **re-verified before publication** rather
+than assumed still current. This task is drafting, not publishing, so re-verification is a
+Task 008 gate - but if you find the listing has changed, stop and report it.
 
-So today: **`mastodon` carries tokens** - the handle is an open owner input, and writing `null`
-there would encode a decision the owner has not made. **`signal` is `null`** - the owner
-withdrew the chat link on 2026-07-30, and that is a decision. Comment the `signal: null` with
-its date so the next session reads it as settled rather than missing.
+### 6. Validate it as an Astro data collection
 
-Apply the same rule to `tagline`: it is `'GROUP_TAGLINE'` today because it is unknown. If the
-owner later answers "the group name alone, no tagline", it becomes `null`.
+Owner decision at promotion: **use the content layer's `file()` loader**, per constraint 3.6's
+preference for the platform over a new dependency.
 
-### 4. Replace all eight in-scope occurrences with config reads
+- In `src/content.config.ts`, add a `locations` collection with
+  `loader: file('src/data/locations.json')` and a schema built with the `z` already imported
+  from `astro:content`. **Do not import `zod` directly** - it is only a transitive dependency
+  of astro today, so a direct import would rely on npm hoisting. That decision is Task 009's.
+- The schema is a **discriminated union on `kind`**, via `z.discriminatedUnion('kind', [...])`.
+- **Define exactly one variant today: `garden`.** The roadmap sketched three kinds
+  (garden, distribution, cook-session) on the assumption that distribution sites would be
+  named. The owner has since answered that none are, which collapses the other two to zero
+  records. Shipping unexercised union branches and unexercised render paths would violate
+  constraints 3.2 and 3.4. A discriminated union with one member is valid, makes the extension
+  point explicit, and makes adding the next variant **additive rather than a refactor** - which
+  is the whole reason for the discriminator.
+- The `garden` variant carries: `id`, `name`, `address`, `cadence`, `description`, and the
+  operator attribution (`operatorName`, `operatorUrl`). It carries **no** `coordinates`, `hours`,
+  `phone`, `email`, or `features`. Every one of those was invented, and three of them are
+  forbidden by the rulings above.
+- Note in your report the new `npm run check` hint count. Adding a second `z` usage will change
+  it from 12. **The new number is the new baseline, not a regression** - it is the same
+  documented zod deprecation, counted in one more place.
 
-In `Header.astro` (both the `aria-label` and the wordmark), `Footer.astro` (heading and
-copyright), `BaseLayout.astro` (`siteTitle` and `metaDescription`), `content.config.ts`
-(`author` default), `index.astro` (`description`), and `MastodonFeed.astro` (fallback).
+### 7. Update `src/pages/locations.astro` to the new shape
 
-The name becomes the `GROUP_NAME` token **in one place**.
+- Read via `getCollection('locations')`, not the raw JSON import.
+- **Delete the `Object.entries(location.hours)` block, the `phone` block, the `email` block,
+  the `features` chips, and the Google Maps directions link.** With the new schema they have no
+  data behind them; leaving any of them renders a dead field.
+- The `MapPin`, `Clock`, `Phone` and `Mail` icon imports must be pruned to what still renders.
+- The `h1` "Find Us" and the lede "Visit any of our locations to get involved, pick up food, or
+  learn more about our programs" are storefront framing and both go. Replace with copy that
+  explains the real model: distribution happens monthly around town, the schedule is arranged
+  close to the date, and involvement routes through email.
+- **The route stays `/locations`.** Deliberate, not an oversight: it is accurate, and renaming
+  two routes in one task is churn. Do not "fix" it.
 
-Two notes:
+### 8. Update `src/pages/index.astro`
 
-- `BaseLayout.astro`'s `metaDescription` default becomes the tagline from config. Handle
-  `tagline: null` without emitting the string `"null"` into a `<meta>` tag - fall back to the
-  group name, or omit the tag.
-- `index.astro`'s description duplicates what `BaseLayout` can now derive. Prefer deleting the
-  prop over rebuilding the same string at the call site.
+- Migrate the `locations` import to `getCollection`, or drop it - see below.
+- **Replace the three-up "Our Locations" grid.** One record in a three-column grid is a layout
+  defect. Either present the garden as a single feature block, or replace the section with copy
+  explaining how distribution works and link to `/locations`. Implementer's choice, but not
+  `slice(0, 3)` over one record.
+- Rewrite the hero (`Nourishing Our Community` / "Building a more food-secure future through
+  connection, education, and community action"), the locations lede at line 57, and the
+  closing CTA ("Ready to Make a Difference?", "Volunteer today", "Support our mission").
+- Both `/donate` CTAs become `/help` / "Ways to help".
 
-### 5. Create `scripts/check-config.mjs`
+### 9. Fix the lowercase name echo in `posts.astro:18`
 
-Wired as `npm run check:config`, added to the **uncached** half of `verify-baseline.sh`
-alongside `check:contrast`, and to `package.json`. Zero dependencies, same shape as the
-contrast script.
+"...announcements from our community food group" - rewrite the sentence. **The lede text only.**
+The `MastodonFeed` component and its defect are Task 006's.
 
-- Scan the **source text** of `site.config.ts` for tokens matching the pattern in change 1.
-- Also scan `src/` for the same pattern, to catch a token that leaked back into a component.
-  Cheap, and it is what makes the "only file with an unfilled token" invariant enforceable
-  rather than aspirational.
-- Print each hit with its file, line, and the field it sits in. Exit non-zero if any remain.
-- **Prove it fails before declaring it works.** A validator never seen to fail is not yet a
-  validator. Also prove it *passes*: temporarily fill every token, watch it exit 0, then revert.
-  Both directions, or you have tested nothing.
+### 10. Rewrite the `Footer.astro:12` blurb
 
-Guard against the obvious false positive: the pattern will match ordinary uppercase constants
-if you point it at the wrong files. Scanning `site.config.ts` plus `src/` keeps the surface
-small; if a legitimate identifier trips it, narrow the scan, do not weaken the pattern.
+Left by Task 004b on purpose. Two sentences of on-model prose. It opens with the withdrawn
+invented tagline today. **Prose, so no config interpolation and no literal group name.**
 
-### 6. Retitle `README.md` and broaden the rebranding section
+### 11. Reconcile `README.md`
 
-`README.md:1` currently reads `# Community Food Group`, which titles the *template's*
-documentation after one group. Retitle it to describe what the repository is - a mutual aid
-group's site, template plus one instance - and say in one sentence that it is adopted by
-forking. **Do not put a token in the `<h1>` of the README**; the README describes the
-repository, and the repository is not the group.
+- The claim at line 209 that the records "describe real places in Tucson, Arizona and are not
+  sample data" becomes true with this task - confirm it reads correctly against the single
+  garden record and does not imply multiple sites.
+- Document the `kind` discriminator in the adopter section, and say that a group with named
+  distribution sites adds a variant to the union.
+- **The "not ready to publish" callout at lines 9-17 stays.** `GROUP_DOMAIN` and the Mastodon
+  handle remain unfilled, `check:config` stays red, and the site still must not be deployed.
+  Update its wording so it no longer claims the locations records are invented scaffold, but do
+  not remove the warning.
 
-**Broaden the existing `## Rebranding this site` section** into the four adoption surfaces
-from section 2. Colour becomes one of four, not a competing section - **do not add a second
-rebranding heading**, and do not delete the Layer 1 / Layer 2 material, which is correct and
-was verified in Task 003.
+---
 
-State plainly which surfaces an adopter edits, document the token pattern from change 1, and
-state that **prose is rewritten rather than tokenized**, so a forking group does not try to
-parameterize the MDX and ship mad-libs.
+## The framing traps, stated so they can be checked
+
+`PROJECT_CONTEXT.md` warns that the most likely failure here is **smoothing a true-but-awkward
+sentence into a false-but-natural one.** Each of these has a shorter, more natural, wrong form:
+
+| Never write | Because |
+| --- | --- |
+| "our community garden" | The group rents a plot at a garden **run by someone else**. Permitted framing: the group maintains a plot at Presidio Garden, one of the Community Gardens of Tucson. |
+| anything implying partnership or affiliation with CGT | The relationship is a plot rental. Nothing more. |
+| "members" for people who receive food | The word now carries three incompatible senses - a CGT plot-holder, a person in the group, and the scaffold's invented tiers. Use "people in the group" and "neighbors". |
+| "bi-weekly" | Means both *twice a week* and *every two weeks*. Cannot ship under constraint 1. |
+| any month or date range for the growing season | Not supplied, and Tucson's season is not the one most writers would assume. |
+| a directions or map link for the garden | It would route neighbors to a garden they cannot enter. |
+| any published distribution time | The schedule is set close to the date. Publishing it in advance would be **inaccurate**. |
+| the literal group name, anywhere in `src/` | See the naming ruling. |
+| any chat link | Owner decision, 2026-07-30. |
+| "apply", "screening", "vetting" - or "instantly", "automatically" | It is a person answering an email. Both directions are constraint 1 problems. |
+| "90%", "most donations", or any efficiency figure | Withdrawn in full. |
 
 ---
 
 ## Acceptance criteria
 
-Every criterion is executed, not inspected. Constraint 3.10 forbids reporting success from a
-diff.
+Every criterion is **executed**, not inspected. Constraint 3.10 forbids reporting success from
+a diff. Paste real output.
 
-1. `npm run check` reports **0 errors** (12 zod hints remain expected). Then prove the config
-   is genuinely type-checked: introduce a deliberately wrong field, watch `npm run check`
-   fail, revert. Paste both results.
-2. `npm run verify` exits 0 **except** for `check:config`, which must exit non-zero - see
-   criterion 4. Confirm `check:config` runs in the uncached half by touching only
-   `site.config.ts` and watching it re-run on a dependency-cache hit.
-3. `grep -rn 'Community Food Group' src/` returns **exactly one** line:
-   `src/content/pages/about.mdx:9`. Paste the result. **Any other survivor is a failure; that
-   one is required to survive.**
-4. `npm run check:config` **exits non-zero**, and its output names `GROUP_NAME`,
-   `GROUP_TAGLINE`, `GROUP_DOMAIN` and the Mastodon tokens with their locations. **This task
-   ships with the check failing on purpose**, because those facts genuinely are not known.
-   **Do not weaken the check to make it pass, and do not fill a token to make it green.**
-5. `npm run check:config` exits **0** when every token is temporarily filled. Paste the result,
-   then confirm the revert.
-6. `grep -rn 'GROUP NAME' src/ site.config.ts` returns nothing - the space-spelled token is
-   retired from all source. It **does** still appear in `PROJECT_CONTEXT.md`, `ROADMAP.md` and
-   this file, in prose recording its retirement; that is correct and must not be "fixed".
-7. `site.config.ts` is the only file in the repository containing an unfilled identity token,
-   apart from documentation that describes the token system itself.
-8. `npm run build` emits the same **six** routes, and the rendered `<title>`, `<meta
-   name="description">`, `og:description`, header and footer show the **token**, not an
-   invented name. Confirm in `dist/`, not in the source.
-9. `npm run check:contrast` still exits 0 with all sixteen pairs passing. This task must not
-   move a colour.
-10. The Task 004 accessibility work is intact: `grep -rn 'role="menubar"\|role="menuitem"\|role="none"' src/`
-    and `grep -rn 'href="#"' src/` both still return nothing, and the `:focus-visible` rule and
-    `prefers-reduced-motion` block in `global.css` are byte-for-byte unchanged.
-11. The Task 002 type scale, the spacing tokens, and the **unlayered** `.container` and
-    `.prose` blocks are byte-for-byte unchanged. Confirm by targeted diff.
-12. `README.md` has exactly one rebranding section, covering four surfaces, and its `<h1>` no
-    longer names this group.
-
-A browser pass is **not** required for this task. It changes no layout, no colour, and no
-interactive behaviour. If you find yourself needing one, you have left the scope.
+1. `npm run check` reports **0 errors, 0 warnings**. Report the hint count and state explicitly
+   that the change from 12 is the zod deprecation counted in one more place.
+2. `npm run check:contrast` still exits **0** with all sixteen pairs passing, and
+   `git diff HEAD -- src/styles/global.css` is **empty**. This task moves no colour.
+3. `npm run check:config` **still exits non-zero** - correctly. Its output must **no longer
+   name `GROUP_NAME` or `GROUP_TAGLINE`**, and must still name `GROUP_DOMAIN` and the two
+   Mastodon tokens. **Do not fill a token to make it green.**
+4. `npm run build` emits **six** routes: `/`, `/about`, `/help`, `/join`, `/locations`,
+   `/posts`. `/donate` is gone and `/help` has replaced it.
+5. `grep -rniE 'springfield|\(555\)|communityfood\.org|90%|founded in 2024|community food group' src/`
+   returns **nothing**. Paste the empty result.
+6. `grep -rn 'CITY' src/` returns **nothing**. The city is Tucson and is written out.
+7. `grep -rni 'our community garden' src/ dist/` returns **nothing**.
+8. `grep -rn 'Vegans Against Fascism' . --exclude-dir=node_modules --exclude-dir=.git`
+   returns hits in `site.config.ts` and in the project documents **only** - and **zero** hits
+   in `src/`. This is the naming ruling, and it is the criterion most likely to fail.
+9. `grep -rniE 'signal|whatsapp|telegram' src/ dist/` returns nothing that is a chat link.
+10. `grep -rn '/donate' src/ dist/` returns **nothing**. The rename is complete.
+11. **In `dist/`, not in source:** the garden card shows the street address and has **no**
+    directions or maps link; Community Gardens of Tucson is named and linked with
+    `rel="noopener noreferrer"`; and no distribution time appears anywhere.
+12. **In `dist/`,** `<title>`, `<meta name="description">` and `og:description` show the real
+    name and tagline, not a token.
+13. Task 004's accessibility work is intact:
+    `grep -rn 'role="menubar"\|role="menuitem"\|role="none"' src/` and
+    `grep -rn 'href="#"' src/` both still return nothing.
+14. **Every factual claim in the new copy traces to a specific owner input.** Provide a short
+    table mapping each claim to its source row in this spec or in `PROJECT_CONTEXT.md`
+    section 4. A claim you cannot trace is one you invented; remove it.
+15. **A browser pass is required for this task** - unlike Task 004b. `/`, `/locations` and
+    `/help` change layout materially, and the one-record locations grid is a layout decision
+    that cannot be verified from a diff. Check at **375px and 1440px**. See
+    `docs/ENVIRONMENT.md` for the persistent Playwright/Chromium setup and the
+    `LD_LIBRARY_PATH` requirement.
 
 ---
 
 ## Reviewer focus
 
-- Whether the invented name reached `dist/` anywhere. Grep the built HTML, not the source.
-- Whether `about.mdx:9` was "helpfully" fixed. It must survive; fixing it means either
-  interpolating config into prose or rewriting Task 005's copy, and both are out of scope.
-- Whether the `Footer.astro:8` blurb was rewritten. It must not be.
-- Whether `mastodon` was set to `null`. It must carry tokens - `null` would assert a decision
-  the owner has not made.
-- Whether `contactEmail` was derived from `domain` rather than written literally, which would
-  hide the token from the scan.
-- Whether `check:config` was ever **seen to fail**, and separately **seen to pass**. A pasted
-  green run alone does not establish either.
-- Whether the check was weakened, or a token filled with a plausible value, to make `verify`
-  fully green. The correct end state is a red `check:config`.
-- Whether `check:config` landed in the **uncached** half of `verify-baseline.sh`.
-- Whether a second rebranding heading appeared in `README.md`.
-- Whether `tsconfig.json` or `astro.config.mjs` were touched. Neither should be.
+- **Did the literal group name reach `src/`?** Criterion 8. The natural way to write an about
+  page is to name the group in the first sentence; this task forbids it.
+- **Did "our community garden" survive anywhere**, including in an `alt`, a `title` attribute,
+  or a meta description?
+- **Is the garden's operator relationship stated as a plot rental**, with no wording that
+  implies partnership, affiliation, or that the group runs the site?
+- **Does a directions link exist for the garden?** It must not.
+- **Is any distribution time published?** It must not be.
+- Is "member" used for anyone who receives food?
+- Are the cooking classes described as established rather than forming?
+- Was a food-safety statement invented? None was authorized.
+- Was a domain, drop-off address, or donation platform invented to fill a gap?
+- **Was `check:config` weakened, or a token filled, to make `verify` green?** The correct end
+  state is still red, on `GROUP_DOMAIN` and the Mastodon tokens.
+- Was the `MastodonFeed` markup defect "helpfully" fixed? It is Task 006's.
+- Were `global.css`, `astro.config.mjs`, `tsconfig.json`, `package.json` or `scripts/` touched?
+  None should be.
+- Was `zod` imported directly rather than via `astro:content`?
+- Does the homepage still render a three-up grid over a single record?
 
 ---
 
 ## Out of scope / queued work
 
-**Task 005 follows this task.** It is Track B and remains blocked on **exactly one** owner
-input: the organization name, in the `PROJECT_CONTEXT.md` section 4 table. This task does not
-resolve that - it moves the name into one config field rather than eight, but Task 005's prose
-still has to be written knowing what the group is called.
+**Task 006 (Mastodon) follows.** Still blocked on the Mastodon handle in `PROJECT_CONTEXT.md`
+section 4. This task does not touch `MastodonFeed.astro`.
 
-Nothing else blocks Task 005. The contact route, the geographic scope (Tucson, Arizona) and
-the garden are all settled; the garden is a **schema** change to `locations.json`, not a values
-change. See `ROADMAP.md`.
+**Task 007 (brand assets)** needs the logo/favicon/OG image, still deferred. Note that the
+`🍲` emoji logo and the missing `public/` assets are untouched here by design.
 
-**This task surfaces one new owner input**, recorded in `PROJECT_CONTEXT.md` section 4: the
-tagline, or a decision that there is none. It does not block Task 005.
+**Two owner inputs remain open after this task:** the domain (`GROUP_DOMAIN`, which gates
+deployment and the token check) and the Mastodon handle. **Food-safety language is a third,
+deliberately deferred rather than answered.**
 
-**Task 009 inherits `check:config`** as the mechanical half of its pre-publication check. What
-remains there is the judgement half - fabricated data that is not a token and therefore cannot
-be caught by a pattern. `about.mdx:9` is a live example of exactly that.
+**An eventual name change is a live project fact.** When a new name arrives it is a one-field edit to
+`site.config.ts` - provided this task's naming ruling held. If a reviewer finds the name in
+prose, that edit becomes a prose rewrite instead, and the ruling has failed.

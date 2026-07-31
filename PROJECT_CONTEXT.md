@@ -312,6 +312,41 @@ to `docs/DECISIONS_ARCHIVE.md`.
   - No deployed build may contain one. This unblocks drafting; it does not unblock
     publishing.
 
+- **[2026-07-31] The group is `Vegans Against Fascism`, a name change is anticipated, and the
+  name must never be written into prose.** Owner input at the Task 005 promotion, and the
+  single most consequential naming rule in this project.
+
+  **The facts.** The public name today is `Vegans Against Fascism` and the current tagline is
+  `a counter-cultural, total liberation collective`. The group is always evaluating new ways
+  of presenting itself, and its funding sources are dynamic, so the owner wants the site to
+  stay rebrandable as a **standing property of the codebase** rather than a one-off migration.
+  **Treat a name change as expected. The timing is unknown.**
+
+  **This entry is deliberately non-specific about the group's internal circumstances**, by
+  owner decision on 2026-07-31, and should stay that way. The repository is public and the
+  reasons behind a name change are not the codebase's business. What a future session needs is
+  the *engineering* consequence below, which does not depend on the reasons at all - so do not
+  "restore context" here by writing them back in.
+
+  Rulings, all binding:
+  - **`groupName` and `tagline` are filled with the real values, not left as tokens.** The
+    state table below is explicit that a token means *unknown, awaiting owner input*. These are
+    known. A token here would misrepresent the world state exactly as `null` for an unknown
+    would - it would also permanently mislead the next session into re-asking a settled
+    question.
+  - **The literal name must not appear anywhere in `src/`** - not in prose, a heading, an
+    `aria-label`, a comment, or a meta tag. Write "the group", "we", "us". Task 004b collapsed
+    the name into one config field precisely so a rebrand is a **one-line edit**; a name written
+    into prose reintroduces the unverifiable find-and-replace that 004b exists to prevent.
+  - **Interpolating config into prose is not the escape hatch.** Section 2 forbids it, and it
+    would produce exactly the mad-libs copy the reuse model warns about. **A sentence that needs
+    the group's name to work is a sentence to rewrite.**
+  - This is the same discipline the template needs for an adopting fork, arriving early because
+    this instance happens to need it first. It is not a workaround.
+  - **When the new name lands it is a two-field edit to `site.config.ts`** - provided the rule
+    above held. If the name is ever found in prose, that edit becomes a prose rewrite and the
+    rule has failed. A future session should grep before assuming it holds.
+
 ### Styling and design system
 
 - **Tailwind is configured in CSS.** The theme lives in an `@theme` block in
@@ -488,23 +523,40 @@ trusting the roadmap entry, and they are recorded here because they outlive the 
   but the same words also open a footer *prose* blurb, which is Task 005's and was left alone.
   This raised one new owner input, in the table below.
 
-**Track B (Task 005) remains blocked on exactly one input: the organization name**, in the
-owner-inputs table below. Task 004b did not resolve this - it moved the name into one config
-field (`site.config.ts`) rather than eight, but Task 005's prose still has to be written
-knowing what the group is called. Nothing else blocks Task 005: the contact route, the
-geographic scope, and the garden are all settled. **The next `ARCHITECT` session should
-re-confirm this blocker and, if it is still open, decide whether to promote a different task
-instead of leaving Track B idle.**
+**[2026-07-31] Task 005 (real content, on-model) is promoted and ACTIVE.** Its blocker - the
+organization name - was answered at promotion, along with five other inputs; see the
+owner-inputs table below and the naming decision above. **`TASK_SPEC.md` is the only authority
+on its scope and acceptance.** It is the task that makes the site honest: until it lands, the
+repository ships a description of an organization that does not exist.
+
+Four repository facts were found at that promotion by grepping rather than trusting the
+roadmap entry, and they are recorded here because they outlive the task:
+
+- **`src/pages/index.astro` was missing from the roadmap's Task 005 scope and could not stay
+  out.** It imports `locations.json` directly, so the data-model change breaks it. Its prose
+  also carries the same storefront framing the entry flagged only in `locations.astro`. **This
+  is the third roadmap entry whose own file inventory was wrong** (see Task 004b, twice above).
+  Constraint 3.4 governs this project's notes about itself, not only the repository.
+- **A single location record breaks the homepage layout.** `locations.slice(0, 3)` renders one
+  card in a three-column grid. The "garden only" answer made this a layout decision.
+- **`README.md` contradicts itself, and one half is currently false.** Line 209 claims the
+  location records describe real places in Tucson; lines 11-14 of the same file say they are
+  invented scaffold. Task 004b wrote the former in anticipation of Task 005, which is exactly
+  the "true when written, stale when read" failure this file keeps logging.
+- **The roadmap's "add a Zod schema" plan conflicted with the open zod decision.** Resolved by
+  using the content layer's `file()` loader with the `z` already re-exported from
+  `astro:content` - the platform option constraint 3.6 prefers, and no new dependency. Taking
+  `zod` directly remains Task 009's.
 
 **Resolved: the `ROADMAP.md` Task 004c staleness** flagged here previously. That entry read
 "not yet committed" while `git log` showed `bcef6db`; it was corrected at the 004b promotion,
 which was the next ARCHITECT write to that file. The general rule stands and is worth keeping:
 **do not infer commit state from a status word in any of these documents - check `git log`.**
 
-`ROADMAP.md` holds the ordered sequence through launch. **Its status lines for Task 004 and
-Task 004b should be confirmed to read as complete** at the next `ARCHITECT` session - both
-were merged after their respective roadmap entries collapsed to status lines, and this file
-has twice gone stale on exactly that kind of unconfirmed transition (Task 003, Task 004c).
+**Resolved at the Task 005 promotion: the `ROADMAP.md` status lines for Tasks 004 and 004b**,
+flagged here previously. Task 004 already read complete; **Task 004b still read `ACTIVE` while
+`git log` showed `0fd7d5e`** - the same unconfirmed-transition drift, caught for the third
+time. Both now read complete. `ROADMAP.md` holds the ordered sequence through launch.
 
 ### Open owner inputs
 
@@ -530,13 +582,14 @@ enforces this and fails the build while any token remains unfilled.
 
 | Input | Status | Blocks |
 | --- | --- | --- |
-| Final public organization name | Deferred; use `GROUP_NAME` token. **Currently hardcoded as the plausible-sounding "Community Food Group" in 9 places across 7 files in `src/`, which is a live constraint 1 violation. Task 004b removes 8 of them; the 9th (`about.mdx:9`) is prose and goes with Task 005.** | Branding, page copy, metadata |
-| **Tagline, or a decision that there is none** | **Open; raised 2026-07-31 at the Task 004b promotion.** Use the `GROUP_TAGLINE` token. `"Building food security through community action"` is invented scaffold currently shipping in `og:description` on every route. A decision of "no tagline, the name alone" is a valid answer and is modelled as `null`, not as a token. | `<meta name="description">`, OG and Twitter cards |
+| Final public organization name | **ANSWERED 2026-07-31: `Vegans Against Fascism`.** Fills `GROUP_NAME` in `site.config.ts` at Task 005. **A name change is anticipated - see the dated decision below - so the name is filled in config and must never be written into prose.** | *(unblocked)* |
+| Tagline | **ANSWERED 2026-07-31: `a counter-cultural, total liberation collective`.** Fills `GROUP_TAGLINE`. Carries the same name-change caveat as the name. | *(unblocked)* |
 | Town / geographic scope | **ANSWERED 2026-07-31: Tucson, Arizona.** `CITY` token retired | *(unblocked)* |
-| Domain name; not yet purchased | Deferred; use `GROUP_DOMAIN` token | Contact address, canonical URLs, deployment |
-| Whether cook-session and distribution places are named publicly at all | **Required.** May be "none are named". *The garden is settled and is no longer part of this row; this now covers only the cook and distribution sites.* | `src/data/locations.json` replacement |
+| Domain name; not yet purchased | **Still deferred; use `GROUP_DOMAIN` token.** After Task 005 this token also appears legitimately in `src/content/pages/*.mdx`, because the contact route is written as the literal `info@GROUP_DOMAIN`. That is correct, not a leak. | Contact address, canonical URLs, deployment |
+| Whether cook-session and distribution places are named publicly at all | **ANSWERED 2026-07-31: none are named.** The garden plot is the only record in `src/data/locations.json`. Distribution is described as a monthly rhythm around town, with no site and no time published. | *(unblocked)* |
+| **Whether the food is vegan, and whether the site says so** | **ANSWERED 2026-07-31: yes, and the site says so plainly.** Raised at the Task 005 promotion - the group's name made it an obvious reader question that no document had settled, and it is material to anyone deciding whether to take food or to offer ingredients. | About and ways-to-help content |
 | Mastodon account handle, or confirmation there is none | **Required before Task 006** | Mastodon ingestion, feed routes, footer |
-| Approved food-safety language, if any is wanted | Open | About or ways-to-help content |
+| Approved food-safety language, if any is wanted | **Open, and deliberately deferred at the Task 005 promotion rather than answered.** Task 005 writes none. Do not invent a practices statement to fill the gap. | About or ways-to-help content |
 | Logo, favicon, social image | Deferred | `public/` assets, brand pass |
 | Confirmed Cloudflare Pages project URL | Deferred | `astro.config.mjs`, deployment |
 
@@ -553,6 +606,15 @@ still open:**
 
 Answered on 2026-07-31. **Do not re-ask these either:**
 
+- **Organization name: `Vegans Against Fascism`. Tagline: `a counter-cultural, total
+  liberation collective`.** Both fill their tokens at Task 005. **Both carry the name-change
+  caveat below.**
+- **No cook or distribution site is named publicly.** The garden plot is the only location
+  record. This closes the last open row that gated `locations.json`.
+- **The food is vegan, and the site says so plainly.**
+- **`/donate` is renamed to `/help`**, labelled "Ways to help", completing the 2026-07-30
+  Ways-to-Help decision at the route and navigation level rather than only in the page body.
+- **Food-safety language is deferred, not declined.** Task 005 writes none. The row stays open.
 - **Geographic scope: Tucson, Arizona.** Written out; the `CITY` token is retired.
 - **The garden is settled in full** - Presidio Garden, 3440 E Presidio Rd, a rented plot in a
   Community Gardens of Tucson site, every other week through the growing season, address
@@ -562,13 +624,13 @@ Answered on 2026-07-31. **Do not re-ask these either:**
   answer the handle question - it defers the link until Task 006 or 007, when the handle
   exists.
 
-Nothing on the remaining list blocked Task 004b, now complete (`0fd7d5e`) - it centralized
-these values without filling them, and **ships with `npm run check:config` deliberately
-failing** on the tokens that are genuinely unknown. **Track B is still down to two blockers:**
-the organization name, which gates Task 005, and the Mastodon handle, which gates Task 006.
-The tagline added above blocks neither; it is metadata that 004b tokenized and the owner can
-answer at any point. The locations row still gates the cook and distribution records, but the
-garden record can be written today.
+**[2026-07-31] Track B's blockers on Task 005 are all cleared and it is promoted.** Six inputs
+were answered at that promotion, listed above. **Task 006 remains blocked on the Mastodon
+handle**, which is now the only *required* unanswered input. The domain, the logo set and the
+Pages URL are deferred rather than blocking, and food safety is open but deliberately skipped.
+
+`npm run check:config` **continues to ship red after Task 005**, on `GROUP_DOMAIN` and the two
+Mastodon tokens. That is still the guard working, not a regression.
 
 **How an unanswered input is represented in `site.config.ts`** (shipped in Task 004b), because
 the distinction is load-bearing and easy to get backwards:
@@ -656,30 +718,33 @@ architecture unless a task explicitly creates them.
 
 ### Session role
 
-**`ARCHITECT`, next.** The prior session ran as `IMPLEMENTER` for Task 004b, now complete and
-merged as `0fd7d5e`, then ran `MEMORY SYNC` to fold its verification record and newly
-discovered facts back into this file. No task is currently promoted.
+**`IMPLEMENTER`, next.** The prior session ran as `ARCHITECT`: it archived Task 004b, corrected
+that task's stale `ACTIVE` status line in `ROADMAP.md`, collected six owner inputs, and
+promoted Task 005.
 
 ### Active task
 
-**None promoted.** `TASK_SPEC.md` still holds Task 004b's spec text; it is historical record
-now, not current authorization - it will be overwritten at the next promotion, per the
-promotion protocol in section 1.
+**Task 005 - Real content, on-model. Promoted 2026-07-31 and specified in `TASK_SPEC.md`,
+which is the only authority on its scope and acceptance.** Read that file in full before
+touching anything. Its planned scope was **cut** from `ROADMAP.md`, whose entry is now a status
+line pointing at it.
 
-The next `ARCHITECT` session should:
+Three things about this task in particular:
 
-- Review priorities against `ROADMAP.md`.
-- Re-confirm Task 005's one blocker (the organization name - see the owner-inputs table in
-  section 4) and promote it if the owner has supplied a name, or promote a different task if
-  Track B is still idle.
-- Confirm `ROADMAP.md`'s status lines for Task 004 and Task 004b read as complete; both were
-  merged after promotion, and this file has twice gone stale on exactly that unconfirmed
-  transition (Task 003, Task 004c).
+- **Its dominant failure mode is linguistic, not technical.** The most likely way to fail it is
+  to smooth a true-but-awkward sentence into a false-but-natural one - "our community garden"
+  instead of "a plot at Presidio Garden, one of the Community Gardens of Tucson". The spec
+  carries a table of these traps. Read it before writing copy, not after.
+- **The organization name is filled in `site.config.ts` and forbidden in `src/`.** See the
+  dated naming decision in section 4.
+- **`npm run check:config` must still exit non-zero when you finish**, on `GROUP_DOMAIN` and
+  the two Mastodon tokens. Do not fill a token or weaken the check to turn `verify` green.
 
 Tasks 001, 001b, 001c, 002, 003, 004, 004b and 004c are complete and merged to `main` - 003 as
-`faf489e`, 004c as `bcef6db`, 004 as `15dd164`, 004b as `0fd7d5e` - and the working tree is
-clean. **Do not infer commit state from a status word in this file; check `git log` /
-`git status`.** These documents have gone stale on exactly this point twice.
+`faf489e`, 004c as `bcef6db`, 004 as `15dd164`, 004b as `0fd7d5e`, with the promotion and
+memory-sync commits after it - and the working tree was clean at promotion. **Do not infer
+commit state from a status word in this file; check `git log` / `git status`.** These documents
+have gone stale on exactly this point three times.
 
 ### Required inputs
 

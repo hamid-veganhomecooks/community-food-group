@@ -19,10 +19,11 @@ deleted.
 
 Two tracks are independent and can proceed in parallel:
 
-- **Track A (unblocked today):** Tasks 001-004 and 004b. Purely structural. Requires no owner
-  facts - 004b centralizes the identity values without filling them. **Tasks 001-004 and 004c
-  are complete and merged; 004b is the only Track A task left, and it is active.**
-- **Track B (blocked on owner input):** Tasks 005-007.
+- **Track A (complete):** Tasks 001-004, 004b and 004c. Purely structural. Required no owner
+  facts - 004b centralized the identity values without filling them. **Every Track A task is
+  complete and merged to `main`; the working tree is clean.**
+- **Track B (blocked on owner input):** Tasks 005-007. **Task 005 is now unblocked and
+  active** - see its entry below.
 
 Tasks 008-009 close out the release and depend on both tracks.
 
@@ -142,18 +143,19 @@ notes about itself, not just to the repository - a correction is logged in
 
 ## Task 004b - Site config and the fork-and-adopt surface
 
-**Status: ACTIVE**, promoted 2026-07-31. **Specified in `TASK_SPEC.md`, which is the only
-authority on its scope and acceptance.**
-**Blocked on:** nothing. Task 004 is merged as `15dd164` and the working tree is clean, so the
-`Header.astro` / `Footer.astro` collision that sequenced this behind 004 is resolved.
-**Touches:** new `site.config.ts` and `scripts/check-config.mjs`; `verify-baseline.sh`,
-`package.json`, `README.md`; and `Header.astro`, `Footer.astro`, `BaseLayout.astro`,
-`content.config.ts`, `index.astro`, `MastodonFeed.astro`.
-**Sequenced before Task 005** so that content work is not written and then immediately
-refactored into config.
+**Status: COMPLETE**, 2026-07-31. Merged to `main` as `0fd7d5e`. Verification record in
+`docs/DECISIONS_ARCHIVE.md` under `## Verification history`.
 
-The planned scope that stood here has been **cut into `TASK_SPEC.md`**, not copied. The reuse
-model it serves is in `PROJECT_CONTEXT.md` section 2, which remains its authority.
+Collapsed this group's identity constants into one typed `site.config.ts`, replaced all eight
+in-scope hardcoded occurrences of the invented organization name with config reads, tokenized
+the invented tagline out of `og:description`, and shipped zero-dependency
+`scripts/check-config.mjs` wired into the **uncached** half of `npm run verify`.
+
+**It ships with `npm run check:config` deliberately red**, because `GROUP_NAME`,
+`GROUP_TAGLINE`, `GROUP_DOMAIN` and the two Mastodon tokens were genuinely unknown owner
+inputs. That is the guard the task exists to build, not a regression.
+
+The dated decisions are in `PROJECT_CONTEXT.md` section 4, which is their only copy.
 
 **Three things changed at promotion, from grepping the repository rather than trusting this
 entry:**
@@ -172,11 +174,17 @@ entry:**
    a footer *prose* blurb, which does not. This raises a new owner input, recorded in
    `PROJECT_CONTEXT.md` section 4.
 
-The promoted spec also resolves two ambiguities this entry left open: the project's **two**
+The promoted spec also resolved two ambiguities this entry left open: the project's **two**
 incompatible token spellings (`GROUP NAME` with a space, `GROUP_DOMAIN` with an underscore)
-are normalized to one greppable pattern, and the `SocialAccount | null` type is given an
+were normalized to one greppable pattern, and the `SocialAccount | null` type was given an
 explicit rule for *unknown* versus *deliberately absent* - the Mastodon handle is unknown, so
 it carries a token rather than the `null` this entry's wording would have suggested.
+
+**Carries one durable lesson.** A validator that scans source text for a pattern cannot tell
+"this string is a token" from "this comment describes tokens". The first draft of
+`site.config.ts`'s own doc comments spelled out token-shaped strings and would have made
+`check:config` permanently unpassable. Caught by **running** the validator and reading its
+output, not by inspecting the diff - which is the behaviour constraint 3.10 exists to force.
 
 ---
 
@@ -225,106 +233,43 @@ dedicated under CC0 is needed. Cheap now, painful to retrofit once patches have 
 
 ## Task 005 - Real content, on-model
 
-**Status:** queued. **Track B.** Next after Task 004b.
-**Blocked on:** the organization name in `PROJECT_CONTEXT.md` section 4. Do not start
-otherwise. *Note: Task 004b reduces this blocker but does not remove it - the name will live
-in one config field rather than eight, but the prose still has to be written knowing what the
-group is called.* Three former blockers cleared: the contact route is email to `info@GROUP_DOMAIN`
-with no chat link anywhere, the **geographic scope is Tucson, Arizona** and the `CITY` token
-is retired, and the **garden is settled in full**. Whether the cook and distribution sites are
-named publicly is still open, but that gates only those records - the garden record can be
-written today.
+**Status: ACTIVE**, promoted 2026-07-31. **Specified in `TASK_SPEC.md`, which is the only
+authority on its scope and acceptance.**
+**Blocked on:** nothing. Every blocker cleared at promotion - see below.
+**Touches:** `site.config.ts`; `about.mdx`, `join.mdx`, `donate.mdx` -> `help.mdx`;
+`donate.astro` -> `help.astro`; `index.astro`, `locations.astro`, `posts.astro`;
+`Header.astro`, `Footer.astro`; `locations.json`, `content.config.ts`; `README.md`.
 
-**This task inherits one occurrence from Task 004b.** `about.mdx:9` reads
-`# About Our Community Food Group`, and 004b deliberately leaves it - fixing it would mean
-either interpolating config into prose, which section 2 forbids, or rewriting this task's copy
-early. It disappears when `about.mdx` is rewritten wholesale. It is also the worked example of
-what Task 009's *judgement* half has to catch: an invented fact that is not a token and
-therefore cannot be caught by a pattern.
+The planned scope that stood here has been **cut into `TASK_SPEC.md`**, not copied. The model
+it serves is in `PROJECT_CONTEXT.md` section 2 and the garden rulings in section 4, which
+remain their authority.
 
-**Blockers will be re-confirmed in an `ARCHITECT` session after Task 004b lands**, before this
-task is promoted.
+**Six owner inputs were answered at promotion**, all recorded in `PROJECT_CONTEXT.md`
+section 4: the organization name, the tagline, that **no cook or distribution site is named
+publicly** (so the garden is the only record), that **the food is vegan and the site says so**,
+the `/donate` -> `/help` rename, and that food-safety language is deferred rather than written.
 
-### Why
+**Four things changed at promotion, from grepping the repository rather than trusting this
+entry:**
 
-Every current MDX page describes a different organization than the real one: farm surplus
-collection, three staffed locations, membership benefits, and a fabricated "90% of all
-donations" statistic. This is a rewrite against a new model, not a find-and-replace.
+1. **`index.astro` was missing from this entry's scope and could not stay out.** It imports
+   `locations.json` directly, so the data migration breaks it - not optional. Its prose is also
+   off-model scaffold carrying the same storefront framing this entry flags in `locations.astro`.
+2. **The single garden record breaks the homepage layout.** `locations.slice(0, 3)` renders one
+   card in a three-column grid. A layout decision, not a data swap.
+3. **The union ships with one variant, not three.** This entry sketched garden, distribution
+   and cook-session on the assumption distribution sites would be named. The owner answered
+   that none are, collapsing two of the three to zero records; shipping unexercised branches
+   would violate constraints 3.2 and 3.4.
+4. **`README.md` contradicts itself and one half is currently false.** Line 209 claims the
+   location records describe real places; lines 11-14 of the same file say they are invented
+   scaffold. Task 004b wrote the former in anticipation of this task.
 
-### The garden changes the data model, not just the copy
-
-Owner input, 2026-07-31. **The full decision, the verified third-party details and the exact
-permitted framing live in `PROJECT_CONTEXT.md` section 4, which is their only copy. Read it
-before writing garden copy.** Summarized here only insofar as it changes the shape of this
-task:
-
-**It is a schema change, not a values change.** This entry previously assumed one flat shape
-for every site, with `hours` collapsed into a cook-and-distribute rhythm. That is wrong. A
-distribution point deliberately publishes **no** time, because the schedule is set close to
-the date and publishing it in advance would be inaccurate. The garden has a real cadence and a
-real street address, but must **not** get a directions link, because the site requires a
-membership the reader does not have. One flat shape forces one of them to carry a falsehood or
-a dead field. Use a `kind` discriminator - garden, distribution, cook-session - make the Zod
-schema a discriminated union rather than one optional-heavy object, and make the address, the
-map link and the cadence render per `kind`.
-
-**The card affordance survives; the record does not.** The existing `community-garden` entry
-in `src/data/locations.json` is scaffold: `789 Garden Lane, Springfield`, `(555) 456-7890`,
-`garden@communityfood.org`, and seven days of 8:00-6:00 hours. Every one of those is invented
-and every one falls under constraint 1. **"Keep the community garden card" means keep the card
-for the real plot, not keep the row.**
-
-**Two phrases will fail review if they reach the page.** "Our community garden" - the group
-rents a plot at a garden run by someone else - and "members", which now means three
-incompatible things. Section 4 explains both.
-
-**"Community Garden" is currently also a feature chip on `main-hub`.** There is one plot. The
-chip vocabulary - "Workshop Space", "Learning Center", "Community Outreach" - is invented
-alongside the rest and is not a naming problem to fix in place.
-
-### Planned scope
-
-- Rewrite `about.mdx` around the actual model: people in Tucson gather, cook together, and
-  hand food directly to neighbors. Cooking classes and cultural events are described at
-  whatever status the owner confirms - as intentions if they are intentions. **The garden
-  belongs in this page, not only on the locations card**: produce from the plot feeds the
-  distribution effort, which is the one place the two activities connect.
-- Rewrite `join.mdx` for an affinity group: how someone actually shows up for a cook
-  session. Remove the invented time commitments, role tiers, and "member-only" benefits.
-  The call to action is **email `info@GROUP_DOMAIN`**, and a person replies. Per the
-  2026-07-30 decision: no chat link anywhere, do not promise an instant join or a published
-  schedule, and do not frame the reply as an application or a screening step.
-- Replace `donate.mdx` with **Ways to Help**, per the 2026-07-30 decision: concrete needs
-  such as ingredients, containers, kitchen time, transport. The 90% claim is withdrawn and
-  must not reappear in any form.
-- Replace `src/data/locations.json` with a data file matching the real model, per the
-  2026-07-30 and 2026-07-31 decisions. The schema changes, not just the values: `phone` and
-  `email` per site are removed because they do not exist, staffed `hours` become a
-  cook-and-distribute rhythm for distribution sites, and a `kind` discriminator separates the
-  garden from them. See the garden note above.
-- Add a Zod schema for that data file, as a **discriminated union on `kind`**. It is currently
-  imported raw with no validation.
-- Update `locations.astro` to the new shape. It currently renders address, a map link,
-  `Object.entries(hours)`, `phone` and `email` for every record; under the new schema those
-  blocks become conditional on `kind`. Rename the route if the owner prefers different
-  language - the page's `h1` is "Find Us" and its lede reads "Visit any of our locations to
-  get involved, pick up food", which is storefront framing that outlives a data-only fix.
-- Consider a food-safety note, if the owner wants one. Groups handing out home-cooked food
-  often want to state their practices plainly.
-
-### Acceptance
-
-- No fabricated address, phone number, email, statistic, or founding date remains anywhere
-  in `src/`.
-- Every factual claim traces to a specific owner input.
-- Aspirational programs are worded as intentions. The garden plot is **not** one of these - it
-  is established and is described in the present tense.
-- **The garden copy survives the two framing traps**: no "our community garden" anywhere, and
-  no use of "member" to describe who receives food.
-- **No `CITY` token remains anywhere in `src/`.** Verify by grep. The city is Tucson and is
-  written out.
-- The garden record has an address and **no** map link; the distribution records have a
-  cadence and **no** published time. Confirm both in the built HTML, not in the JSON.
+**The promoted spec also resolves a conflict this entry created.** It required "add a Zod
+schema" while `PROJECT_CONTEXT.md` records that importing `zod` directly is unsafe today and
+needs an owner decision under constraint 3.6. Resolved by using the content layer's `file()`
+loader with the `z` already re-exported from `astro:content` - the platform option constraint
+3.6 prefers, and no new dependency.
 
 ---
 
