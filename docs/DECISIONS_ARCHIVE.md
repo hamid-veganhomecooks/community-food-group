@@ -155,3 +155,73 @@ resolving to 1280px at both widths, exactly one `h1` per route, no skipped headi
 and 661 `prose` occurrences in `dist/_astro/*.css` where there had previously been zero.
 
 Browser tooling setup for this environment is documented in `docs/ENVIRONMENT.md`.
+
+### Task 003, verified 2026-07-31
+
+Brand system, palette, self-hosted fonts. Merged to `main` as `faf489e`. Verified by
+execution on Node v22.23.2:
+
+- `npm ci` exits 0, `npm audit` reports 0 vulnerabilities.
+- `npm run check` reports 0 errors, 0 warnings, 12 hints (the zod deprecation).
+- `npm run build` emits the same six routes; fonts self-hosted (`Copying fonts (2 files)`).
+- `npm run check:contrast` passes all sixteen role pairs, with ratios matching the audited
+  Direction B figures, and was **proven to fail** - correctly naming the broken pairs - when a
+  token was deliberately weakened. A deliberately weakened token dropped two pairs to ~2.8:1.
+- No literal palette name (`terracotta`/`sage`/`cream`/`earthy`) or hex value remained in
+  `src/`; no `fonts.googleapis.com` / `fonts.gstatic.com` reference remained in `dist/`.
+- `.container` and `.prose` remained unlayered; the Task 002 type scale and spacing tokens
+  byte-for-byte unchanged (targeted diff).
+- Browser-verified at 375px and 1440px across all six routes: `verify.mjs` passed, and the new
+  theme's computed colours were confirmed applied (`h2` rendering `rgb(40,88,61)` =
+  `--color-brand-ink`). Focus rings confirmed visible (white 2px offset + green 4px ring) via
+  computed `box-shadow` on a focused button.
+
+**Font self-hosting implementation detail.** Astro 7.1.6's `fonts` config key sits at the
+config **top level**, not under `experimental` - only `experimental_getFontFileURL` carries
+that prefix - so it is stable and needed no new dependency. `astro.config.mjs` configures
+`fontProviders.google()` for Inter with `display: 'swap'`; the provider fetches the file at
+build time and Astro serves it from the site's own origin with a metrics-matched local
+fallback. Confirmed in `dist/`: zero matches for the Google Fonts hosts, two self-hosted
+`.woff2` files under `dist/_astro/fonts/`. **`@fontsource-variable/inter` was never installed
+and is not a dependency of this project** - a plausible-looking claim that a future session
+should not repeat.
+
+### Task 004, verified 2026-07-31
+
+Accessibility and shell correctness. Merged to `main` as `15dd164`. Verified by execution on
+Node v22.23.2:
+
+- `npm run check` reports 0 errors, 0 warnings, 12 hints (unchanged).
+- `npm run verify` exits 0. `check:contrast` now runs inside it, in the **uncached** half -
+  confirmed to re-run after touching only `global.css` even on a dependency-cache hit. All
+  sixteen role pairs still pass; no colour moved.
+- `npm run build` emits the same six routes.
+- `grep -rn 'role="menubar"\|role="menuitem"\|role="none"' src/` returns nothing. The
+  application-menu pattern is gone from both navigation lists, and the
+  `aria-label="Main navigation"` that mis-named the `<header>` landmark is removed. The mobile
+  menu is a labelled `<nav>`, not a labelled `<ul>` with an inert label.
+- `grep -rn 'href="#"' src/` returns nothing. The footer email link points at
+  `mailto:info@GROUP_DOMAIN` (token, deliberately unfilled); the Mastodon link is removed
+  entirely rather than pointed at a guessed instance.
+- The footer's three redundant `aria-label`s (`"Mastodon"` against "Follow us on Mastodon",
+  `"Email"` against "Email us", `"Volunteer"` against "Volunteer") are deleted rather than
+  lengthened, closing the WCAG 2.5.3 failure; decorative emoji wrapped `aria-hidden`.
+- A single `:focus-visible` rule (`a, button, [tabindex]`, using `--color-focus`) supplies the
+  project focus indicator. `.btn-primary` / `.btn-secondary` keep their own rings, which win on
+  specificity, so nothing double-rings.
+- The mobile menu keyboard contract is complete: Escape closes from a link inside or from the
+  toggle and returns focus to the toggle; tabbing past the last link closes without stranding
+  focus; all four close paths share one `closeMenu()`. **No focus trap was added.** The
+  pre-existing, already-correct `isHidden` `aria-expanded` inversion was left untouched.
+- The `prefers-reduced-motion: reduce` block is **preventive hygiene** - the project animates
+  only colour and shadow, so it closed no observed defect and was reported as such.
+- Type scale, spacing tokens, and the unlayered `.container` / `.prose` byte-for-byte
+  unchanged (targeted diff).
+- Browser-verified: `verify.mjs` tabs every focusable element on all six routes at 375px and
+  1440px asserting a visible `outline`/`box-shadow` from computed style, and drives the full
+  mobile-menu keyboard contract including an explicit no-trap assertion.
+
+**Durable lesson.** The task spec claimed the Playwright harness already had "focus-visible
+traversal groundwork". It had none. The claim was inherited from an earlier document rather
+than checked. Constraint 3.4 ("observed state beats planned state") governs this project's
+notes about itself, not only the repository. Correction logged in `docs/ENVIRONMENT.md`.

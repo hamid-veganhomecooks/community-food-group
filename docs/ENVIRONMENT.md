@@ -30,7 +30,33 @@ so a shell started before the alias change - or any subshell of one - keeps repo
 version however many times nvm is reloaded. That is stale `PATH`, not a broken alias. Checking
 with `bash -ic 'node -v'` from such a shell reproduces the false negative.
 
-If a session does land on the wrong version, select the pinned one explicitly:
+**[2026-07-31] The default alias cannot rescue an agent or tool shell, for a second and
+independent reason: nvm never loads there at all.** Ubuntu's stock `~/.bashrc` returns early
+for non-interactive shells (the `case $- in *i*) ;; *) return;; esac` guard near the top), and
+the nvm loader sits *below* it, around line 125. A tool-driven shell has no `i` in `$-`, so
+`.bashrc` returns before nvm is sourced and `~/.nvm/alias/default` is never consulted. This is
+the same placement trap documented for `LD_LIBRARY_PATH` in section 3.
+
+The two causes compound and look identical from inside the shell. Tell them apart:
+
+```bash
+export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"
+node -v            # what this shell is actually using
+nvm version default # what the alias resolves to
+```
+
+If they disagree, it is stale inherited `PATH` and the alias is fine. Observed on 2026-07-31:
+`node -v` reported v20.20.2 while `nvm version default` reported v22.23.2, in a session whose
+`PATH` predated the alias change.
+
+**Practical consequence.** An agent session inherits `PATH` from the terminal it was launched
+from, so one launched from a *fresh* terminal is on 22 and every subshell it spawns is too.
+One launched from a pre-alias terminal is stuck on 20 for its whole lifetime and cannot fix
+itself by reloading nvm. **Relaunching from a new terminal is the durable fix; the command
+below is the per-session workaround.**
+
+If a session does land on the wrong version, select the pinned one explicitly - and note this
+must be repeated in **every** command, since shell state does not persist between tool calls:
 
 ```bash
 export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use

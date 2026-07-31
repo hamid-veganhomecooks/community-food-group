@@ -34,9 +34,11 @@ An `IMPLEMENTER` never writes `ROADMAP.md`, so it cannot drift mid-task.
 
 Two files exist so this one can stay small. **Do not load them by default.**
 
-- `docs/DECISIONS_ARCHIVE.md` - superseded decisions, resolved defects, and the rationale
-  behind rules that are already stated here. Read it only when a rule here looks arbitrary
-  or you are about to propose reversing one. Never treat it as current authorization.
+- `docs/DECISIONS_ARCHIVE.md` - superseded decisions, resolved defects, the rationale behind
+  rules that are already stated here, and the **per-task verification records** for completed
+  work. Read it only when a rule here looks arbitrary, when you are about to propose reversing
+  one, or to settle a question about how a finished task was confirmed. Never treat it as
+  current authorization.
 - `docs/ENVIRONMENT.md` - workstation setup: Node selection, the cached baseline
   verification, and the persistent Playwright/Chromium install. Read it only when a task
   needs a browser or the baseline behaves unexpectedly.
@@ -323,131 +325,82 @@ to `docs/DECISIONS_ARCHIVE.md`.
   silently reintroduces a shipped bug. This has been the shape of two separate defects here:
   treat "my Tailwind override is being ignored" as a layer question first.
 - **[2026-07-31] Palette Direction B ("Garden") is implemented.** Green leads, clay supports.
-  The terracotta/sage/cream/earthy tokens are **deleted** (not renamed) from
-  `src/styles/global.css` and from every component and page; confirmed by grep across `src/`.
-  All sixteen role pairs pass AA; figures are in `docs/DECISIONS_ARCHIVE.md` and reproduced
-  live by `npm run check:contrast`.
-- **Colour is a two-layer token system, implemented in `src/styles/global.css`.** Layer 1 is a
-  `:root` block of fourteen **brand-input** values, six brand/accent (`--brand-green`,
-  `--brand-green-hover`, `--brand-green-ink`, `--brand-clay`, `--brand-clay-ink`,
-  `--brand-clay-soft`) and eight neutrals (`--neutral-paper`, `--neutral-white`,
-  `--neutral-mist`, `--neutral-charcoal`, `--neutral-slate`, `--neutral-fog`, `--neutral-haze`,
-  `--neutral-line`). These are named **outside** the `--color-*` namespace on purpose, so
-  Tailwind never turns them into utility classes - a reusing group edits only this block.
-  Layer 2 is sixteen **semantic roles** in the `@theme` block (`--color-surface`,
-  `--color-ink`, `--color-brand`, `--color-brand-ink`, `--color-accent`, `--color-accent-ink`,
-  `--color-focus`, ...), each a `var()` reference into Layer 1. Templates consume only Layer 2.
-  **`--color-brand` (fills) and `--color-brand-ink` (text on light) stay separate roles**, as
-  do `--color-accent`/`--color-accent-ink`; collapsing either pair is how the previous palette
-  failed nine measured pairs.
+  The terracotta/sage/cream/earthy tokens are **deleted** (not renamed) from `src/` entirely.
+  All sixteen role pairs pass AA; the audited figures are in `docs/DECISIONS_ARCHIVE.md` and
+  are reproduced live by `npm run check:contrast`.
+- **Colour is a two-layer token system in `src/styles/global.css`**, and that file is the only
+  authority on the token names - **they are deliberately not enumerated here**, because a
+  duplicate list in a document drifts from the source. `README.md` documents them for adopters.
+  The contract, which is what binds a task:
+  - **Layer 1** is a `:root` block of fourteen **brand inputs**, named *outside* the
+    `--color-*` namespace on purpose (`--brand-*`, `--neutral-*`) so Tailwind never generates
+    utility classes from them. A reusing group edits only this block.
+  - **Layer 2** is sixteen **semantic roles** in the `@theme` block (`--color-*`), each a
+    `var()` reference into Layer 1. **Templates consume only Layer 2.** A literal hex or a
+    colour name like `terracotta` in a component is the bug this system exists to prevent.
+  - **Fill roles and text roles stay separate** - `--color-brand` (fills) vs
+    `--color-brand-ink` (text on light), and likewise for `accent`. Collapsing either pair is
+    exactly how the previous palette failed nine measured pairs.
 - **A contrast validation script exists**: `scripts/check-contrast.mjs`, wired as
   `npm run check:contrast`, plain Node with **zero dependencies**. It parses the token values
   directly out of `src/styles/global.css` (no duplicate list to drift), resolves `var()` chains
   from role to brand input to hex, and checks sixteen named role pairs actually used by the
-  templates against WCAG 2.2 AA (4.5:1 text, 3.0:1 for the two focus-ring pairs). Confirmed to
-  fail loudly: a deliberately weakened token dropped two pairs to ~2.8:1 and the script exited
-  non-zero, naming both. **Not yet part of `npm run verify`** - `scripts/verify-baseline.sh`
-  was outside Task 003's scope and was not edited, so contrast checking is currently a separate
-  manual step.
-- **The type scale is semantic and fluid.** Steps are named for role, not size:
-  `--text-display`, `--text-title`, `--text-heading`, `--text-subheading`, `--text-lead`,
-  `--text-body`, `--text-label`. Each is a `clamp()`, so one class replaces a breakpoint
-  chain and `text-title` supersedes `text-4xl md:text-5xl lg:text-6xl`. A template that
-  needs `md:text-*` on a heading is evidence the scale is wrong, not that the page is
-  special. Line height and letter spacing travel with each step; **font weight deliberately
-  does not**.
-- **The measure is `--container-measure`, 39rem**, about 69 characters at the `prose-lg`
-  size, measured in a browser at 1440px. `.prose-card` sizes itself to
-  `measure + 2 * gutter`, so reading width stays constant however the padding scales.
-- **Section rhythm is three mutually exclusive steps:** `.section-lg`, `.section`,
-  `.section-tight`, so consecutive bands can differ rather than stacking identically.
-- **[2026-07-31] Fonts are self-hosted via Astro's built-in Fonts API, not
-  `@fontsource-variable/inter`.** Verified that Astro 7.1.6's `fonts` config key sits at the
-  config top level, not under `experimental` (only `experimental_getFontFileURL` carries that
-  prefix), so it is stable and needs no new dependency. `astro.config.mjs` now configures
-  `fontProviders.google()` for Inter with `display: 'swap'`; the provider fetches the font file
-  at **build time** and Astro serves it from the site's own origin with a metrics-matched
-  local fallback, so the browser never contacts Google and no visitor IP is sent to a third
-  party. Confirmed in `dist/`: zero matches for `fonts.googleapis.com` or `fonts.gstatic.com`,
-  two self-hosted `.woff2` files under `dist/_astro/fonts/`. `@fontsource-variable/inter` was
-  never installed and is **not** a dependency of this project.
-  **Consequence for the repository map:** `astro.config.mjs` is now part of the design-system
-  surface, not just deployment config - a future palette or type-system task may need to touch
-  it for font reasons even though Task 003's original allowed-scope list did not include it.
-  (That gap was hit live during Task 003 and resolved by an explicit owner-approved scope
-  expansion rather than a silent edit.) Inter stays the single family; pairing a display face
-  is a separate, still-open decision.
+  templates against WCAG 2.2 AA (4.5:1 text, 3.0:1 for the two focus-ring pairs). It has been
+  **proven to fail**, not merely to pass. **Task 004 wired it into the uncached half of
+  `npm run verify`**; it is no longer a manual step. It is the shape to copy for
+  `check-config.mjs` in Task 004b.
+- **The type scale is semantic and fluid.** Steps are named for **role, not size**
+  (`--text-display`, `--text-title`, ... `--text-label`) and each is a `clamp()`, so one class
+  replaces a breakpoint chain: `text-title` supersedes `text-4xl md:text-5xl lg:text-6xl`.
+  **A template that needs `md:text-*` on a heading is evidence the scale is wrong, not that
+  the page is special.** Line height and letter spacing travel with each step; **font weight
+  deliberately does not**. The steps, the 39rem measure (~69 characters, measured in a browser
+  rather than estimated) and the three mutually exclusive section-rhythm classes
+  (`.section-lg` / `.section` / `.section-tight`) are defined in `src/styles/global.css` and
+  documented for adopters in `README.md`. Same rule as the colour tokens: **the source is the
+  authority, not a list here.**
+- **[2026-07-31] Fonts are self-hosted via Astro's built-in Fonts API**, configured in
+  `astro.config.mjs`, with **no font dependency in `package.json`**. The font file is fetched
+  at **build time** and served from the site's own origin, so the browser never contacts Google
+  and no visitor IP reaches a third party. Inter is the single family; pairing a display face is
+  a separate, still-open decision. Implementation and verification detail is in
+  `docs/DECISIONS_ARCHIVE.md`.
+  **Consequence that stays live:** `astro.config.mjs` is part of the **design-system** surface,
+  not just deployment config, because self-hosting fonts is configured there. A future palette
+  or type task may legitimately need it in scope. Task 003's allowed-scope list omitted it, hit
+  the gap mid-task, and resolved it by an explicit owner-approved scope expansion rather than a
+  silent edit - which is the behaviour the protocol wants when scope and repository disagree.
 
 ### Verified repository state on 2026-07-31
 
-**Tasks 001, 001b, 001c and 002 are complete** and merged to `main` (`8ad91ad`).
+**Tasks 001, 001b, 001c, 002, 003, 004 and 004c are complete and merged to `main`**, and the
+working tree is clean. Task 002 as `8ad91ad`, Task 003 as `faf489e`, Task 004c as `bcef6db`,
+Task 004 as `15dd164`.
 
-**Task 003 (brand system, palette, self-hosted fonts) is complete and merged to `main` as
-`faf489e`.** The working tree is clean. *(Corrected 2026-07-31 at Task 004 promotion: this
-paragraph previously said the work was uncommitted, which was true when written and stale by
-the time it was read. Verify commit state against `git log`, not against this file.)* Verified
-by execution on Node v22.23.2:
+**Do not infer commit state from a status word in this file - check `git log` / `git status`.**
+These documents have gone stale on exactly this point twice: once for Task 003 and once for
+Task 004c, in both cases because a status was true when written and read after it stopped
+being true.
 
-- `npm ci` exits 0, `npm audit` reports **0 vulnerabilities**.
-- `npm run check` reports **0 errors, 0 warnings**, 12 hints (the zod deprecation below).
-- `npm run build` emits the same six routes; fonts are self-hosted (`Copying fonts (2 files)`).
-- `npm run check:contrast` passes all sixteen role pairs, with ratios matching the audited
-  Direction B figures, and was proven to fail (and correctly name the broken pairs) when a
-  token was deliberately weakened.
-- No literal palette name (`terracotta`/`sage`/`cream`/`earthy`) or hex value remains in
-  `src/`; no `fonts.googleapis.com`/`fonts.gstatic.com` reference remains in `dist/`.
-- `.container` and `.prose` remain unlayered; the Task 002 type scale and spacing tokens are
-  byte-for-byte unchanged (confirmed by targeted diff).
-- Browser-verified with the Playwright harness (`docs/ENVIRONMENT.md`) at 375px and 1440px
-  across all six routes: `verify.mjs` passes, and the new theme's computed colours were
-  confirmed applied (e.g. `h2` renders `rgb(40,88,61)` = `--color-brand-ink`). Focus rings
-  were separately confirmed visible (white 2px offset + green 4px ring) via computed
-  `box-shadow` on a focused button.
+**The green baseline, on Node v22.23.2.** These are the numbers a task compares against; a
+change to any of them is a finding, not noise:
 
-Green baseline, reproducible with `npm run verify`: unchanged mechanics from the note above.
-`scripts/verify-baseline.sh` was not edited in Task 003, so `check:contrast` was a manual step
-until **Task 004 wired it into the uncached half**; it now runs inside `npm run verify`.
+| Check | Expected result |
+| --- | --- |
+| `npm ci` / `npm audit` | exits 0 / **0 vulnerabilities** |
+| `npm run check` | **0 errors, 0 warnings, 12 hints** (the zod deprecation) |
+| `npm run build` | the same **six** routes |
+| `npm run check:contrast` | all **sixteen** role pairs pass |
+| `npm run verify` | exits 0 |
 
-**[2026-07-31] Task 004 (accessibility and shell correctness) is complete and merged to `main`
-as `15dd164`.** The working tree is clean. Verified by execution on Node v22.23.2:
+`npm run verify` runs `check`, `check:contrast` and `build` in its **uncached** half, so a
+source edit always re-runs them; only `npm ci` / `npm audit` are cached, keyed on the lockfile
+and Node version. Task 004 wired `check:contrast` in - it was a manual step before that.
 
-- `npm run check` reports **0 errors**, 0 warnings, 12 hints (the zod deprecation, unchanged).
-- `npm run verify` exits 0. `npm run check:contrast` now runs inside it, in the **uncached**
-  half alongside `astro check` and `astro build` - confirmed to re-run after touching only
-  `global.css` even when the dependency half is a cache hit. All sixteen role pairs still
-  pass; no colour moved.
-- `npm run build` emits the same six routes.
-- `grep -rn 'role="menubar"\|role="menuitem"\|role="none"' src/` returns nothing. The
-  application-menu ARIA pattern is gone from both navigation lists in `Header.astro`, and the
-  `aria-label="Main navigation"` that mis-named the `<header>` landmark is removed. The mobile
-  menu is now a labelled `<nav>`, not a labelled `<ul>` with an inert label.
-- `grep -rn 'href="#"' src/` returns nothing. The footer email link now points at
-  `mailto:info@GROUP_DOMAIN` (owner-fill token, deliberately still unfilled); the Mastodon
-  link is **removed entirely** rather than pointed at a guessed instance - it returns in Task
-  006 or 007 with `rel="me"` once the handle exists.
-- The footer's three redundant `aria-label`s (`"Mastodon"` against "Follow us on Mastodon",
-  `"Email"` against "Email us", `"Volunteer"` against "Volunteer") are deleted rather than
-  lengthened, closing the WCAG 2.5.3 failure; decorative emoji are wrapped `aria-hidden`.
-- A single `:focus-visible` rule in `global.css` (`a, button, [tabindex]`, using the existing
-  `--color-focus` role) supplies the project's focus indicator. `.btn-primary` /
-  `.btn-secondary` keep their own rings, which win on specificity, so nothing double-rings.
-- The mobile menu's keyboard contract is complete: Escape closes it from a link inside or from
-  the toggle and returns focus to the toggle; tabbing past the last link closes it without
-  stranding focus; all four close paths (toggle click, link click, Escape, focus-leaving)
-  share one `closeMenu()` function. **No focus trap was added.** The pre-existing, already-
-  correct `isHidden` `aria-expanded` inversion was left untouched, as instructed.
-- A `prefers-reduced-motion: reduce` block was added to `global.css` as preventive hygiene -
-  the project animates only colour and shadow today, so this closes no observed defect and is
-  reported as such, not as a fix.
-- The Task 002 type scale, the spacing tokens, and the **unlayered** `.container` / `.prose`
-  blocks are confirmed byte-for-byte unchanged by targeted diff.
-- Browser-verified with the Playwright harness (`docs/ENVIRONMENT.md`). **The harness's own
-  claim to already have "focus-visible traversal groundwork" did not hold up** - it had none -
-  so it was extended rather than trusted; see the correction logged in `docs/ENVIRONMENT.md`.
-  It now tabs through every focusable element on all six routes at both 375px and 1440px,
-  asserting a visible `outline` or `box-shadow` from computed style, and separately drives the
-  mobile menu's full keyboard contract (Escape from inside, Escape from the toggle,
-  tab-past-last-link, focus return, and an explicit no-trap assertion). All checks pass.
+**The per-task execution records for Tasks 002, 003 and 004 are in
+`docs/DECISIONS_ARCHIVE.md` under `## Verification history`.** They are evidence that finished
+work was verified, not input to the next task. Read them only to settle a question about how
+something was confirmed.
 
 ### Open defects
 
