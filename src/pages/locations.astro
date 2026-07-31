@@ -11,26 +11,23 @@ import { MapPin, Clock, Phone, Mail } from 'lucide-astro';
 >
   <div class="section bg-cream">
     <div class="container">
-      <div class="max-w-3xl mx-auto text-center mb-12">
-        <h1 class="text-4xl md:text-5xl font-bold text-terracotta-dark mb-4">
+      <div class="max-w-3xl mx-auto text-center mb-stack">
+        <h1 class="text-title font-bold text-terracotta-dark">
           Find Us
         </h1>
-        <p class="text-lg text-gray-600">
+        <p class="text-lead text-gray-600 max-w-lede mx-auto mt-stack-sm">
           Visit any of our locations to get involved, pick up food, or learn more about our programs.
         </p>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-stack">
         {locations.map((location) => (
-          <article
-            id={location.id}
-            class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
-          >
-            <h2 class="text-2xl font-bold text-terracotta mb-3">
+          <article id={location.id} class="card">
+            <h2 class="text-subheading font-bold text-terracotta mb-stack-sm">
               {location.name}
             </h2>
 
-            <div class="space-y-3 text-gray-700">
+            <div class="space-y-4 text-gray-700">
               <div class="flex items-start space-x-2">
                 <MapPin class="w-5 h-5 text-terracotta shrink-0 mt-0.5" aria-hidden="true" />
                 <div>
@@ -39,7 +36,7 @@ import { MapPin, Clock, Phone, Mail } from 'lucide-astro';
                     href={`https://www.google.com/maps?q=${location.coordinates.lat},${location.coordinates.lng}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="text-sm text-terracotta hover:text-terracotta-dark"
+                    class="text-label text-terracotta hover:text-terracotta-dark"
                     aria-label={`Get directions to ${location.name}`}
                   >
                     Get Directions →
@@ -51,7 +48,7 @@ import { MapPin, Clock, Phone, Mail } from 'lucide-astro';
                 <Clock class="w-5 h-5 text-terracotta shrink-0 mt-0.5" aria-hidden="true" />
                 <div>
                   <p class="font-medium text-gray-800">Hours:</p>
-                  <ul class="text-sm" aria-label="Operating hours">
+                  <ul class="text-label" aria-label="Operating hours">
                     {Object.entries(location.hours).map(([day, hours]) => (
                       <li class="flex justify-between gap-4">
                         <span class="capitalize">{day}</span>
@@ -82,12 +79,12 @@ import { MapPin, Clock, Phone, Mail } from 'lucide-astro';
             </div>
 
             {location.features && (
-              <div class="mt-4">
-                <h3 class="font-semibold text-gray-800 text-sm mb-2">Features:</h3>
+              <div class="mt-stack-sm">
+                <h3 class="text-label font-semibold text-gray-800 mb-2">Features:</h3>
                 <div class="flex flex-wrap gap-2">
                   {location.features.map((feature) => (
                     <span
-                      class="bg-sage-light/20 text-sage-dark px-3 py-1 rounded-full text-sm"
+                      class="bg-sage-light/20 text-sage-dark px-3 py-1 rounded-full text-label"
                     >
                       {feature}
                     </span>
@@ -96,7 +93,7 @@ import { MapPin, Clock, Phone, Mail } from 'lucide-astro';
               </div>
             )}
 
-            <p class="mt-4 text-gray-700 text-sm">
+            <p class="mt-stack-sm text-gray-700">
               {location.description}
             </p>
           </article>

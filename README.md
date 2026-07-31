@@ -3,7 +3,7 @@
 Public information site for a local mutual aid group that cooks together and distributes
 food directly to neighbours.
 
-Built with Astro 5, Tailwind CSS 3, and MDX. Static output, intended for Cloudflare Pages.
+Built with Astro 7, Tailwind CSS 4, and MDX. Static output, intended for Cloudflare Pages.
 
 > **This site is not ready to publish.**
 >
@@ -111,14 +111,84 @@ src/layouts/BaseLayout.astro
 src/styles/global.css
 ```
 
+## Typography and spacing
+
+Tailwind 4 is configured in CSS. There is no `tailwind.config.mjs` and recreating one will
+not work. Everything below is declared as `@theme` custom properties in
+`src/styles/global.css`, so a template names a token instead of inventing a value.
+
+### Type scale
+
+Steps are semantic, not t-shirt sizes, and each one is fluid: a `clamp()` interpolates
+between roughly a 320px and a 1200px viewport. **Write one class, not a breakpoint chain.**
+`text-title` replaces `text-4xl md:text-5xl lg:text-6xl`. Reaching for a breakpoint variant
+on a step means the scale is wrong, not that the page is special.
+
+| Token | Class | 375px | 1440px | Used for |
+| --- | --- | --- | --- | --- |
+| `--text-display` | `text-display` | 40px | 64px | The home hero `h1`, once per site |
+| `--text-title` | `text-title` | 32px | 48px | Interior page `h1` |
+| `--text-heading` | `text-heading` | 26px | 36px | Section `h2` |
+| `--text-subheading` | `text-subheading` | 20px | 24px | Card and sub-section headings |
+| `--text-lead` | `text-lead` | 18px | 21px | Standfirst paragraph under a heading |
+| `--text-body` | `text-body` | 17px | 17px | Body copy; also the `body` default |
+| `--text-label` | `text-label` | 14px | 14px | Small UI labels, chips, metadata |
+
+Line height and letter spacing travel with each size. Font weight deliberately does not, so
+a heading can be re-weighted without leaving the scale.
+
+### Vertical rhythm
+
+| Token | Class | 375px | 1440px | Used for |
+| --- | --- | --- | --- | --- |
+| `--spacing-section-lg` | `.section-lg` | 68px | 144px | Hero bands |
+| `--spacing-section` | `.section` | 51px | 96px | Standard page bands |
+| `--spacing-section-tight` | `.section-tight` | 34px | 56px | Closing or secondary bands |
+| `--spacing-stack` | `mt-stack`, `gap-stack` | 24px | 40px | Between blocks in a section |
+| `--spacing-stack-sm` | `mt-stack-sm` | 16px | 24px | Between tightly related blocks |
+| `--spacing-gutter` | `p-gutter` | 26px | 48px | Card inner padding |
+
+The three `.section*` classes are **mutually exclusive**; a band picks one. They exist so
+consecutive sections can differ, rather than stacking as identical bands.
+
+### Measure
+
+`--container-measure` (39rem) is the reading width for running body copy, about **69
+characters** at the `prose-lg` size, measured in a browser rather than estimated. It is
+deliberately far narrower than `.container`, which is a layout width and not a measure.
+
+The card and the measure are separate concerns. `.prose-card` sizes itself to
+`measure + 2 * gutter`, so the reading width stays constant however the padding scales.
+`max-w-lede` (42rem) is the slightly wider width for standfirst paragraphs.
+
+### Prose
+
+`@tailwindcss/typography` is registered with `@plugin` in `src/styles/global.css`.
+
+**The `.prose` customization is deliberately declared outside any cascade layer, and must
+stay there.** The plugin registers `prose` in the **utilities** layer, not the components
+layer, so a `.prose` override placed inside `@layer components` loses on layer order no
+matter its specificity, and silently does nothing. This was verified against the compiled
+stylesheet. The same fact is why one `.prose` block also governs `prose-lg`.
+
+`.container` is unlayered for the same class of reason. Do not move either into a layer.
+
+Headings inside prose get generous space above and tight space below, so a heading groups
+with the text it introduces instead of floating midway between two blocks.
+
+### Heading case convention
+
+- **Title Case** for page titles (`h1`) and section headings (`h2`).
+- **Sentence case** for sub-headings (`h3` and below), UI labels, buttons, and links.
+
+Headings inside the MDX documents still mix both. They are brought into line in Task 005,
+which rewrites that copy anyway.
+
 ## Known gaps
 
 Recorded so they are not mistaken for finished work. Details and sequencing are in
 `ROADMAP.md`.
 
-- **Editorial pages render with no spacing.** The routes reference `prose` classes but
-  `@tailwindcss/typography` is not installed, so paragraphs and headings have no margins and
-  lists have no markers. Tracked as Task 002.
 - `public/` is empty, so the favicon and social preview image referenced by the layout
   return 404.
 - `MastodonFeed.astro` renders post HTML as escaped text, which would display literal markup

@@ -1,6 +1,12 @@
 @import 'tailwindcss';
 
 /*
+ * The typography plugin supplies the `prose` classes the editorial routes
+ * reference. Tailwind 4 registers plugins in CSS; there is no JS config.
+ */
+@plugin '@tailwindcss/typography';
+
+/*
  * Tailwind 4 is configured in CSS. The former tailwind.config.mjs has been
  * removed; these custom properties are the equivalent of its theme.extend
  * block. Tailwind derives utilities from the namespace, so --color-sage
@@ -30,6 +36,71 @@
   --color-earthy-900: #8d5d19;
 
   --font-sans: 'Inter', system-ui, sans-serif;
+
+  /*
+   * TYPE SCALE
+   *
+   * Semantic steps, not t-shirt sizes. Every step is fluid: the clamp()
+   * interpolates between roughly a 320px and a 1200px viewport, so a template
+   * writes one class (text-title) instead of a breakpoint chain
+   * (text-4xl md:text-5xl lg:text-6xl). Adding a breakpoint variant to a step
+   * is a sign the scale is wrong, not that the page is special.
+   *
+   * Line height and tracking travel with the size. Weight does not, so a
+   * heading can be re-weighted without leaving the scale.
+   */
+  --text-display: clamp(2.5rem, 1.75rem + 3.2vw, 4rem);
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.025em;
+
+  --text-title: clamp(2rem, 1.55rem + 1.9vw, 3rem);
+  --text-title--line-height: 1.1;
+  --text-title--letter-spacing: -0.02em;
+
+  --text-heading: clamp(1.625rem, 1.35rem + 1.2vw, 2.25rem);
+  --text-heading--line-height: 1.2;
+  --text-heading--letter-spacing: -0.015em;
+
+  --text-subheading: clamp(1.25rem, 1.16rem + 0.45vw, 1.5rem);
+  --text-subheading--line-height: 1.3;
+  --text-subheading--letter-spacing: -0.01em;
+
+  --text-lead: clamp(1.125rem, 1.07rem + 0.28vw, 1.3125rem);
+  --text-lead--line-height: 1.6;
+
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.7;
+
+  --text-label: 0.875rem;
+  --text-label--line-height: 1.5;
+  --text-label--letter-spacing: 0.01em;
+
+  /*
+   * VERTICAL RHYTHM
+   *
+   * Section padding is a token, not a breakpoint chain, and there are three
+   * steps so a page can vary its rhythm instead of stacking identical bands.
+   */
+  --spacing-section: clamp(3rem, 2.05rem + 4.75vw, 6rem);
+  --spacing-section-lg: clamp(4rem, 2.4rem + 8vw, 9rem);
+  --spacing-section-tight: clamp(2rem, 1.4rem + 3vw, 3.5rem);
+
+  /* Space between blocks inside a section, and card inner padding. */
+  --spacing-stack: clamp(1.5rem, 1.2rem + 1.5vw, 2.5rem);
+  --spacing-stack-sm: clamp(1rem, 0.85rem + 0.75vw, 1.5rem);
+  --spacing-gutter: clamp(1.5rem, 0.9rem + 3vw, 3rem);
+
+  /*
+   * MEASURE
+   *
+   * --container-measure is the reading width for running body copy. Measured
+   * in a browser at the prose-lg size, 39rem renders about 69 characters,
+   * mid-range rather than at the floor of the 65-75 target. It is deliberately
+   * much narrower than the page container, which is a layout width, not a
+   * measure.
+   */
+  --container-measure: 39rem;
+  --container-lede: 42rem;
 }
 
 @layer base {
@@ -39,6 +110,8 @@
 
   body {
     @apply bg-cream text-gray-900 antialiased;
+    font-size: var(--text-body);
+    line-height: 1.7;
   }
 
   h1,
@@ -48,6 +121,7 @@
   h5,
   h6 {
     @apply font-bold text-terracotta-dark;
+    text-wrap: balance;
   }
 
   a {
@@ -69,6 +143,90 @@
   @apply mx-auto px-4 max-w-7xl;
 }
 
+/*
+ * The prose customization is unlayered for the same reason .container is, and
+ * this was verified against the compiled stylesheet rather than assumed:
+ * @tailwindcss/typography registers `prose` in the UTILITIES layer, not the
+ * components layer. A `.prose` override inside @layer components is therefore
+ * beaten by the plugin on layer order, whatever its specificity, and silently
+ * does nothing. Unlayered rules beat every layered rule, so these hold.
+ *
+ * The same fact explains why one `.prose` block is enough to cover `prose-lg`:
+ * the plugin's `.prose-lg :where(h2)` is also layered, so it cannot override
+ * the margins set here. Only the properties left alone below, such as
+ * font-size, still come from the size variant.
+ *
+ * Tradeoff, accepted deliberately: a `max-w-*` utility on a .prose element no
+ * longer wins. Reading width is set here, once, and the card sizes itself to
+ * match; see .prose-card.
+ */
+.prose {
+  /*
+   * The plugin exposes these variables so a project can inherit the palette
+   * rather than restyle element by element. Colours are Task 003's subject;
+   * these only point prose at the palette that already exists.
+   */
+  --tw-prose-body: var(--color-gray-800);
+  --tw-prose-headings: var(--color-terracotta-dark);
+  --tw-prose-lead: var(--color-gray-700);
+  --tw-prose-links: var(--color-terracotta);
+  --tw-prose-bold: var(--color-gray-900);
+  --tw-prose-counters: var(--color-sage-dark);
+  --tw-prose-bullets: var(--color-sage);
+  --tw-prose-hr: var(--color-cream-dark);
+  --tw-prose-quotes: var(--color-gray-900);
+  --tw-prose-quote-borders: var(--color-sage);
+  --tw-prose-captions: var(--color-gray-600);
+  --tw-prose-code: var(--color-terracotta-dark);
+  --tw-prose-pre-bg: var(--color-gray-900);
+  --tw-prose-th-borders: var(--color-cream-dark);
+  --tw-prose-td-borders: var(--color-cream-dark);
+
+  max-width: var(--container-measure);
+}
+
+/*
+ * Heading spacing inside prose: generous above, tight below, so a heading
+ * reads as belonging to the text it introduces rather than floating midway
+ * between two blocks. The plugin's own defaults are near symmetrical.
+ *
+ * Margins are in em, so they track each heading's own size and stay correct
+ * across the size variants. The :not() clause mirrors the plugin's selector so
+ * `not-prose` keeps working.
+ */
+.prose :where(h2):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+  margin-top: 2.2em;
+  margin-bottom: 0.55em;
+}
+
+.prose :where(h3):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+}
+
+.prose :where(h4):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+  margin-top: 1.9em;
+  margin-bottom: 0.5em;
+}
+
+/* The plugin's own rule; restated because the block above outranks it. */
+.prose
+  :where(h2 + *, h3 + *, h4 + *, hr + *):not(
+    :where([class~='not-prose'], [class~='not-prose'] *)
+  ) {
+  margin-top: 0;
+}
+
+.prose :where(p):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+  text-wrap: pretty;
+}
+
+/* A closing rule needs more air than the plugin gives it. */
+.prose :where(hr):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+  margin-top: 3.5em;
+  margin-bottom: 3em;
+}
+
 @layer components {
   .btn-primary {
     @apply bg-terracotta text-white px-6 py-3 rounded-lg font-semibold hover:bg-terracotta-dark transition-colors duration-200 focus:outline-hidden focus:ring-2 focus:ring-terracotta focus:ring-offset-2;
@@ -79,10 +237,35 @@
   }
 
   .card {
-    @apply bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200;
+    @apply bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200;
+    padding: var(--spacing-stack);
   }
 
+  /*
+   * Section rhythm. These three are mutually exclusive; a page picks one per
+   * band so consecutive sections do not all breathe identically.
+   */
   .section {
-    @apply py-12 md:py-16 lg:py-20;
+    padding-block: var(--spacing-section);
   }
+
+  .section-lg {
+    padding-block: var(--spacing-section-lg);
+  }
+
+  .section-tight {
+    padding-block: var(--spacing-section-tight);
+  }
+
+  /*
+   * The editorial card and the measure are separate concerns. The card is
+   * wide enough to hold one measure plus its own padding, so the reading
+   * width stays constant no matter how the padding scales.
+   */
+  .prose-card {
+    @apply mx-auto bg-white rounded-lg shadow-md;
+    padding: var(--spacing-gutter);
+    max-width: calc(var(--container-measure) + 2 * var(--spacing-gutter));
+  }
+
 }

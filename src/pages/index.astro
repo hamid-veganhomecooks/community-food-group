@@ -10,18 +10,18 @@ import locations from '../data/locations.json';
   pageTitle="Welcome"
 >
   <!-- Hero Section -->
-  <section class="bg-linear-to-r from-terracotta to-terracotta-dark text-white py-20">
+  <section class="section-lg bg-linear-to-r from-terracotta to-terracotta-dark text-white">
     <div class="container">
       <div class="max-w-3xl">
-        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
+        <h1 class="text-display font-bold text-white">
           Nourishing Our Community
         </h1>
-        <p class="text-lg md:text-xl text-cream/90 mb-8">
+        <p class="text-lead text-cream/90 max-w-lede mt-stack">
           Building a more food-secure future through connection, education, and community action.
         </p>
-        <div class="flex flex-wrap gap-4">
+        <div class="flex flex-wrap gap-4 mt-stack">
           <a href="/join" class="btn-secondary bg-white text-terracotta hover:bg-cream">
-            Join Us
+            Join us
           </a>
           <a href="/donate" class="btn-primary bg-cream text-terracotta-dark hover:bg-white">
             Donate
@@ -34,13 +34,15 @@ import locations from '../data/locations.json';
   <!-- Latest Updates Section -->
   <section class="section bg-cream">
     <div class="container">
-      <h2 class="text-3xl md:text-4xl font-bold text-terracotta-dark mb-8">
+      <h2 class="text-heading font-bold text-terracotta-dark">
         Latest Updates
       </h2>
-      <MastodonFeed limit={6} />
-      <div class="mt-8 text-center">
+      <div class="mt-stack">
+        <MastodonFeed limit={6} />
+      </div>
+      <div class="mt-stack text-center">
         <a href="/posts" class="btn-primary">
-          View All Updates
+          View all updates
         </a>
       </div>
     </div>
@@ -49,52 +51,52 @@ import locations from '../data/locations.json';
   <!-- Locations Preview -->
   <section class="section bg-white">
     <div class="container">
-      <h2 class="text-3xl md:text-4xl font-bold text-terracotta-dark mb-4">
+      <h2 class="text-heading font-bold text-terracotta-dark">
         Our Locations
       </h2>
-      <p class="text-gray-600 mb-8 max-w-2xl">
+      <p class="text-lead text-gray-600 max-w-lede mt-stack-sm">
         Visit us at any of our community locations. We're here to serve you.
       </p>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-stack mt-stack">
         {locations.slice(0, 3).map((location) => (
           <div class="card">
-            <h3 class="text-xl font-semibold text-terracotta mb-2">
+            <h3 class="text-subheading font-semibold text-terracotta">
               {location.name}
             </h3>
-            <p class="text-gray-600 text-sm mb-2">{location.address}</p>
-            <p class="text-gray-700 text-sm mb-4">{location.description}</p>
+            <p class="text-label text-gray-600 mt-2">{location.address}</p>
+            <p class="text-gray-700 mt-stack-sm">{location.description}</p>
             <a
               href={`/locations#${location.id}`}
-              class="text-terracotta hover:text-terracotta-dark font-medium text-sm inline-flex items-center"
+              class="text-label text-terracotta hover:text-terracotta-dark font-medium inline-flex items-center mt-stack-sm"
             >
-              Learn More →
+              Learn more →
             </a>
           </div>
         ))}
       </div>
-      <div class="mt-8 text-center">
+      <div class="mt-stack text-center">
         <a href="/locations" class="btn-primary">
-          View All Locations
+          View all locations
         </a>
       </div>
     </div>
   </section>
 
   <!-- Call to Action -->
-  <section class="section bg-sage text-white">
+  <section class="section-tight bg-sage text-white">
     <div class="container text-center">
-      <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+      <h2 class="text-heading font-bold text-white">
         Ready to Make a Difference?
       </h2>
-      <p class="text-cream/90 text-lg max-w-2xl mx-auto mb-8">
+      <p class="text-lead text-cream/90 max-w-lede mx-auto mt-stack-sm">
         Whether you have an hour or a day, your contribution helps build a stronger community.
       </p>
-      <div class="flex flex-wrap justify-center gap-4">
+      <div class="flex flex-wrap justify-center gap-4 mt-stack">
         <a href="/join" class="btn-primary bg-white text-sage-dark hover:bg-cream">
-          Volunteer Today
+          Volunteer today
         </a>
         <a href="/donate" class="btn-secondary bg-cream text-sage-dark hover:bg-white">
-          Support Our Mission
+          Support our mission
         </a>
       </div>
     </div>
