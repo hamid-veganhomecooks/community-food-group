@@ -56,39 +56,22 @@ acceptance criteria name; it just declines to re-prove a lockfile that has not m
 Some acceptance criteria - anything about spacing, layout, computed colour or contrast -
 cannot be signed off from a CSS diff and must be measured in a real browser.
 
-### One-time setup
+### Setup state, verified 2026-07-31
 
-Run once, by hand. Verified state as of 2026-07-30: the Chromium binaries persist, and the
-npm driver plus the Task 002 harness survive in a **previous session's scratchpad** under
-`/tmp`, which does not survive a reboot or `wsl --shutdown`. Step 2 rescues them. Only
-`libasound.so.2` (step 3) genuinely has to be rebuilt.
+| Component | Location | Status |
+| --- | --- | --- |
+| Chromium binaries | `~/.cache/ms-playwright/` | Installed |
+| `playwright` driver + harness | `~/.local/share/playwright-runner/` | Installed |
+| `libasound.so.2` | `~/.local/lib/playwright-deps/` | **MISSING - do this first** |
 
-**Chromium binaries** live in `~/.cache/ms-playwright/` (chromium-1234,
-chromium_headless_shell-1234, ffmpeg-1011). These persist and are already installed.
+All three are user-local and sit outside both the project and any nvm version directory, so
+switching Node does not lose them. `~/.local/share/playwright-runner/` holds
+`playwright@1.62.1`, `verify.mjs` (the Task 002 layout harness) and `shot.mjs` (screenshots
+at 1440px and 390px into `$SHOTS`). It was rescued out of a session scratchpad under `/tmp`;
+do not let it drift back there. Reinstalling the npm package would **not** reproduce
+`verify.mjs` - that file exists only here.
 
-**Step 2 - the `playwright` npm driver and the harness.** They live in their own directory,
-deliberately outside the project and outside any nvm version directory so that switching
-Node does not lose them. Move rather than reinstall - the existing copy is complete, and
-this needs no network:
-
-```bash
-mkdir -p ~/.local/share
-mv /tmp/claude-1000/-home-mbenhuri-github-community-food-group/56be5e55-*/scratchpad/browser \
-   ~/.local/share/playwright-runner
-```
-
-If that scratchpad is already gone, rebuild it instead - but `verify.mjs` is not
-recoverable this way and would have to be rewritten:
-
-```bash
-mkdir -p ~/.local/share/playwright-runner && cd ~/.local/share/playwright-runner
-npm init -y && npm i playwright
-```
-
-The directory then holds `playwright@1.62.1`, `verify.mjs` (the Task 002 layout harness) and
-`shot.mjs` (screenshots at 1440px and 390px into `$SHOTS`).
-
-**Step 3 - `libasound.so.2`.** It is missing system-wide and cannot be apt-installed without sudo.
+**Outstanding - `libasound.so.2`.** Missing system-wide and not apt-installable without sudo.
 Chromium will not start without it. Extract it into a user-local directory:
 
 ```bash
@@ -103,31 +86,55 @@ rm -rf /tmp/asound-x /tmp/libasound2_*.deb
 `apt-get download` needs no root. Only the shared object is required - Chromium loads it
 but never opens an audio device, so `libasound2-data` is unnecessary.
 
-Then make the loader find it, once, in `~/.bashrc`:
+**Both** browser binaries need it: the full `chrome` **and** `chrome-headless-shell`.
+`chromium.launch()` with no channel resolves to `chrome-headless-shell`, so this blocks
+`verify.mjs` outright, not just headed runs.
+
+Then make the loader find it. **Placement matters:** Ubuntu's stock `~/.bashrc` returns
+early for non-interactive shells, so a line appended to the end never runs under a
+tool-driven or scripted shell. Put the export **above** that guard, near the top of the
+file:
 
 ```bash
 export LD_LIBRARY_PATH="$HOME/.local/lib/playwright-deps${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 ```
 
-### Per-session use
-
-Nothing to install. Confirm and go:
+Belt and braces, and independent of shell startup entirely - a wrapper in the runner
+directory:
 
 ```bash
-ldd ~/.cache/ms-playwright/chromium-*/chrome-linux64/chrome | grep 'not found'   # expect no output
+cat > ~/.local/share/playwright-runner/run.sh <<'EOF'
+#!/usr/bin/env bash
+export LD_LIBRARY_PATH="$HOME/.local/lib/playwright-deps${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+cd "$(dirname "$0")"
+exec node "$@"
+EOF
+chmod +x ~/.local/share/playwright-runner/run.sh
 ```
 
-If that prints `libasound.so.2 => not found`, `LD_LIBRARY_PATH` was not inherited; export
-the line above in the current shell and continue. Do not re-extract, and do not fall back
-to a scratch-directory install.
+### Per-session use
 
-Serve the built site, then drive the harness from the runner directory so the project's
-`node_modules` stays untouched:
+Nothing to install. Confirm with an **actual launch** - `ldd` alone is not sufficient
+evidence, and an empty `ldd` result usually means the path was wrong rather than that
+nothing is missing:
 
 ```bash
-npm run build && npm run preview &                       # serves on :4321
-cd ~/.local/share/playwright-runner && node verify.mjs   # exits non-zero on any failure
-SHOTS=/some/dir node shot.mjs                            # screenshots, optional
+~/.local/share/playwright-runner/run.sh -e "
+  const { chromium } = require('playwright');
+  chromium.launch().then(b => b.close()).then(() => console.log('browser OK'));
+"
+```
+
+If that fails with `libasound.so.2: cannot open shared object file`, the library or the
+`LD_LIBRARY_PATH` is missing. Do not fall back to a scratch-directory install.
+
+Serve the built site, then drive the harness through the wrapper so the project's
+`node_modules` stays untouched and `LD_LIBRARY_PATH` is guaranteed set:
+
+```bash
+npm run build && npm run preview &                            # serves on :4321
+~/.local/share/playwright-runner/run.sh verify.mjs            # non-zero on any failure
+SHOTS=/some/dir ~/.local/share/playwright-runner/run.sh shot.mjs   # optional
 ```
 
 `verify.mjs` takes `BASE` (default `http://localhost:4321`).
