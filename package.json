@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "astro dev",
     "check": "astro check",
+    "check:contrast": "node scripts/check-contrast.mjs",
     "fetch-mastodon": "node --env-file-if-exists=.env scripts/fetch-mastodon.ts",
     "prebuild": "npm run fetch-mastodon",
     "build": "astro build",

@@ -7,35 +7,78 @@
 @plugin '@tailwindcss/typography';
 
 /*
+ * COLOUR: TWO-LAYER TOKEN SYSTEM
+ *
+ * Layer 1 - BRAND INPUTS. The only block a reusing group edits. Fourteen
+ * values: six brand/accent tones an actual rebrand changes, and eight
+ * neutrals almost no reusing group will touch. These are deliberately named
+ * outside the `--color-*` namespace so Tailwind does not turn them into
+ * utility classes (no `bg-brand-green`) - they are raw material for Layer 2,
+ * not something a template ever writes directly.
+ *
+ * Direction B ("Garden"), owner decision 2026-07-30: green leads, clay
+ * supports. All sixteen role pairs derived from these inputs were checked
+ * against WCAG 2.2 AA before this direction was chosen; see TASK_SPEC.md.
+ */
+:root {
+  /* Brand/accent - six values, this is what a rebrand actually changes. */
+  --brand-green: #2c6244;
+  --brand-green-hover: #224e35;
+  --brand-green-ink: #28583d;
+  --brand-clay: #a8481f;
+  --brand-clay-ink: #8f3d1a;
+  --brand-clay-soft: #f3e2d6;
+
+  /* Neutrals - eight values, most reusing groups leave these alone. */
+  --neutral-paper: #f7f5ef;
+  --neutral-white: #ffffff;
+  --neutral-mist: #ece9df;
+  --neutral-charcoal: #1c241e;
+  --neutral-slate: #4d564f;
+  --neutral-fog: #f2f5f0;
+  --neutral-haze: #bcc7bd;
+  --neutral-line: #ddd8ca;
+}
+
+/*
  * Tailwind 4 is configured in CSS. The former tailwind.config.mjs has been
  * removed; these custom properties are the equivalent of its theme.extend
- * block. Tailwind derives utilities from the namespace, so --color-sage
- * produces bg-sage, text-sage, border-sage and so on.
+ * block. Tailwind derives utilities from the namespace, so --color-brand
+ * produces bg-brand, text-brand, border-brand and so on.
+ *
+ * Layer 2 - SEMANTIC ROLES. Every role below references a Layer 1 input;
+ * none carries a literal hex value of its own. Templates consume only these
+ * roles, never Layer 1 directly.
+ *
+ * The load-bearing distinction: --color-brand is for FILLS, --color-brand-ink
+ * is for TEXT ON A LIGHT SURFACE. A brand colour that works as a fill usually
+ * fails as text at AA - collapsing these two roles into one is exactly how
+ * the previous palette came to fail nine measured pairs. Keep them separate
+ * even where their values look close enough to merge.
  */
 @theme {
-  --color-terracotta: #c26a4f;
-  --color-terracotta-light: #d98266;
-  --color-terracotta-dark: #a8553b;
+  --color-surface: var(--neutral-paper);
+  --color-surface-raised: var(--neutral-white);
+  --color-surface-sunken: var(--neutral-mist);
+  --color-surface-inverse: var(--neutral-charcoal);
 
-  --color-sage: #7a9b7a;
-  --color-sage-light: #9ab89a;
-  --color-sage-dark: #5c7a5c;
+  --color-ink: var(--neutral-charcoal);
+  --color-ink-muted: var(--neutral-slate);
+  --color-ink-inverse: var(--neutral-fog);
+  --color-ink-inverse-muted: var(--neutral-haze);
 
-  --color-cream: #f5f0e8;
-  --color-cream-dark: #e8e0d4;
+  --color-brand: var(--brand-green);
+  --color-brand-hover: var(--brand-green-hover);
+  --color-brand-ink: var(--brand-green-ink);
 
-  --color-earthy-50: #faf6f0;
-  --color-earthy-100: #f5ede1;
-  --color-earthy-200: #e8dbc8;
-  --color-earthy-300: #dbc9af;
-  --color-earthy-400: #ceb796;
-  --color-earthy-500: #c1a57d;
-  --color-earthy-600: #b49364;
-  --color-earthy-700: #a7814b;
-  --color-earthy-800: #9a6f32;
-  --color-earthy-900: #8d5d19;
+  --color-accent: var(--brand-clay);
+  --color-accent-ink: var(--brand-clay-ink);
+  --color-accent-soft: var(--brand-clay-soft);
 
-  --font-sans: 'Inter', system-ui, sans-serif;
+  --color-border: var(--neutral-line);
+  --color-focus: var(--brand-green);
+
+  --font-sans: var(--font-inter), system-ui, sans-serif;
 
   /*
    * TYPE SCALE
@@ -109,7 +152,7 @@
   }
 
   body {
-    @apply bg-cream text-gray-900 antialiased;
+    @apply bg-surface text-ink antialiased;
     font-size: var(--text-body);
     line-height: 1.7;
   }
@@ -120,12 +163,12 @@
   h4,
   h5,
   h6 {
-    @apply font-bold text-terracotta-dark;
+    @apply font-bold text-brand-ink;
     text-wrap: balance;
   }
 
   a {
-    @apply text-terracotta hover:text-terracotta-dark transition-colors duration-200;
+    @apply text-brand-ink hover:text-brand-hover transition-colors duration-200;
   }
 }
 
@@ -166,21 +209,21 @@
    * rather than restyle element by element. Colours are Task 003's subject;
    * these only point prose at the palette that already exists.
    */
-  --tw-prose-body: var(--color-gray-800);
-  --tw-prose-headings: var(--color-terracotta-dark);
-  --tw-prose-lead: var(--color-gray-700);
-  --tw-prose-links: var(--color-terracotta);
-  --tw-prose-bold: var(--color-gray-900);
-  --tw-prose-counters: var(--color-sage-dark);
-  --tw-prose-bullets: var(--color-sage);
-  --tw-prose-hr: var(--color-cream-dark);
-  --tw-prose-quotes: var(--color-gray-900);
-  --tw-prose-quote-borders: var(--color-sage);
-  --tw-prose-captions: var(--color-gray-600);
-  --tw-prose-code: var(--color-terracotta-dark);
-  --tw-prose-pre-bg: var(--color-gray-900);
-  --tw-prose-th-borders: var(--color-cream-dark);
-  --tw-prose-td-borders: var(--color-cream-dark);
+  --tw-prose-body: var(--color-ink);
+  --tw-prose-headings: var(--color-brand-ink);
+  --tw-prose-lead: var(--color-ink-muted);
+  --tw-prose-links: var(--color-brand-ink);
+  --tw-prose-bold: var(--color-ink);
+  --tw-prose-counters: var(--color-accent-ink);
+  --tw-prose-bullets: var(--color-accent);
+  --tw-prose-hr: var(--color-border);
+  --tw-prose-quotes: var(--color-ink);
+  --tw-prose-quote-borders: var(--color-accent);
+  --tw-prose-captions: var(--color-ink-muted);
+  --tw-prose-code: var(--color-brand-ink);
+  --tw-prose-pre-bg: var(--color-surface-inverse);
+  --tw-prose-th-borders: var(--color-border);
+  --tw-prose-td-borders: var(--color-border);
 
   max-width: var(--container-measure);
 }
@@ -229,15 +272,15 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-terracotta text-white px-6 py-3 rounded-lg font-semibold hover:bg-terracotta-dark transition-colors duration-200 focus:outline-hidden focus:ring-2 focus:ring-terracotta focus:ring-offset-2;
+    @apply bg-brand text-ink-inverse px-6 py-3 rounded-lg font-semibold hover:bg-brand-hover transition-colors duration-200 focus:outline-hidden focus:ring-2 focus:ring-focus focus:ring-offset-2;
   }
 
   .btn-secondary {
-    @apply bg-sage text-white px-6 py-3 rounded-lg font-semibold hover:bg-sage-dark transition-colors duration-200 focus:outline-hidden focus:ring-2 focus:ring-sage focus:ring-offset-2;
+    @apply bg-accent text-ink-inverse px-6 py-3 rounded-lg font-semibold hover:bg-accent-ink transition-colors duration-200 focus:outline-hidden focus:ring-2 focus:ring-focus focus:ring-offset-2;
   }
 
   .card {
-    @apply bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200;
+    @apply bg-surface-raised rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200;
     padding: var(--spacing-stack);
   }
 
@@ -263,7 +306,7 @@
    * width stays constant no matter how the padding scales.
    */
   .prose-card {
-    @apply mx-auto bg-white rounded-lg shadow-md;
+    @apply mx-auto bg-surface-raised rounded-lg shadow-md;
     padding: var(--spacing-gutter);
     max-width: calc(var(--container-measure) + 2 * var(--spacing-gutter));
   }

@@ -1,4 +1,4 @@
-import { defineConfig } from 'astro/config';
+import { defineConfig, fontProviders } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import tailwindcss from '@tailwindcss/vite';
 
@@ -24,4 +24,19 @@ export default defineConfig({
   build: {
     assets: '_astro',
   },
+  // Astro's Fonts API is stable in 7.1.6 (the `fonts` key sits at the config
+  // top level, not under `experimental`), so it needs no extra dependency.
+  // The Google provider fetches the font file at build time and serves it
+  // from this site's own origin; the browser never talks to Google, unlike
+  // the CDN <link> this replaces.
+  fonts: [
+    {
+      provider: fontProviders.google(),
+      name: 'Inter',
+      cssVariable: '--font-inter',
+      weights: ['300 700'],
+      styles: ['normal', 'italic'],
+      display: 'swap',
+    },
+  ],
 });

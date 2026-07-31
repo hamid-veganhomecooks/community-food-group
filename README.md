@@ -102,6 +102,7 @@ environment variable.
 
 ```text
 scripts/fetch-mastodon.ts   Build-time Mastodon ingestion
+scripts/check-contrast.mjs  WCAG 2.2 AA check for the colour tokens
 src/content.config.ts       Content collection definition
 src/content/pages/          Editorial MDX: about, join, donate
 src/data/                   Location records and the generated Mastodon cache
@@ -110,6 +111,62 @@ src/components/             Header, Footer, MastodonFeed
 src/layouts/BaseLayout.astro
 src/styles/global.css
 ```
+
+## Rebranding this site
+
+Colour is a two-layer token system in `src/styles/global.css`. A reusing group only ever
+edits **Layer 1**; every template consumes only **Layer 2**.
+
+### Layer 1 - brand inputs
+
+A `:root` block near the top of the file, named outside Tailwind's `--color-*` namespace on
+purpose (`--brand-*`, `--neutral-*`) so it never generates its own utility classes. Fourteen
+values in two groups:
+
+- **Six brand/accent tones** - the colours an actual rebrand changes: the brand hue and its
+  hover/text variants, and the accent hue and its text/soft variants.
+- **Eight neutrals** - surfaces and ink tones. Most groups reusing this site will leave these
+  alone; they exist to be edited only if the whole visual register (not just the brand hue)
+  needs to change.
+
+Edit these fourteen values and every semantic role updates with them, because Layer 2 is
+built entirely out of `var()` references into Layer 1.
+
+### Layer 2 - semantic roles
+
+The `@theme` block's `--color-*` custom properties. This is the **only** thing a template may
+write - `bg-brand`, `text-ink-muted`, `border-focus`, and so on. No component or page file
+should ever contain a literal hex value or a colour name like `terracotta` or `sage`; if one
+does, that is the bug this token system exists to prevent.
+
+| Role | Purpose |
+| --- | --- |
+| `surface`, `surface-raised`, `surface-sunken`, `surface-inverse` | Page background, card background, a slightly recessed panel, and the dark footer background |
+| `ink`, `ink-muted`, `ink-inverse`, `ink-inverse-muted` | Body text, de-emphasised text, and their counterparts for text on a dark surface |
+| `brand`, `brand-hover`, `brand-ink` | The lead colour: fill, its hover/pressed fill, and its text-safe variant |
+| `accent`, `accent-ink`, `accent-soft` | The supporting colour: its text-safe variant, and a pale fill for chips |
+| `border` | Decorative dividers and input borders |
+| `focus` | The visible focus ring on every interactive element |
+
+**Why `brand` and `brand-ink` are separate roles, not one:** `brand` is tuned to look right as
+a *fill* - a button background, a gradient. `brand-ink` is tuned to pass AA as *text on a
+light surface*. A colour that reads well as a large fill is very often too light to pass 4.5:1
+as text, and that gap is exactly how the previous palette failed nine measured contrast pairs
+(`text-terracotta` alone accounted for 23 uses, several of them failing). Collapsing the two
+roles back into one hex value would silently reintroduce that failure. The same reasoning is
+why `accent` and `accent-ink` are kept apart.
+
+### Checking your rebrand
+
+```bash
+npm run check:contrast
+```
+
+Parses the tokens directly out of `global.css` - it does not carry a second, duplicate colour
+list that could drift from what ships - and checks all sixteen role pairs actually used by the
+templates against WCAG 2.2 AA (4.5:1 for text, 3.0:1 for the focus ring). It prints a measured
+ratio for every pair and exits non-zero, naming the failing pair, if a new brand value drops
+below threshold.
 
 ## Typography and spacing
 

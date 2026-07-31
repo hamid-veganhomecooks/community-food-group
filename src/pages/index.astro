@@ -10,20 +10,20 @@ import locations from '../data/locations.json';
   pageTitle="Welcome"
 >
   <!-- Hero Section -->
-  <section class="section-lg bg-linear-to-r from-terracotta to-terracotta-dark text-white">
+  <section class="section-lg bg-linear-to-r from-brand to-brand-hover text-ink-inverse">
     <div class="container">
       <div class="max-w-3xl">
-        <h1 class="text-display font-bold text-white">
+        <h1 class="text-display font-bold text-ink-inverse">
           Nourishing Our Community
         </h1>
-        <p class="text-lead text-cream/90 max-w-lede mt-stack">
+        <p class="text-lead text-ink-inverse max-w-lede mt-stack">
           Building a more food-secure future through connection, education, and community action.
         </p>
         <div class="flex flex-wrap gap-4 mt-stack">
-          <a href="/join" class="btn-secondary bg-white text-terracotta hover:bg-cream">
+          <a href="/join" class="btn-secondary bg-surface-raised text-brand-ink hover:bg-surface">
             Join us
           </a>
-          <a href="/donate" class="btn-primary bg-cream text-terracotta-dark hover:bg-white">
+          <a href="/donate" class="btn-primary bg-surface text-brand-ink hover:bg-surface-raised">
             Donate
           </a>
         </div>
@@ -32,9 +32,9 @@ import locations from '../data/locations.json';
   </section>
 
   <!-- Latest Updates Section -->
-  <section class="section bg-cream">
+  <section class="section bg-surface">
     <div class="container">
-      <h2 class="text-heading font-bold text-terracotta-dark">
+      <h2 class="text-heading font-bold text-brand-ink">
         Latest Updates
       </h2>
       <div class="mt-stack">
@@ -49,25 +49,25 @@ import locations from '../data/locations.json';
   </section>
 
   <!-- Locations Preview -->
-  <section class="section bg-white">
+  <section class="section bg-surface-raised">
     <div class="container">
-      <h2 class="text-heading font-bold text-terracotta-dark">
+      <h2 class="text-heading font-bold text-brand-ink">
         Our Locations
       </h2>
-      <p class="text-lead text-gray-600 max-w-lede mt-stack-sm">
+      <p class="text-lead text-ink-muted max-w-lede mt-stack-sm">
         Visit us at any of our community locations. We're here to serve you.
       </p>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-stack mt-stack">
         {locations.slice(0, 3).map((location) => (
           <div class="card">
-            <h3 class="text-subheading font-semibold text-terracotta">
+            <h3 class="text-subheading font-semibold text-brand-ink">
               {location.name}
             </h3>
-            <p class="text-label text-gray-600 mt-2">{location.address}</p>
-            <p class="text-gray-700 mt-stack-sm">{location.description}</p>
+            <p class="text-label text-ink-muted mt-2">{location.address}</p>
+            <p class="text-ink mt-stack-sm">{location.description}</p>
             <a
               href={`/locations#${location.id}`}
-              class="text-label text-terracotta hover:text-terracotta-dark font-medium inline-flex items-center mt-stack-sm"
+              class="text-label text-brand-ink hover:text-brand-hover font-medium inline-flex items-center mt-stack-sm"
             >
               Learn more →
             </a>
@@ -83,19 +83,19 @@ import locations from '../data/locations.json';
   </section>
 
   <!-- Call to Action -->
-  <section class="section-tight bg-sage text-white">
+  <section class="section-tight bg-accent text-ink-inverse">
     <div class="container text-center">
-      <h2 class="text-heading font-bold text-white">
+      <h2 class="text-heading font-bold text-ink-inverse">
         Ready to Make a Difference?
       </h2>
-      <p class="text-lead text-cream/90 max-w-lede mx-auto mt-stack-sm">
+      <p class="text-lead text-ink-inverse max-w-lede mx-auto mt-stack-sm">
         Whether you have an hour or a day, your contribution helps build a stronger community.
       </p>
       <div class="flex flex-wrap justify-center gap-4 mt-stack">
-        <a href="/join" class="btn-primary bg-white text-sage-dark hover:bg-cream">
+        <a href="/join" class="btn-primary bg-surface-raised text-accent-ink hover:bg-surface">
           Volunteer today
         </a>
-        <a href="/donate" class="btn-secondary bg-cream text-sage-dark hover:bg-white">
+        <a href="/donate" class="btn-secondary bg-surface text-accent-ink hover:bg-surface-raised">
           Support our mission
         </a>
       </div>

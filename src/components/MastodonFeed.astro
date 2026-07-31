@@ -43,10 +43,10 @@ try {
             />
           )}
           <div>
-            <p class="font-semibold text-gray-900">
+            <p class="font-semibold text-ink">
               {post.account?.display_name || post.account?.username || 'Community Food Group'}
             </p>
-            <p class="text-sm text-gray-500">
+            <p class="text-sm text-ink-muted">
               {new Date(post.created_at).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
@@ -56,7 +56,7 @@ try {
           </div>
         </div>
 
-        <div class="prose prose-sm max-w-none text-gray-700">
+        <div class="prose prose-sm max-w-none text-ink">
           {post.content}
         </div>
 
@@ -73,7 +73,7 @@ try {
           </div>
         )}
 
-        <div class="mt-4 flex items-center space-x-4 text-sm text-gray-500">
+        <div class="mt-4 flex items-center space-x-4 text-sm text-ink-muted">
           <span aria-label="Replies">
             💬 {post.replies_count || 0}
           </span>
@@ -90,7 +90,7 @@ try {
             href={post.url}
             target="_blank"
             rel="noopener noreferrer"
-            class="mt-4 inline-block text-sm text-terracotta hover:text-terracotta-dark font-medium"
+            class="mt-4 inline-block text-sm text-brand-ink hover:text-brand-hover font-medium"
             aria-label="View original post on Mastodon"
           >
             View on Mastodon →
@@ -101,6 +101,6 @@ try {
   </div>
 ) : (
   <div class="text-center py-12">
-    <p class="text-gray-600">No updates available at the moment. Please check back later!</p>
+    <p class="text-ink-muted">No updates available at the moment. Please check back later!</p>
   </div>
 )}

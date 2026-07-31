@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { Font } from 'astro:assets';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
@@ -33,15 +34,10 @@ const metaImage = ogImage || '/images/og-default.jpg';
     <meta name="twitter:description" content={metaDescription} />
     <meta name="twitter:image" content={metaImage} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap"
-      rel="stylesheet"
-    />
+    <Font cssVariable="--font-inter" preload />
   </head>
   <body>
-    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-cream focus:text-terracotta focus:font-bold">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-surface focus:text-brand-ink focus:font-bold">
       Skip to main content
     </a>
 

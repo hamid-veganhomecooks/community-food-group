@@ -184,19 +184,33 @@ to `docs/DECISIONS_ARCHIVE.md`.
   custom `.container` are therefore **unlayered**. Preserve that; moving either into a layer
   silently reintroduces a shipped bug. This has been the shape of two separate defects here:
   treat "my Tailwind override is being ignored" as a layer question first.
-- **Palette Direction B ("Garden") is chosen.** Owner decision. Green leads, clay supports.
-  All sixteen role pairs validated against AA before selection. Values are in `TASK_SPEC.md`.
-  The terracotta/sage/cream direction is retired and its tokens are to be **deleted, not
-  renamed**.
-- **Colour is a two-layer token system.** Layer 1 is a **brand-inputs block**, the only block
-  a reusing group edits. Layer 2 is **semantic roles** (`--color-surface`, `--color-ink`,
-  `--color-brand`, `--color-brand-ink`, ...), the only thing templates consume.
-  **`--color-brand` (fills) and `--color-brand-ink` (text on light) must stay separate
-  roles.**
-- **A contrast validation script is authorized and required**, as `npm run check:contrast`,
-  in plain Node with **zero dependencies**. It must parse the tokens out of
-  `src/styles/global.css` rather than carry a duplicate list, or it will silently drift from
-  what ships.
+- **[2026-07-31] Palette Direction B ("Garden") is implemented.** Green leads, clay supports.
+  The terracotta/sage/cream/earthy tokens are **deleted** (not renamed) from
+  `src/styles/global.css` and from every component and page; confirmed by grep across `src/`.
+  All sixteen role pairs pass AA; figures are in `docs/DECISIONS_ARCHIVE.md` and reproduced
+  live by `npm run check:contrast`.
+- **Colour is a two-layer token system, implemented in `src/styles/global.css`.** Layer 1 is a
+  `:root` block of fourteen **brand-input** values, six brand/accent (`--brand-green`,
+  `--brand-green-hover`, `--brand-green-ink`, `--brand-clay`, `--brand-clay-ink`,
+  `--brand-clay-soft`) and eight neutrals (`--neutral-paper`, `--neutral-white`,
+  `--neutral-mist`, `--neutral-charcoal`, `--neutral-slate`, `--neutral-fog`, `--neutral-haze`,
+  `--neutral-line`). These are named **outside** the `--color-*` namespace on purpose, so
+  Tailwind never turns them into utility classes - a reusing group edits only this block.
+  Layer 2 is sixteen **semantic roles** in the `@theme` block (`--color-surface`,
+  `--color-ink`, `--color-brand`, `--color-brand-ink`, `--color-accent`, `--color-accent-ink`,
+  `--color-focus`, ...), each a `var()` reference into Layer 1. Templates consume only Layer 2.
+  **`--color-brand` (fills) and `--color-brand-ink` (text on light) stay separate roles**, as
+  do `--color-accent`/`--color-accent-ink`; collapsing either pair is how the previous palette
+  failed nine measured pairs.
+- **A contrast validation script exists**: `scripts/check-contrast.mjs`, wired as
+  `npm run check:contrast`, plain Node with **zero dependencies**. It parses the token values
+  directly out of `src/styles/global.css` (no duplicate list to drift), resolves `var()` chains
+  from role to brand input to hex, and checks sixteen named role pairs actually used by the
+  templates against WCAG 2.2 AA (4.5:1 text, 3.0:1 for the two focus-ring pairs). Confirmed to
+  fail loudly: a deliberately weakened token dropped two pairs to ~2.8:1 and the script exited
+  non-zero, naming both. **Not yet part of `npm run verify`** - `scripts/verify-baseline.sh`
+  was outside Task 003's scope and was not edited, so contrast checking is currently a separate
+  manual step.
 - **The type scale is semantic and fluid.** Steps are named for role, not size:
   `--text-display`, `--text-title`, `--text-heading`, `--text-subheading`, `--text-lead`,
   `--text-body`, `--text-label`. Each is a `clamp()`, so one class replaces a breakpoint
@@ -209,21 +223,50 @@ to `docs/DECISIONS_ARCHIVE.md`.
   `measure + 2 * gutter`, so reading width stays constant however the padding scales.
 - **Section rhythm is three mutually exclusive steps:** `.section-lg`, `.section`,
   `.section-tight`, so consecutive bands can differ rather than stacking identically.
-- **Fonts are self-hosted; the Google Fonts CDN is removed.**
-  **`@fontsource-variable/inter` is authorized as a dependency**, satisfying constraint 3.6
-  for that package only - but first check whether Astro 7.1.6 ships a **stable** built-in
-  Fonts API and prefer that, since it needs no dependency at all. Inter stays as the single
-  family; pairing a display face is a separate decision and is not part of Task 003.
+- **[2026-07-31] Fonts are self-hosted via Astro's built-in Fonts API, not
+  `@fontsource-variable/inter`.** Verified that Astro 7.1.6's `fonts` config key sits at the
+  config top level, not under `experimental` (only `experimental_getFontFileURL` carries that
+  prefix), so it is stable and needs no new dependency. `astro.config.mjs` now configures
+  `fontProviders.google()` for Inter with `display: 'swap'`; the provider fetches the font file
+  at **build time** and Astro serves it from the site's own origin with a metrics-matched
+  local fallback, so the browser never contacts Google and no visitor IP is sent to a third
+  party. Confirmed in `dist/`: zero matches for `fonts.googleapis.com` or `fonts.gstatic.com`,
+  two self-hosted `.woff2` files under `dist/_astro/fonts/`. `@fontsource-variable/inter` was
+  never installed and is **not** a dependency of this project.
+  **Consequence for the repository map:** `astro.config.mjs` is now part of the design-system
+  surface, not just deployment config - a future palette or type-system task may need to touch
+  it for font reasons even though Task 003's original allowed-scope list did not include it.
+  (That gap was hit live during Task 003 and resolved by an explicit owner-approved scope
+  expansion rather than a silent edit.) Inter stays the single family; pairing a display face
+  is a separate, still-open decision.
 
-### Verified repository state on 2026-07-30
+### Verified repository state on 2026-07-31
 
-**Tasks 001, 001b, 001c and 002 are complete** and merged to `main` (`8ad91ad`), verified by
-execution on Node v22.23.2 and, for Task 002, in a real browser at 375px and 1440px across
-all six routes. Measurements are in `docs/DECISIONS_ARCHIVE.md`.
+**Tasks 001, 001b, 001c and 002 are complete** and merged to `main` (`8ad91ad`).
 
-Green baseline, reproducible with `npm run verify`: `npm ci` exits 0; `npm run check`
-reports **0 errors, 0 warnings** and 12 hints (all the zod deprecation below);
-`npm run build` emits the same six routes; `npm audit` reports **0 vulnerabilities**.
+**Task 003 (brand system, palette, self-hosted fonts) is implemented and fully verified in
+the working tree, but not yet committed or merged** - `git status` still shows it as
+uncommitted changes as of this entry. Verified by execution on Node v22.23.2:
+
+- `npm ci` exits 0, `npm audit` reports **0 vulnerabilities**.
+- `npm run check` reports **0 errors, 0 warnings**, 12 hints (the zod deprecation below).
+- `npm run build` emits the same six routes; fonts are self-hosted (`Copying fonts (2 files)`).
+- `npm run check:contrast` passes all sixteen role pairs, with ratios matching the audited
+  Direction B figures, and was proven to fail (and correctly name the broken pairs) when a
+  token was deliberately weakened.
+- No literal palette name (`terracotta`/`sage`/`cream`/`earthy`) or hex value remains in
+  `src/`; no `fonts.googleapis.com`/`fonts.gstatic.com` reference remains in `dist/`.
+- `.container` and `.prose` remain unlayered; the Task 002 type scale and spacing tokens are
+  byte-for-byte unchanged (confirmed by targeted diff).
+- Browser-verified with the Playwright harness (`docs/ENVIRONMENT.md`) at 375px and 1440px
+  across all six routes: `verify.mjs` passes, and the new theme's computed colours were
+  confirmed applied (e.g. `h2` renders `rgb(40,88,61)` = `--color-brand-ink`). Focus rings
+  were separately confirmed visible (white 2px offset + green 4px ring) via computed
+  `box-shadow` on a focused button.
+
+Green baseline, reproducible with `npm run verify`: unchanged mechanics from the note above;
+`scripts/verify-baseline.sh` was not edited in Task 003 and does not yet run
+`check:contrast` (see the styling notes above).
 
 ### Open defects
 
@@ -252,15 +295,17 @@ reports **0 errors, 0 warnings** and 12 hints (all the zod deprecation below);
 
 ### Current phase
 
-**Task 003 is active: brand system, palette and self-hosted fonts.** The build contract is
-truthful and deterministic, the toolchain is current, and the routes share one type scale,
-one measure and one set of rhythm tokens. The repository is still a prototype whose public
-copy is invented scaffold data, and **it must not be deployed.**
+**Task 003 is complete** (implemented and verified as above; not yet committed). The palette
+now passes AA on every checked pair instead of failing nine, the toolchain is current, and
+the routes share one type scale, one measure, one set of rhythm tokens, and one colour token
+system. The repository is still a prototype whose public copy is invented scaffold data, and
+**it must not be deployed.**
 
-The palette audit changed this task's character: the scaffold palette failed AA on nine
-measured pairs, so Task 003 is a correctness fix as much as a design pass. `TASK_SPEC.md`
-carries the full specification and the chosen Direction B values; the audit figures are in
-`docs/DECISIONS_ARCHIVE.md`.
+`TASK_SPEC.md` still describes Task 003 as active; promoting Task 004 into it, and collapsing
+Task 003's `ROADMAP.md` entry to a status line, is an `ARCHITECT` action at promotion time and
+was **not** performed by this `MEMORY SYNC` - only this file was updated, on request. Until
+that promotion happens, `TASK_SPEC.md` is stale and should not be treated as the active task
+by a future session; this section is the authority on what is actually done.
 
 **Task 004 follows Task 003**, not in parallel: both edit `Header.astro` and `Footer.astro`.
 `ROADMAP.md` holds the ordered sequence through launch.
@@ -312,7 +357,8 @@ organization name, the geographic scope, the locations answer and the Mastodon h
 |-- TASK_SPEC.md                      # Active task-level SSOT
 |-- ROADMAP.md                        # Ordered backlog beyond the active task
 |-- PRE-CONTXT-GENERATOR-PROTOCOL.md  # Workflow bootstrap protocol
-|-- astro.config.mjs                  # Static output; site from SITE_URL; Tailwind Vite plugin
+|-- astro.config.mjs                  # Static output; site from SITE_URL; Tailwind Vite
+|                                      # plugin; a fonts[] entry self-hosts Inter (Task 003)
 |-- package.json                      # engines.node >=22.18.0; check, prebuild, verify
 |-- tsconfig.json                     # Astro strict TypeScript
 |-- docs/
@@ -321,6 +367,7 @@ organization name, the geographic scope, the locations answer and the Mastodon h
 |-- public/                           # Empty; referenced favicon and OG image are absent
 |-- scripts/
 |   |-- fetch-mastodon.ts             # Run by the prebuild hook; needs Node 22.18+
+|   |-- check-contrast.mjs            # npm run check:contrast; zero deps; not yet in verify
 |   `-- verify-baseline.sh            # npm run verify; caches the lockfile-dependent half
 `-- src/
     |-- content.config.ts             # Content collection; glob() loader
@@ -336,8 +383,10 @@ organization name, the geographic scope, the locations answer and the Mastodon h
     |-- layouts/BaseLayout.astro
     |-- pages/                        # about, donate, index, join, locations, posts
     |-- styles/
-    |   `-- global.css                # tailwindcss import, @plugin typography, @theme
-    |                                 # tokens, and the UNLAYERED .container and .prose
+    |   `-- global.css                # tailwindcss import, @plugin typography; a :root
+    |                                 # brand-inputs block feeding @theme's semantic colour
+    |                                 # roles, type scale and rhythm tokens; and the
+    |                                 # UNLAYERED .container and .prose
     `-- types/mastodon.ts
 ```
 
@@ -361,8 +410,12 @@ architecture unless a task explicitly creates them.
 
 ### Active task
 
-Execute `TASK_SPEC.md`. The current task is **Task 003 - Brand system, palette, and
-self-hosted fonts**. Tasks 001, 001b, 001c and 002 are complete and merged to `main`.
+**Task 003 - Brand system, palette, and self-hosted fonts - is complete**, verified in the
+working tree (see section 4). `TASK_SPEC.md` still describes it as active; it has not been
+re-promoted for Task 004 because that is an `ARCHITECT` action at promotion time, out of
+scope for the `MEMORY SYNC` that produced this entry. A session that loads `TASK_SPEC.md`
+before an `ARCHITECT` has promoted Task 004 into it is looking at a stale spec - trust this
+section instead. Tasks 001, 001b, 001c and 002 are complete and merged to `main`.
 
 ### Required inputs
 

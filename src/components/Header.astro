@@ -2,10 +2,10 @@
 import { Menu, X } from 'lucide-astro';
 ---
 
-<header class="bg-white shadow-xs sticky top-0 z-50" role="banner" aria-label="Main navigation">
+<header class="bg-surface-raised shadow-xs sticky top-0 z-50" role="banner" aria-label="Main navigation">
   <nav class="container flex items-center justify-between h-16" aria-label="Primary navigation">
     <!-- Logo -->
-    <a href="/" class="flex items-center space-x-2 text-xl font-bold text-terracotta hover:text-terracotta-dark transition-colors" aria-label="Community Food Group Home">
+    <a href="/" class="flex items-center space-x-2 text-xl font-bold text-brand-ink hover:text-brand-hover transition-colors" aria-label="Community Food Group Home">
       <span class="text-2xl">🍲</span>
       <span>Community Food Group</span>
     </a>
@@ -13,22 +13,22 @@ import { Menu, X } from 'lucide-astro';
     <!-- Desktop Navigation -->
     <ul class="hidden md:flex items-center space-x-6" role="menubar">
       <li role="none">
-        <a href="/" class="text-gray-700 hover:text-terracotta transition-colors font-medium" role="menuitem">
+        <a href="/" class="text-ink-muted hover:text-brand-ink transition-colors font-medium" role="menuitem">
           Home
         </a>
       </li>
       <li role="none">
-        <a href="/about" class="text-gray-700 hover:text-terracotta transition-colors font-medium" role="menuitem">
+        <a href="/about" class="text-ink-muted hover:text-brand-ink transition-colors font-medium" role="menuitem">
           About
         </a>
       </li>
       <li role="none">
-        <a href="/locations" class="text-gray-700 hover:text-terracotta transition-colors font-medium" role="menuitem">
+        <a href="/locations" class="text-ink-muted hover:text-brand-ink transition-colors font-medium" role="menuitem">
           Locations
         </a>
       </li>
       <li role="none">
-        <a href="/join" class="text-gray-700 hover:text-terracotta transition-colors font-medium" role="menuitem">
+        <a href="/join" class="text-ink-muted hover:text-brand-ink transition-colors font-medium" role="menuitem">
           Join
         </a>
       </li>
@@ -42,38 +42,38 @@ import { Menu, X } from 'lucide-astro';
     <!-- Mobile Menu Toggle -->
     <button
       type="button"
-      class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-hidden focus:ring-2 focus:ring-terracotta"
+      class="md:hidden p-2 rounded-lg hover:bg-surface-sunken transition-colors focus:outline-hidden focus:ring-2 focus:ring-focus"
       aria-controls="mobile-menu"
       aria-expanded="false"
       aria-label="Toggle navigation menu"
       id="mobile-menu-toggle"
       data-mobile-toggle
     >
-      <Menu class="w-6 h-6 text-gray-700" data-icon-open />
-      <X class="w-6 h-6 text-gray-700 hidden" data-icon-close />
+      <Menu class="w-6 h-6 text-ink-muted" data-icon-open />
+      <X class="w-6 h-6 text-ink-muted hidden" data-icon-close />
     </button>
   </nav>
 
   <!-- Mobile Navigation -->
-  <div id="mobile-menu" class="md:hidden hidden bg-white border-t border-gray-200" data-mobile-menu>
+  <div id="mobile-menu" class="md:hidden hidden bg-surface-raised border-t border-border" data-mobile-menu>
     <ul class="container py-4 space-y-3" role="menubar" aria-label="Mobile navigation">
       <li role="none">
-        <a href="/" class="block text-gray-700 hover:text-terracotta transition-colors font-medium" role="menuitem">
+        <a href="/" class="block text-ink-muted hover:text-brand-ink transition-colors font-medium" role="menuitem">
           Home
         </a>
       </li>
       <li role="none">
-        <a href="/about" class="block text-gray-700 hover:text-terracotta transition-colors font-medium" role="menuitem">
+        <a href="/about" class="block text-ink-muted hover:text-brand-ink transition-colors font-medium" role="menuitem">
           About
         </a>
       </li>
       <li role="none">
-        <a href="/locations" class="block text-gray-700 hover:text-terracotta transition-colors font-medium" role="menuitem">
+        <a href="/locations" class="block text-ink-muted hover:text-brand-ink transition-colors font-medium" role="menuitem">
           Locations
         </a>
       </li>
       <li role="none">
-        <a href="/join" class="block text-gray-700 hover:text-terracotta transition-colors font-medium" role="menuitem">
+        <a href="/join" class="block text-ink-muted hover:text-brand-ink transition-colors font-medium" role="menuitem">
           Join
         </a>
       </li>
