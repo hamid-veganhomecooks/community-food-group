@@ -64,7 +64,6 @@ try {
           <div class="mt-4 grid grid-cols-2 gap-2">
             {post.media_attachments.slice(0, 4).map((media) => (
               <img
-                key={media.id}
                 src={media.preview_url || media.url}
                 alt={media.description || 'Post attachment'}
                 class="rounded-lg object-cover w-full h-32"

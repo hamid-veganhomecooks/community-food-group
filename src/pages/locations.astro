@@ -32,7 +32,7 @@ import { MapPin, Clock, Phone, Mail } from 'lucide-astro';
 
             <div class="space-y-3 text-gray-700">
               <div class="flex items-start space-x-2">
-                <MapPin class="w-5 h-5 text-terracotta flex-shrink-0 mt-0.5" aria-hidden="true" />
+                <MapPin class="w-5 h-5 text-terracotta shrink-0 mt-0.5" aria-hidden="true" />
                 <div>
                   <p>{location.address}</p>
                   <a
@@ -48,12 +48,12 @@ import { MapPin, Clock, Phone, Mail } from 'lucide-astro';
               </div>
 
               <div class="flex items-start space-x-2">
-                <Clock class="w-5 h-5 text-terracotta flex-shrink-0 mt-0.5" aria-hidden="true" />
+                <Clock class="w-5 h-5 text-terracotta shrink-0 mt-0.5" aria-hidden="true" />
                 <div>
                   <p class="font-medium text-gray-800">Hours:</p>
                   <ul class="text-sm" aria-label="Operating hours">
                     {Object.entries(location.hours).map(([day, hours]) => (
-                      <li key={day} class="flex justify-between gap-4">
+                      <li class="flex justify-between gap-4">
                         <span class="capitalize">{day}</span>
                         <span class="text-gray-600">{hours}</span>
                       </li>
@@ -64,7 +64,7 @@ import { MapPin, Clock, Phone, Mail } from 'lucide-astro';
 
               {location.phone && (
                 <div class="flex items-center space-x-2">
-                  <Phone class="w-5 h-5 text-terracotta flex-shrink-0" aria-hidden="true" />
+                  <Phone class="w-5 h-5 text-terracotta shrink-0" aria-hidden="true" />
                   <a href={`tel:${location.phone}`} class="hover:text-terracotta">
                     {location.phone}
                   </a>
@@ -73,7 +73,7 @@ import { MapPin, Clock, Phone, Mail } from 'lucide-astro';
 
               {location.email && (
                 <div class="flex items-center space-x-2">
-                  <Mail class="w-5 h-5 text-terracotta flex-shrink-0" aria-hidden="true" />
+                  <Mail class="w-5 h-5 text-terracotta shrink-0" aria-hidden="true" />
                   <a href={`mailto:${location.email}`} class="hover:text-terracotta">
                     {location.email}
                   </a>
@@ -87,7 +87,6 @@ import { MapPin, Clock, Phone, Mail } from 'lucide-astro';
                 <div class="flex flex-wrap gap-2">
                   {location.features.map((feature) => (
                     <span
-                      key={feature}
                       class="bg-sage-light/20 text-sage-dark px-3 py-1 rounded-full text-sm"
                     >
                       {feature}
