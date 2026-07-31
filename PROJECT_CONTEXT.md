@@ -127,7 +127,7 @@ proposing to reverse this decision and needs a new one.
 
 | Surface | What an adopter does | Status |
 | --- | --- | --- |
-| `site.config.ts` | Fills identity constants: name, tagline, city, contact, social | **Task 004b, active** |
+| `site.config.ts` | Fills identity constants: name, tagline, city, contact, social | Shipped, Task 004b |
 | `:root` brand inputs in `src/styles/global.css` | Edits fourteen colour values | Shipped, Task 003 |
 | `src/data/locations.json` | Replaces the records wholesale | Task 005 |
 | `src/content/pages/*.mdx` | **Rewrites the prose wholesale** | Task 005 |
@@ -373,9 +373,9 @@ to `docs/DECISIONS_ARCHIVE.md`.
 
 ### Verified repository state on 2026-07-31
 
-**Tasks 001, 001b, 001c, 002, 003, 004 and 004c are complete and merged to `main`**, and the
-working tree is clean. Task 002 as `8ad91ad`, Task 003 as `faf489e`, Task 004c as `bcef6db`,
-Task 004 as `15dd164`.
+**Tasks 001, 001b, 001c, 002, 003, 004, 004b and 004c are complete and merged to `main`**, and
+the working tree is clean. Task 002 as `8ad91ad`, Task 003 as `faf489e`, Task 004c as
+`bcef6db`, Task 004 as `15dd164`, Task 004b as `0fd7d5e`.
 
 **Do not infer commit state from a status word in this file - check `git log` / `git status`.**
 These documents have gone stale on exactly this point twice: once for Task 003 and once for
@@ -383,7 +383,8 @@ Task 004c, in both cases because a status was true when written and read after i
 being true.
 
 **The green baseline, on Node v22.23.2.** These are the numbers a task compares against; a
-change to any of them is a finding, not noise:
+change to any of them is a finding, not noise. **As of Task 004b, `npm run verify` no longer
+exits 0 - that is the correct, honest state**, not a regression to chase:
 
 | Check | Expected result |
 | --- | --- |
@@ -391,13 +392,17 @@ change to any of them is a finding, not noise:
 | `npm run check` | **0 errors, 0 warnings, 12 hints** (the zod deprecation) |
 | `npm run build` | the same **six** routes |
 | `npm run check:contrast` | all **sixteen** role pairs pass |
-| `npm run verify` | exits 0 |
+| `npm run check:config` | **exits non-zero.** `GROUP_NAME`, `GROUP_TAGLINE`, `GROUP_DOMAIN` and the Mastodon tokens are genuinely unknown owner inputs - see the owner-inputs table below. Do not weaken this check or fill a token with a guess to turn it green. |
+| `npm run verify` | **exits non-zero**, at the `check:config` step only |
 
-`npm run verify` runs `check`, `check:contrast` and `build` in its **uncached** half, so a
-source edit always re-runs them; only `npm ci` / `npm audit` are cached, keyed on the lockfile
-and Node version. Task 004 wired `check:contrast` in - it was a manual step before that.
+`npm run verify` runs `check`, `check:contrast`, `check:config` and `build`, in that order, in
+its **uncached** half, so a source edit always re-runs them; only `npm ci` / `npm audit` are
+cached, keyed on the lockfile and Node version. Task 004 wired `check:contrast` in; Task 004b
+wired `check:config` in, before `build`. Because the script uses `set -e`, a failing
+`check:config` currently stops `verify` before `build` runs - run `npm run build` directly to
+confirm it still emits six routes while tokens remain unfilled.
 
-**The per-task execution records for Tasks 002, 003 and 004 are in
+**The per-task execution records for Tasks 002, 003, 004 and 004b are in
 `docs/DECISIONS_ARCHIVE.md` under `## Verification history`.** They are evidence that finished
 work was verified, not input to the next task. Read them only to settle a question about how
 something was confirmed.
@@ -424,16 +429,18 @@ something was confirmed.
 - The MDX documents and `src/data/locations.json` still contain invented locations, history,
   schedules and impact claims - scaffold content, not approved public facts, and the target of
   Task 005. `Footer.astro`'s share of this is resolved: its invented social link and
-  mismatched labels are gone. Its hardcoded organization name is a separate thing, tracked in
-  the owner-inputs table below and **now being fixed by the active Task 004b**, not by this
-  defect.
-- **[2026-07-31] The invented organization name and tagline are shipping in metadata.**
-  `"Community Food Group"` appears 9 times across 7 files and `"Building food security through
-  community action"` 3 times, reaching `<title>`, the copyright line, `og:description` and
-  `twitter:description` on every route. Live constraint 1 violations. **Task 004b** removes
-  all of the metadata occurrences; two prose occurrences (`about.mdx:9` and the
-  `Footer.astro:8` blurb) are deliberately left for **Task 005**, because section 2 forbids
-  interpolating config into prose.
+  mismatched labels are gone. Its hardcoded organization name is also resolved, by Task 004b -
+  the heading, the copyright line, and the mailto link now read `site.config.ts`. Only the
+  `Footer.astro:8` prose blurb remains, and it is Task 005's, deliberately untouched.
+- **[2026-07-31] Resolved by Task 004b, removed from this list:** the invented organization
+  name and tagline shipping in metadata. `"Community Food Group"` no longer appears in
+  `<title>`, the copyright line, `og:description`, `twitter:description`, the `author` schema
+  default, the header wordmark/`aria-label`, or the `MastodonFeed` display-name fallback - all
+  eight in-scope occurrences now read `site.config.ts`, which carries the `GROUP_NAME` and
+  `GROUP_TAGLINE` tokens because those facts are still genuinely unknown. Two occurrences
+  remain by design, not oversight: `about.mdx:9` and the `Footer.astro:8` blurb are MDX prose,
+  which section 2 forbids interpolating config into, and both are Task 005's. See the dated
+  decision below and `docs/DECISIONS_ARCHIVE.md`'s verification history for the record.
 - There is no CI workflow, automated test suite, formatter, or lint command.
 - Cloudflare Pages configuration and a production URL have not been verified.
 
@@ -448,45 +455,56 @@ one measure, one set of rhythm tokens, and one colour token system.
 two things Task 003 could not: wiring `npm run check:contrast` into `npm run verify`, and the
 two dead footer links.
 
-**Every Track A task through 004 is now merged and the working tree is clean.** Tasks 001,
-001b, 001c, 002, 003, 004 and 004c are all on `main`.
+**Every Track A task through 004b is now merged and the working tree is clean.** Tasks 001,
+001b, 001c, 002, 003, 004, 004b and 004c are all on `main`.
 
 The repository is still a prototype whose public copy is invented scaffold data, and **it
 must not be deployed.**
 
-**[2026-07-31] Task 004b (site config and the fork-and-adopt surface) is promoted and
-ACTIVE.** Its full scope and acceptance are in `TASK_SPEC.md`, which is their only copy; the
-`ROADMAP.md` entry is now a status line. The next session's role is `IMPLEMENTER`.
+**[2026-07-31] Task 004b (site config and the fork-and-adopt surface) is complete and merged**
+as `0fd7d5e`. `site.config.ts` and `scripts/check-config.mjs` now exist; `npm run check:config`
+is wired into the uncached half of `npm run verify`, between `check:contrast` and `build`.
+Eight of the nine hardcoded occurrences of the invented organization name, and both metadata
+occurrences of the invented tagline, now read `site.config.ts` instead - see the resolved
+defect above and `docs/DECISIONS_ARCHIVE.md`'s verification history for the full record.
+**`npm run check:config` ships red on purpose**: `GROUP_NAME`, `GROUP_TAGLINE`, `GROUP_DOMAIN`
+and the Mastodon handle are still genuinely unknown owner inputs, so `npm run verify` now
+exits non-zero at that step until they are answered. This is not a regression to fix; it is
+the guard this task exists to build. The one occurrence left in source, `about.mdx:9`,
+survived deliberately - it is prose, and belongs to Task 005.
 
-Three things were found at promotion by grepping the repository rather than trusting the
-roadmap entry, and they are recorded here because they outlive the task:
+Three things were found at the Task 004b promotion by grepping the repository rather than
+trusting the roadmap entry, and they are recorded here because they outlive the task:
 
 - **The roadmap's own inventory of the hardcoded name was wrong** - it claimed 9 occurrences,
   enumerated 7, and named 6 files where there are 7. The two it missed were an `aria-label`
   and an MDX heading, which is precisely the failure mode its own rationale predicted.
   Constraint 3.4 governs this project's notes about itself, not only the repository.
 - **One occurrence is not fixable by 004b.** `about.mdx:9` is MDX prose, and section 2 forbids
-  interpolating config into prose, so it is deliberately left for Task 005. The promoted spec
-  requires it to *survive* rather than counting its survival as a failure.
+  interpolating config into prose, so it was deliberately left for Task 005, and did survive.
 - **A second constraint 1 violation was found:** the invented tagline "Building food security
   through community action", feeding `<meta name="description">`, `og:description` and
-  `twitter:description`. It is config-driven chrome under section 2 and is in 004b's scope,
-  but the same words also open a footer *prose* blurb, which is Task 005's. This raises one
-  new owner input, in the table below.
+  `twitter:description`. It was config-driven chrome under section 2 and was in 004b's scope,
+  but the same words also open a footer *prose* blurb, which is Task 005's and was left alone.
+  This raised one new owner input, in the table below.
 
 **Track B (Task 005) remains blocked on exactly one input: the organization name**, in the
-owner-inputs table below. Task 004b does not resolve this - it moves the name into one config
+owner-inputs table below. Task 004b did not resolve this - it moved the name into one config
 field (`site.config.ts`) rather than eight, but Task 005's prose still has to be written
 knowing what the group is called. Nothing else blocks Task 005: the contact route, the
-geographic scope, and the garden are all settled. **Its blockers will be re-confirmed in an
-`ARCHITECT` session after 004b lands**, before it is promoted.
+geographic scope, and the garden are all settled. **The next `ARCHITECT` session should
+re-confirm this blocker and, if it is still open, decide whether to promote a different task
+instead of leaving Track B idle.**
 
 **Resolved: the `ROADMAP.md` Task 004c staleness** flagged here previously. That entry read
 "not yet committed" while `git log` showed `bcef6db`; it was corrected at the 004b promotion,
 which was the next ARCHITECT write to that file. The general rule stands and is worth keeping:
 **do not infer commit state from a status word in any of these documents - check `git log`.**
 
-`ROADMAP.md` holds the ordered sequence through launch.
+`ROADMAP.md` holds the ordered sequence through launch. **Its status lines for Task 004 and
+Task 004b should be confirmed to read as complete** at the next `ARCHITECT` session - both
+were merged after their respective roadmap entries collapsed to status lines, and this file
+has twice gone stale on exactly that kind of unconfirmed transition (Task 003, Task 004c).
 
 ### Open owner inputs
 
@@ -544,16 +562,16 @@ Answered on 2026-07-31. **Do not re-ask these either:**
   answer the handle question - it defers the link until Task 006 or 007, when the handle
   exists.
 
-Nothing on the remaining list blocks Task 004b - it centralizes these values without filling
-them, and **ships with `npm run check:config` deliberately failing** on the tokens that are
-genuinely unknown. **Track B is still down to two blockers:** the organization name, which
-gates Task 005, and the Mastodon handle, which gates Task 006. The tagline added above blocks
-neither; it is metadata that 004b tokenizes today and the owner can answer at any point. The
-locations row still gates the cook and distribution records, but the garden record can be
-written today.
+Nothing on the remaining list blocked Task 004b, now complete (`0fd7d5e`) - it centralized
+these values without filling them, and **ships with `npm run check:config` deliberately
+failing** on the tokens that are genuinely unknown. **Track B is still down to two blockers:**
+the organization name, which gates Task 005, and the Mastodon handle, which gates Task 006.
+The tagline added above blocks neither; it is metadata that 004b tokenized and the owner can
+answer at any point. The locations row still gates the cook and distribution records, but the
+garden record can be written today.
 
-**How an unanswered input is represented in `site.config.ts`** (Task 004b), because the
-distinction is load-bearing and easy to get backwards:
+**How an unanswered input is represented in `site.config.ts`** (shipped in Task 004b), because
+the distinction is load-bearing and easy to get backwards:
 
 | World state | Representation |
 | --- | --- |
@@ -583,6 +601,9 @@ the withdrawn Signal link is `null` (the owner *decided* against it on 2026-07-3
 |                                      # plugin; a fonts[] entry self-hosts Inter (Task 003)
 |-- package.json                      # engines.node >=22.18.0; check, prebuild, verify
 |-- tsconfig.json                     # Astro strict TypeScript
+|-- site.config.ts                    # Identity constants (Task 004b); GROUP_NAME,
+|                                      # GROUP_TAGLINE, GROUP_DOMAIN and the Mastodon handle
+|                                      # are still unfilled tokens; city/region are filled
 |-- docs/
 |   |-- DECISIONS_ARCHIVE.md          # Historical; not part of the session payload
 |   `-- ENVIRONMENT.md                # Workstation setup; not part of the session payload
@@ -591,6 +612,9 @@ the withdrawn Signal link is `null` (the owner *decided* against it on 2026-07-3
 |   |-- fetch-mastodon.ts             # Run by the prebuild hook; needs Node 22.18+
 |   |-- check-contrast.mjs            # npm run check:contrast; zero deps; wired into the
 |   |                                 # UNCACHED half of verify by Task 004
+|   |-- check-config.mjs              # npm run check:config; zero deps; wired into the
+|   |                                 # UNCACHED half of verify by Task 004b; exits non-zero
+|   |                                 # while site.config.ts carries an unfilled token
 |   `-- verify-baseline.sh            # npm run verify; caches the lockfile-dependent half
 `-- src/
     |-- content.config.ts             # Content collection; glob() loader
@@ -618,9 +642,8 @@ deliberately.
 
 `dist/`, `.astro/` and `.verify-cache/` exist locally and are git-ignored.
 
-`site.config.ts` and `scripts/check-config.mjs` are **absent from this map on purpose**: the
-active Task 004b creates them, and they do not exist yet. This map records observed state
-(constraint 3.4). Add them here only once they are on disk.
+`site.config.ts` and `scripts/check-config.mjs` were created by Task 004b and are on disk as
+of `0fd7d5e`; both are now in the map above.
 
 `src/components/LocationCard.astro`, `DonateSection.astro`, and `JoinCTA.astro` do not
 exist. Earlier repository maps that list them describe an unrealized design, not current
@@ -633,43 +656,36 @@ architecture unless a task explicitly creates them.
 
 ### Session role
 
-**`IMPLEMENTER`.** The prior session ran as `ARCHITECT` and promoted Task 004b into
-`TASK_SPEC.md` on 2026-07-31. The session before that ran as `IMPLEMENTER` for Task 004, now
-complete and merged.
+**`ARCHITECT`, next.** The prior session ran as `IMPLEMENTER` for Task 004b, now complete and
+merged as `0fd7d5e`, then ran `MEMORY SYNC` to fold its verification record and newly
+discovered facts back into this file. No task is currently promoted.
 
 ### Active task
 
-**Task 004b - Site config and the fork-and-adopt surface.** Promoted 2026-07-31.
-**`TASK_SPEC.md` is the only authority on its scope and acceptance**; the `ROADMAP.md` entry
-is a status line and the planned scope was cut, not copied.
+**None promoted.** `TASK_SPEC.md` still holds Task 004b's spec text; it is historical record
+now, not current authorization - it will be overwritten at the next promotion, per the
+promotion protocol in section 1.
 
-In short: create `site.config.ts` and `scripts/check-config.mjs`, replace the eight in-scope
-hardcoded occurrences of the organization name plus the tagline in metadata, wire
-`check:config` into the uncached half of `npm run verify`, and broaden `README.md`'s
-rebranding section to the four adoption surfaces.
+The next `ARCHITECT` session should:
 
-**Two things about this task are unusual and are not defects:**
+- Review priorities against `ROADMAP.md`.
+- Re-confirm Task 005's one blocker (the organization name - see the owner-inputs table in
+  section 4) and promote it if the owner has supplied a name, or promote a different task if
+  Track B is still idle.
+- Confirm `ROADMAP.md`'s status lines for Task 004 and Task 004b read as complete; both were
+  merged after promotion, and this file has twice gone stale on exactly that unconfirmed
+  transition (Task 003, Task 004c).
 
-1. **It ships with `npm run check:config` deliberately failing.** The organization name, the
-   tagline, the domain and the Mastodon handle genuinely are not known. A red check is the
-   honest end state. Do not weaken the check and do not fill a token to make `verify` green.
-2. **It deliberately leaves one hardcoded name behind**, at `about.mdx:9`. That is prose, and
-   section 2 forbids interpolating config into prose. It belongs to Task 005.
-
-Tasks 001, 001b, 001c, 002, 003, 004 and 004c are complete and merged to `main` - 003 as
-`faf489e`, 004c as `bcef6db`, 004 as `15dd164` - and the working tree is clean. **Do not infer
-commit state from a status word in this file; check `git log` / `git status`.** These
-documents have gone stale on exactly this point twice.
-
-**Next after 004b:** an `ARCHITECT` session re-confirms Task 005's blockers and promotes it if
-they are clear. Task 005 (Track B) stays blocked until the owner supplies the organization
-name - see the owner-inputs table in section 4.
+Tasks 001, 001b, 001c, 002, 003, 004, 004b and 004c are complete and merged to `main` - 003 as
+`faf489e`, 004c as `bcef6db`, 004 as `15dd164`, 004b as `0fd7d5e` - and the working tree is
+clean. **Do not infer commit state from a status word in this file; check `git log` /
+`git status`.** These documents have gone stale on exactly this point twice.
 
 ### Required inputs
 
 - This entire `PROJECT_CONTEXT.md`
-- The entire `TASK_SPEC.md`
-- The current contents of every file listed under the task's allowed scope
+- The entire `TASK_SPEC.md`, once a task is promoted
+- The current contents of every file listed under the promoted task's allowed scope
 - Actual command output from the task's verification commands
 
 `docs/DECISIONS_ARCHIVE.md` and `docs/ENVIRONMENT.md` are **not** required inputs. Load
@@ -685,6 +701,6 @@ The implementer must return:
 4. Any acceptance criterion that did not pass
 5. Newly discovered repository facts that should be added during `MEMORY SYNC`
 
-Task 004b is promoted and this contract is live. An `IMPLEMENTER` session must still stop and
-report rather than start Task 005 unpromoted, fill in an owner input, or silently expand
-scope - including into the two prose occurrences that `TASK_SPEC.md` explicitly fences off.
+This contract is live for whichever task is promoted next. An `IMPLEMENTER` session must still
+stop and report rather than start unpromoted work, fill in an owner input, or silently expand
+scope.

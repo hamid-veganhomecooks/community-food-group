@@ -225,3 +225,65 @@ Node v22.23.2:
 traversal groundwork". It had none. The claim was inherited from an earlier document rather
 than checked. Constraint 3.4 ("observed state beats planned state") governs this project's
 notes about itself, not only the repository. Correction logged in `docs/ENVIRONMENT.md`.
+
+### Task 004b, verified 2026-07-31
+
+Site config and the fork-and-adopt surface. Merged to `main` as `0fd7d5e`. Verified by
+execution on Node v22.23.2:
+
+- `npm run check` reports 0 errors, 0 warnings, 12 hints (unchanged). A deliberately wrong
+  field (`notARealField`) added to `site.config.ts` produced `ts(2353): Object literal may
+  only specify known properties, and 'notARealField' does not exist in type 'SiteConfig'`,
+  proving `as const satisfies SiteConfig` is genuinely checked; reverted, 0 errors again.
+- `grep -rn 'Community Food Group' src/` returns exactly one line, `src/content/pages/about.mdx:9`
+  - the one occurrence Task 005 owns. All eight in-scope occurrences (`Header.astro` x2,
+  `Footer.astro` x2, `BaseLayout.astro`'s `siteTitle` and `metaDescription`,
+  `content.config.ts`'s `author` default, `index.astro`'s `description` prop - deleted rather
+  than rebuilt, `MastodonFeed.astro`'s fallback) now read `site.config.ts`.
+- `npm run check:config` **proven to fail**: exits 1, naming `GROUP_NAME`, `GROUP_TAGLINE`,
+  `GROUP_DOMAIN` (twice - `domain` and `contactEmail`), `MASTODON_HANDLE` and `MASTODON_URL`
+  with file and line. **Proven to pass**: every token temporarily replaced with a
+  plausible-looking value, `check:config` exited 0 ("No unfilled tokens found"), then the file
+  was reverted (diffed clean against the pre-edit copy) and reconfirmed red. Both directions
+  observed, not just one.
+- `grep -rn 'GROUP NAME' src/ site.config.ts` returns nothing - the space-spelled token is
+  fully retired from source.
+- The exact token strings (`GROUP_NAME`, `GROUP_TAGLINE`, `GROUP_DOMAIN`, `MASTODON_HANDLE`,
+  `MASTODON_URL`) were grepped across the **whole repository**, not just `src/`: `site.config.ts`
+  is the only non-documentation file that contains them; every other hit is prose in
+  `PROJECT_CONTEXT.md`, `TASK_SPEC.md`, `ROADMAP.md`, `README.md` or this file, describing the
+  token system itself.
+- `npm run build` still emits the same six routes. Checked `dist/` directly, not source:
+  `dist/index.html`'s `<title>`, meta description, `og:description`, `twitter:description`,
+  header wordmark/`aria-label` and footer heading/copyright all show the literal token text,
+  not an invented name; `dist/about/index.html` still shows "Community Food Group" only in its
+  one permitted MDX heading.
+- `npm run check:contrast` still passes all sixteen role pairs, unmoved - `global.css` was
+  never touched by this task (`git diff HEAD -- src/styles/global.css` empty), so the Task 002
+  type scale, spacing tokens, and unlayered `.container`/`.prose` are byte-for-byte unchanged.
+- Task 004's accessibility work confirmed intact: `role="menubar"`/`role="menuitem"`/
+  `role="none"` and `href="#"` both still grep to nothing in `src/`.
+- `npm run verify` exits non-zero, at the `check:config` step, on purpose. Confirmed
+  `check:config` runs in the **uncached** half: after touching only `site.config.ts`, a rerun
+  showed `deps: unchanged ... skipping npm ci and npm audit` while `check`, `check:contrast`
+  and `check:config` all reran.
+- `README.md` confirmed to have exactly one `##`-level rebranding heading, now introduced by a
+  four-surface table and four `### N.` subsections covering `site.config.ts`, colour,
+  `locations.json`, and MDX prose; the existing colour material (Layer 1/Layer 2/Checking your
+  rebrand) was kept, not deleted. The `<h1>` no longer names the group.
+
+**Implementation trap found and fixed during this task, not before.** The first draft of
+`site.config.ts`'s own doc comments referenced `PROJECT_CONTEXT.md` and spelled out
+`SCREAMING_SNAKE_CASE` literally - both self-matched the token regex `check-config.mjs` scans
+for, which would have permanently blocked the validator from ever reaching a clean pass, even
+once every real identity field was filled. Caught by running `check:config` and reading its
+output before declaring success, not by inspection. Fixed by rewording those two comments to
+avoid the literal pattern. **A future edit to `site.config.ts`'s comments must not spell out a
+token-shaped string that isn't an actual token** - the validator cannot distinguish "this is a
+token" from "this is prose describing tokens."
+
+**Two narrow, documented exclusions from the `check:config` scan**, both to avoid false
+positives rather than to weaken the pattern: `src/env.d.ts` is excluded by path (its
+`MASTODON_ACCOUNT` is a fixed Vite ambient-env interface member, not an owner-fill token), and
+`.css` is excluded from the scanned extensions (`global.css`'s doc comment references
+`TASK_SPEC.md` by name). Both are commented inline in `scripts/check-config.mjs`.
