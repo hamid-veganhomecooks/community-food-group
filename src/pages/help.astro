@@ -2,19 +2,19 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getEntry, render } from 'astro:content';
 
-const donatePage = await getEntry('pages', 'donate');
+const helpPage = await getEntry('pages', 'help');
 
-if (!donatePage) {
-  throw new Error("Content entry 'pages/donate' was not found");
+if (!helpPage) {
+  throw new Error("Content entry 'pages/help' was not found");
 }
 
-const { Content } = await render(donatePage);
+const { Content } = await render(helpPage);
 ---
 
 <BaseLayout
-  title={donatePage.data.title}
-  description={donatePage.data.description}
-  pageTitle={donatePage.data.heroTitle || donatePage.data.title}
+  title={helpPage.data.title}
+  description={helpPage.data.description}
+  pageTitle={helpPage.data.heroTitle || helpPage.data.title}
 >
   <div class="section bg-surface">
     <div class="container">

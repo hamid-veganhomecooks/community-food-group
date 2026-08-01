@@ -239,23 +239,26 @@ to `docs/DECISIONS_ARCHIVE.md`.
     a person in the group, and the scaffold's invented membership tiers that Task 005 is under
     orders to delete. Prefer "people in the group" and "neighbors". Copy saying food goes to
     "members" will be read as the third sense.
-  - **The existing `community-garden` record in `src/data/locations.json` is scaffold and is
-    replaced, not edited.** `789 Garden Lane, Springfield`, `(555) 456-7890`,
-    `garden@communityfood.org` and its seven days of 8:00-6:00 hours are all invented. What
-    survives is the **card affordance**, not the row. A future session must not read "keep the
-    community garden card" as authorization to leave that data in place.
-  - **This is a schema change.** A distribution point deliberately publishes no time; the
-    garden has a real cadence and a real address but no map link. One flat shape forces one of
-    them to carry a falsehood or a dead field. `locations.json` gets a `kind` discriminator and
-    a Zod discriminated union. Recorded on the Task 005 entry in `ROADMAP.md`.
+  - **The scaffold `community-garden` record was replaced wholesale, not edited**, by Task 005.
+    `789 Garden Lane, Springfield`, `(555) 456-7890`, `garden@communityfood.org` and its seven
+    days of 8:00-6:00 hours were all invented and are gone. What survived is the **card
+    affordance**, not the row. A future session must not read "keep the community garden card"
+    as authorization to reinstate that data.
+  - **This was a schema change, and it shipped.** A distribution point deliberately publishes
+    no time; the garden has a real cadence and a real address but no map link. One flat shape
+    forces one of them to carry a falsehood or a dead field. `src/data/locations.json` is now
+    an Astro data collection with a `kind` discriminator and a discriminated union, defined in
+    `src/content.config.ts` - see the Task 005 decision below.
   - The garden does **not** reopen the "staffed sites" question. It has no phone number and no
     per-site email; the single contact route is still email to `info@GROUP_DOMAIN`.
   - **Standing dependency:** these are facts about a third party and about a rental that can
     lapse. If the plot is given up, the card and the about-page claim both go stale. Re-verify
     the CGT listing before publication rather than assuming this entry still holds.
-- **`/donate` is a "Ways to Help" page.** It presents concrete material and time needs
-  rather than a donation-platform flow. The invented "90% of all donations" transparency
-  claim is withdrawn and must not reappear in any form.
+- **The route is `/help`, labelled "Ways to help".** Renamed from `/donate` by Task 005. It
+  presents concrete material and time needs - vegan ingredients, containers, kitchen time,
+  transport - rather than a donation-platform flow. The invented "90% of all donations"
+  transparency claim is withdrawn and must not reappear in any form. There is deliberately
+  **no money section**: no bank route, no platform, no drop-off address, because none exist.
 - **Distribution cadence is monthly; precise scheduling happens off-site.** The site states
   the monthly rhythm and nothing more precise. The exact schedule is set close to the date
   and genuinely changes, so publishing a time in advance would be **inaccurate**, not merely
@@ -276,8 +279,7 @@ to `docs/DECISIONS_ARCHIVE.md`.
   established program with a history. Cultural events and other activities are deferred
   until they are real.
 - **Heading case:** Title Case for `h1` and `h2`; sentence case for `h3` and below, UI
-  labels, buttons and links. Headings inside the MDX documents still mix both and are
-  corrected in Task 005, which rewrites that copy anyway.
+  labels, buttons and links. The MDX documents were brought into line by Task 005.
 - **Owner-fill placeholder tokens are permitted in content, under conditions.** Content work
   may use literal `SCREAMING_SNAKE_CASE` tokens matching the single documented pattern below.
   Still unfilled as of 2026-07-31: **`GROUP_NAME`**, **`GROUP_TAGLINE`**, **`GROUP_DOMAIN`**,
@@ -346,6 +348,24 @@ to `docs/DECISIONS_ARCHIVE.md`.
   - **When the new name lands it is a two-field edit to `site.config.ts`** - provided the rule
     above held. If the name is ever found in prose, that edit becomes a prose rewrite and the
     rule has failed. A future session should grep before assuming it holds.
+  - **Verified holding as of Task 005**: zero occurrences in `src/`, the one occurrence in
+    `site.config.ts`, and the expected renders in `dist/`.
+
+- **[2026-07-31] The group's internal circumstances are not recorded in any tracked file.**
+  Owner decision. The repository is public and volunteers read it; the funding position, any
+  organizational strain, and the reasons behind a name change are not the codebase's business
+  and would leave a reader with a false impression of the group.
+
+  **Record the engineering consequence, never the motivation behind it.** The naming rule above
+  is fully binding without a reason attached, which is why removing the reasons cost nothing.
+  The approved register is neutral and forward-looking - "always evaluating new ways of
+  presenting itself", "funding sources are dynamic".
+
+  This applies to `PROJECT_CONTEXT.md`, `TASK_SPEC.md`, `ROADMAP.md` and
+  `docs/DECISIONS_ARCHIVE.md` alike. **A future session offering to "restore the missing
+  context" is proposing to reverse this decision.** Two documents carried such wording between
+  the Task 005 promotion and its `MEMORY SYNC`; it was removed from the working tree while the
+  only commit containing it was still unpushed.
 
 ### Styling and design system
 
@@ -408,14 +428,36 @@ to `docs/DECISIONS_ARCHIVE.md`.
 
 ### Verified repository state on 2026-07-31
 
-**Tasks 001, 001b, 001c, 002, 003, 004, 004b and 004c are complete and merged to `main`**, and
-the working tree is clean. Task 002 as `8ad91ad`, Task 003 as `faf489e`, Task 004c as
-`bcef6db`, Task 004 as `15dd164`, Task 004b as `0fd7d5e`.
+**Tasks 001, 001b, 001c, 002, 003, 004, 004b and 004c are complete and merged to `main`.**
+Task 002 as `8ad91ad`, Task 003 as `faf489e`, Task 004c as `bcef6db`, Task 004 as `15dd164`,
+Task 004b as `0fd7d5e`.
+
+**Task 005 is implemented and fully verified, and is SPLIT ACROSS A COMMIT BOUNDARY.** This is
+bookkeeping, not a defect in the work, but a session that misreads it will draw wrong
+conclusions:
+
+- **Committed**, swept into the docs commit `54f5442` ("Project management"): the deletion of
+  `src/content/pages/donate.mdx` and the rename `src/pages/donate.astro` -> `help.astro`. Both
+  were staged in the index (`git rm` / `git mv`) when that commit was amended, so they went in
+  with it.
+- **Uncommitted**, in the working tree: everything else - `site.config.ts`, all three MDX
+  documents (`help.mdx` is still **untracked**), `locations.json`, `content.config.ts`, the four
+  page templates, `Header.astro`, `Footer.astro`, `README.md`, `docs/ENVIRONMENT.md` and this
+  file.
+
+**Consequence: `HEAD` on its own is not a working tree.** Verified at `54f5442`:
+`src/pages/help.astro` still calls `getEntry('pages', 'donate')`, `src/content/pages/` holds
+only `about.mdx` and `join.mdx`, and `site.config.ts` still carries `GROUP_NAME` and
+`GROUP_TAGLINE`. **A build of `HEAD` alone would throw** on the missing content entry - inferred
+from those three verified facts, not executed. **Do not check out or reset to `54f5442`
+expecting a green build**, and commit the remainder of Task 005 as one unit rather than adding
+to the split.
 
 **Do not infer commit state from a status word in this file - check `git log` / `git status`.**
-These documents have gone stale on exactly this point twice: once for Task 003 and once for
-Task 004c, in both cases because a status was true when written and read after it stopped
-being true.
+These documents have gone stale on exactly this point four times: Task 003, Task 004c, Task
+004b's `ACTIVE` status line, and **this very entry** - its first draft said "not committed" and
+was made wrong within the same session by an amend that landed between two tool calls. The
+warning is not historical. Check the log.
 
 **The green baseline, on Node v22.23.2.** These are the numbers a task compares against; a
 change to any of them is a finding, not noise. **As of Task 004b, `npm run verify` no longer
@@ -424,11 +466,17 @@ exits 0 - that is the correct, honest state**, not a regression to chase:
 | Check | Expected result |
 | --- | --- |
 | `npm ci` / `npm audit` | exits 0 / **0 vulnerabilities** |
-| `npm run check` | **0 errors, 0 warnings, 12 hints** (the zod deprecation) |
-| `npm run build` | the same **six** routes |
+| `npm run check` | **0 errors, 0 warnings, 21 hints.** Was 12 before Task 005. The rise is the **same** zod deprecation counted in one more place - the new `locations` schema in `src/content.config.ts`. **21 is the baseline; it is not a regression.** |
+| `npm run build` | the same **six** routes, now `/`, `/about`, `/help`, `/join`, `/locations`, `/posts`. **`/donate` no longer exists** |
 | `npm run check:contrast` | all **sixteen** role pairs pass |
-| `npm run check:config` | **exits non-zero.** `GROUP_NAME`, `GROUP_TAGLINE`, `GROUP_DOMAIN` and the Mastodon tokens are genuinely unknown owner inputs - see the owner-inputs table below. Do not weaken this check or fill a token with a guess to turn it green. |
+| `npm run check:config` | **exits non-zero, naming 7 tokens.** Four in `site.config.ts` (`GROUP_DOMAIN` twice, `MASTODON_HANDLE`, `MASTODON_URL`) plus **three legitimate `GROUP_DOMAIN` occurrences in `src/content/pages/*.mdx`**, because the contact route is written as the literal `info@GROUP_DOMAIN`. `GROUP_NAME` and `GROUP_TAGLINE` are gone, filled by Task 005. Do not weaken this check or fill a token with a guess to turn it green. |
 | `npm run verify` | **exits non-zero**, at the `check:config` step only |
+
+**Task 005 deliberately ended Task 004b's "`site.config.ts` is the only file carrying a
+token" invariant.** Tokens in *content* are permitted by constraint 1; what section 2 forbids
+is config *interpolation* into MDX, which is a different thing. `check:config` naming
+`GROUP_DOMAIN` inside `src/content/pages/*.mdx` is the expected, correct result and **must not
+be "fixed"** by inventing a domain or deriving the address from config.
 
 `npm run verify` runs `check`, `check:contrast`, `check:config` and `build`, in that order, in
 its **uncached** half, so a source edit always re-runs them; only `npm ci` / `npm audit` are
@@ -440,7 +488,32 @@ confirm it still emits six routes while tokens remain unfilled.
 **The per-task execution records for Tasks 002, 003, 004 and 004b are in
 `docs/DECISIONS_ARCHIVE.md` under `## Verification history`.** They are evidence that finished
 work was verified, not input to the next task. Read them only to settle a question about how
-something was confirmed.
+something was confirmed. **Task 005's record is not yet there** - the next `ARCHITECT` cuts it
+in at archive time.
+
+### Two verification facts found in Task 005 that outlive it
+
+Both are recorded here rather than in a task file because they change how **any** future task
+verifies, and both were found by executing rather than by reading.
+
+- **[2026-07-31] Grep-based acceptance criteria must be run with `/usr/bin/grep`.** In the
+  agent shell, `grep` is a **wrapper function, not GNU grep**, and it honours `.gitignore` -
+  including when an ignored directory is named as an explicit argument. `dist/` and `.astro/`
+  are git-ignored, so **every criterion that greps `dist/` passes vacuously under the wrapper**,
+  reporting "no output" whether or not the string is there. This defeats constraint 3.10 while
+  looking exactly like a pass. Task 005 caught it only because a criterion returned no `dist/`
+  hits for a string that provably renders there. Mechanism in `docs/ENVIRONMENT.md` section 4.
+  **A criterion that greps `dist/` should also say `--exclude-dir=dist --exclude-dir=.astro`
+  when it greps the repository root**, or it will report generated artifacts as violations.
+
+- **[2026-07-31] Astro's HTML compressor strips whitespace-only text nodes around inline
+  elements.** An inline `<a>` written across several source lines inside a paragraph ships with
+  the surrounding words **glued to the link text** - `write to<a>…</a>and a person` renders as
+  one run-on string. It is invisible in the source, invisible in a diff, and visible only in
+  `dist/` or a browser. Task 005 shipped it into two pages and caught it during the required
+  browser pass. **Fix: explicit `{' '}` on both sides of the link.** Any template with an
+  inline link in wrapped prose is exposed; this is a good candidate for an automated check when
+  Task 009 builds one.
 
 ### Open defects
 
@@ -450,10 +523,11 @@ something was confirmed.
   page. Safe handling requires sanitization or an explicit HTML-to-text conversion at build
   time; it does not mean leaving the escape in place. Tracked as Task 006.
 - **zod deprecation.** Astro 7 moved to zod v4 and deprecated the `z` re-export from
-  `astro:content`, producing 12 non-blocking hints in `src/content.config.ts`. Resolving it
-  means taking `zod` as a direct dependency, which needs an owner decision under
-  constraint 3.6. `zod@4.4.3` is currently present only as a transitive dependency of astro,
-  so importing it directly today would rely on hoisting and is not safe.
+  `astro:content`, producing **21** non-blocking hints in `src/content.config.ts` since Task
+  005 added the `locations` schema (was 12). Resolving it means taking `zod` as a direct
+  dependency, which needs an owner decision under constraint 3.6. `zod@4.4.3` is currently
+  present only as a transitive dependency of astro, so importing it directly today would rely
+  on hoisting and is not safe. Tracked as Task 009.
 - `public/` contains no files. `BaseLayout.astro` references `/favicon.svg` and
   `/images/og-default.jpg`, so both 404 on every route. Tracked as Task 007.
 - **[2026-07-31] Resolved by Task 004, removed from this list:** the `role="menubar"` /
@@ -461,12 +535,14 @@ something was confirmed.
   `aria-label="Main navigation"` mismatch on `<header>`, both `Footer.astro` dead `href="#"`
   links, and the three redundant `aria-label`s that failed WCAG 2.5.3. See the dated decision
   above for the verification record.
-- The MDX documents and `src/data/locations.json` still contain invented locations, history,
-  schedules and impact claims - scaffold content, not approved public facts, and the target of
-  Task 005. `Footer.astro`'s share of this is resolved: its invented social link and
-  mismatched labels are gone. Its hardcoded organization name is also resolved, by Task 004b -
-  the heading, the copyright line, and the mailto link now read `site.config.ts`. Only the
-  `Footer.astro:8` prose blurb remains, and it is Task 005's, deliberately untouched.
+- **[2026-07-31] Resolved by Task 005, removed from this list:** the invented public copy. The
+  MDX documents and `src/data/locations.json` no longer contain invented locations, history,
+  schedules or impact claims. Springfield addresses, `(555)` numbers, `communityfood.org`
+  addresses, the 2024 founding date, the "90% of all donations" claim, the membership tiers and
+  the storefront framing are all gone, confirmed by executed grep over `src/` **and** `dist/`.
+  The `Footer.astro` prose blurb and `about.mdx`'s heading - the two occurrences Task 004b left
+  behind on purpose - are resolved. **This defect is the reason the repository could not be
+  deployed on grounds of truthfulness; that reason is now discharged.**
 - **[2026-07-31] Resolved by Task 004b, removed from this list:** the invented organization
   name and tagline shipping in metadata. `"Community Food Group"` no longer appears in
   `<title>`, the copyright line, `og:description`, `twitter:description`, the `author` schema
@@ -481,82 +557,61 @@ something was confirmed.
 
 ### Current phase
 
-**Task 003 is complete and merged** (`faf489e`). The palette now passes AA on every checked
-pair instead of failing nine, the toolchain is current, and the routes share one type scale,
-one measure, one set of rhythm tokens, and one colour token system.
+**Every Track A task is merged.** Tasks 001, 001b, 001c, 002, 003, 004, 004b and 004c are all
+on `main`; their narratives and verification records are in `docs/DECISIONS_ARCHIVE.md` and are
+not repeated here. The palette passes AA on every checked pair, the routes share one type
+scale and one colour token system, the accessibility work is in place, and `site.config.ts`
+plus `scripts/check-config.mjs` guard the identity surface.
 
-**[2026-07-31] Task 004 (accessibility and shell correctness) is complete and merged** as
-`15dd164` - see the dated decision above for the full verification record. It picked up the
-two things Task 003 could not: wiring `npm run check:contrast` into `npm run verify`, and the
-two dead footer links.
+**[2026-07-31] Task 005 (real content, on-model) is IMPLEMENTED and fully verified, and is NOT
+fully committed.** Every acceptance criterion was executed, including the required browser pass
+at 375px and 1440px. **Two of its file operations are in `54f5442` and the rest is in the
+working tree** - see the commit-boundary note in "Verified repository state" above before
+assuming anything about `HEAD`. The remaining commit is the owner's to make, and the next
+`ARCHITECT` session archives the task and promotes Task 006.
 
-**Every Track A task through 004b is now merged and the working tree is clean.** Tasks 001,
-001b, 001c, 002, 003, 004, 004b and 004c are all on `main`.
+What it changed, in one paragraph: the two answered identity fields are filled in
+`site.config.ts`; `about.mdx`, `join.mdx` and `help.mdx` are rewritten wholesale around the
+real model; `/donate` is renamed to `/help` across the route, the content file, both nav lists
+and the footer; `src/data/locations.json` is one garden record validated as an Astro data
+collection through the content layer's `file()` loader with a `kind`-discriminated union;
+`locations.astro` is rebuilt on `getCollection` with the hours, phone, email, features and
+directions affordances deleted; `index.astro` loses the three-up grid over a single record; and
+`README.md` no longer contradicts itself. **The site now describes the real group.**
 
-The repository is still a prototype whose public copy is invented scaffold data, and **it
-must not be deployed.**
+**The deployment block has changed shape and has not lifted.** Until Task 005 the repository
+could not be deployed because its copy was *untrue*. That reason is discharged. It still must
+not be deployed, now for a narrower and purely mechanical reason: `GROUP_DOMAIN` and the two
+Mastodon tokens are unfilled, so `check:config` is red and no build may ship carrying a token.
 
-**[2026-07-31] Task 004b (site config and the fork-and-adopt surface) is complete and merged**
-as `0fd7d5e`. `site.config.ts` and `scripts/check-config.mjs` now exist; `npm run check:config`
-is wired into the uncached half of `npm run verify`, between `check:contrast` and `build`.
-Eight of the nine hardcoded occurrences of the invented organization name, and both metadata
-occurrences of the invented tagline, now read `site.config.ts` instead - see the resolved
-defect above and `docs/DECISIONS_ARCHIVE.md`'s verification history for the full record.
-**`npm run check:config` ships red on purpose**: `GROUP_NAME`, `GROUP_TAGLINE`, `GROUP_DOMAIN`
-and the Mastodon handle are still genuinely unknown owner inputs, so `npm run verify` now
-exits non-zero at that step until they are answered. This is not a regression to fix; it is
-the guard this task exists to build. The one occurrence left in source, `about.mdx:9`,
-survived deliberately - it is prose, and belongs to Task 005.
-
-Three things were found at the Task 004b promotion by grepping the repository rather than
-trusting the roadmap entry, and they are recorded here because they outlive the task:
-
-- **The roadmap's own inventory of the hardcoded name was wrong** - it claimed 9 occurrences,
-  enumerated 7, and named 6 files where there are 7. The two it missed were an `aria-label`
-  and an MDX heading, which is precisely the failure mode its own rationale predicted.
-  Constraint 3.4 governs this project's notes about itself, not only the repository.
-- **One occurrence is not fixable by 004b.** `about.mdx:9` is MDX prose, and section 2 forbids
-  interpolating config into prose, so it was deliberately left for Task 005, and did survive.
-- **A second constraint 1 violation was found:** the invented tagline "Building food security
-  through community action", feeding `<meta name="description">`, `og:description` and
-  `twitter:description`. It was config-driven chrome under section 2 and was in 004b's scope,
-  but the same words also open a footer *prose* blurb, which is Task 005's and was left alone.
-  This raised one new owner input, in the table below.
-
-**[2026-07-31] Task 005 (real content, on-model) is promoted and ACTIVE.** Its blocker - the
-organization name - was answered at promotion, along with five other inputs; see the
-owner-inputs table below and the naming decision above. **`TASK_SPEC.md` is the only authority
-on its scope and acceptance.** It is the task that makes the site honest: until it lands, the
-repository ships a description of an organization that does not exist.
-
-Four repository facts were found at that promotion by grepping rather than trusting the
-roadmap entry, and they are recorded here because they outlive the task:
+Four repository facts were found at the Task 005 promotion by grepping rather than trusting the
+roadmap entry. **All four were acted on and are recorded here because the pattern outlives the
+task:**
 
 - **`src/pages/index.astro` was missing from the roadmap's Task 005 scope and could not stay
-  out.** It imports `locations.json` directly, so the data-model change breaks it. Its prose
-  also carries the same storefront framing the entry flagged only in `locations.astro`. **This
-  is the third roadmap entry whose own file inventory was wrong** (see Task 004b, twice above).
-  Constraint 3.4 governs this project's notes about itself, not only the repository.
-- **A single location record breaks the homepage layout.** `locations.slice(0, 3)` renders one
-  card in a three-column grid. The "garden only" answer made this a layout decision.
-- **`README.md` contradicts itself, and one half is currently false.** Line 209 claims the
-  location records describe real places in Tucson; lines 11-14 of the same file say they are
-  invented scaffold. Task 004b wrote the former in anticipation of Task 005, which is exactly
-  the "true when written, stale when read" failure this file keeps logging.
+  out** - it imported `locations.json` directly, so the data migration broke it. **This was the
+  third roadmap entry whose own file inventory was wrong** (Task 004b's was wrong twice).
+  Constraint 3.4 governs this project's notes about itself, not only the repository. **An
+  `ARCHITECT` promoting Task 006 should grep before trusting that entry's file list.**
+- **A single location record broke the homepage layout.** Resolved by replacing the section
+  with copy plus a link to `/locations`, not by shrinking the grid. Verified in a browser at
+  both widths: the locations grid resolves to one column with one child, and no route
+  overflows horizontally.
+- **`README.md` contradicted itself** - resolved; the callout no longer calls the location
+  records invented scaffold, and the warning it carries is now the token/deployment one.
 - **The roadmap's "add a Zod schema" plan conflicted with the open zod decision.** Resolved by
   using the content layer's `file()` loader with the `z` already re-exported from
-  `astro:content` - the platform option constraint 3.6 prefers, and no new dependency. Taking
-  `zod` directly remains Task 009's.
+  `astro:content` - no new dependency. Taking `zod` directly remains Task 009's.
 
-**Resolved: the `ROADMAP.md` Task 004c staleness** flagged here previously. That entry read
-"not yet committed" while `git log` showed `bcef6db`; it was corrected at the 004b promotion,
-which was the next ARCHITECT write to that file. The general rule stands and is worth keeping:
+**One implementation fact worth carrying forward:** the `file()` loader passes the raw item
+**including its `id`** to the schema (`parseData({ id, data: rawItem })`), so `id` must be
+declared in the Zod object or it is stripped from `entry.data`. Verified by reading
+`node_modules/astro/dist/content/loaders/file.js`, not assumed.
+
+**Resolved and removed from this list:** the `ROADMAP.md` staleness flagged here for Task 004c
+and for the Tasks 004 / 004b status lines. The general rule stands and is worth keeping:
 **do not infer commit state from a status word in any of these documents - check `git log`.**
-
-**Resolved at the Task 005 promotion: the `ROADMAP.md` status lines for Tasks 004 and 004b**,
-flagged here previously. Task 004 already read complete; **Task 004b still read `ACTIVE` while
-`git log` showed `0fd7d5e`** - the same unconfirmed-transition drift, caught for the third
-time. Both now read complete. `ROADMAP.md` holds the ordered sequence through launch.
+`ROADMAP.md` holds the ordered sequence through launch.
 
 ### Open owner inputs
 
@@ -582,14 +637,14 @@ enforces this and fails the build while any token remains unfilled.
 
 | Input | Status | Blocks |
 | --- | --- | --- |
-| Final public organization name | **ANSWERED 2026-07-31: `Vegans Against Fascism`.** Fills `GROUP_NAME` in `site.config.ts` at Task 005. **A name change is anticipated - see the dated decision below - so the name is filled in config and must never be written into prose.** | *(unblocked)* |
-| Tagline | **ANSWERED 2026-07-31: `a counter-cultural, total liberation collective`.** Fills `GROUP_TAGLINE`. Carries the same name-change caveat as the name. | *(unblocked)* |
+| Final public organization name | **ANSWERED 2026-07-31: `Vegans Against Fascism`.** **Filled** in `site.config.ts` by Task 005; `GROUP_NAME` no longer appears. **A name change is anticipated - see the dated decision above - so the name lives in config and must never be written into prose.** Verified zero occurrences in `src/`. | *(closed)* |
+| Tagline | **ANSWERED 2026-07-31: `a counter-cultural, total liberation collective`.** **Filled** by Task 005; `GROUP_TAGLINE` no longer appears. Carries the same name-change caveat as the name. | *(closed)* |
 | Town / geographic scope | **ANSWERED 2026-07-31: Tucson, Arizona.** `CITY` token retired | *(unblocked)* |
 | Domain name; not yet purchased | **Still deferred; use `GROUP_DOMAIN` token.** After Task 005 this token also appears legitimately in `src/content/pages/*.mdx`, because the contact route is written as the literal `info@GROUP_DOMAIN`. That is correct, not a leak. | Contact address, canonical URLs, deployment |
 | Whether cook-session and distribution places are named publicly at all | **ANSWERED 2026-07-31: none are named.** The garden plot is the only record in `src/data/locations.json`. Distribution is described as a monthly rhythm around town, with no site and no time published. | *(unblocked)* |
 | **Whether the food is vegan, and whether the site says so** | **ANSWERED 2026-07-31: yes, and the site says so plainly.** Raised at the Task 005 promotion - the group's name made it an obvious reader question that no document had settled, and it is material to anyone deciding whether to take food or to offer ingredients. | About and ways-to-help content |
-| Mastodon account handle, or confirmation there is none | **Required before Task 006** | Mastodon ingestion, feed routes, footer |
-| Approved food-safety language, if any is wanted | **Open, and deliberately deferred at the Task 005 promotion rather than answered.** Task 005 writes none. Do not invent a practices statement to fill the gap. | About or ways-to-help content |
+| Mastodon account handle, or confirmation there is none | **REQUIRED NOW - this is the only input blocking the next task.** Task 006 cannot be promoted without it. If the answer is "there is no account", that is a decision and `social.mastodon` becomes `null`, which passes `check:config`; a token means the handle is *unknown*, not *absent*. | **Task 006**: Mastodon ingestion, feed routes, footer |
+| Approved food-safety language, if any is wanted | **Open, and deliberately deferred at the Task 005 promotion rather than answered.** Task 005 wrote none, as instructed. Do not invent a practices statement to fill the gap. | About or ways-to-help content |
 | Logo, favicon, social image | Deferred | `public/` assets, brand pass |
 | Confirmed Cloudflare Pages project URL | Deferred | `astro.config.mjs`, deployment |
 
@@ -607,14 +662,14 @@ still open:**
 Answered on 2026-07-31. **Do not re-ask these either:**
 
 - **Organization name: `Vegans Against Fascism`. Tagline: `a counter-cultural, total
-  liberation collective`.** Both fill their tokens at Task 005. **Both carry the name-change
-  caveat below.**
+  liberation collective`.** Both tokens filled by Task 005. **Both carry the name-change
+  caveat above.**
 - **No cook or distribution site is named publicly.** The garden plot is the only location
   record. This closes the last open row that gated `locations.json`.
 - **The food is vegan, and the site says so plainly.**
 - **`/donate` is renamed to `/help`**, labelled "Ways to help", completing the 2026-07-30
   Ways-to-Help decision at the route and navigation level rather than only in the page body.
-- **Food-safety language is deferred, not declined.** Task 005 writes none. The row stays open.
+- **Food-safety language is deferred, not declined.** Task 005 wrote none. The row stays open.
 - **Geographic scope: Tucson, Arizona.** Written out; the `CITY` token is retired.
 - **The garden is settled in full** - Presidio Garden, 3440 E Presidio Rd, a rented plot in a
   Community Gardens of Tucson site, every other week through the growing season, address
@@ -624,13 +679,16 @@ Answered on 2026-07-31. **Do not re-ask these either:**
   answer the handle question - it defers the link until Task 006 or 007, when the handle
   exists.
 
-**[2026-07-31] Track B's blockers on Task 005 are all cleared and it is promoted.** Six inputs
-were answered at that promotion, listed above. **Task 006 remains blocked on the Mastodon
-handle**, which is now the only *required* unanswered input. The domain, the logo set and the
-Pages URL are deferred rather than blocking, and food safety is open but deliberately skipped.
+**[2026-07-31] Task 005's six owner inputs are all answered and the task is implemented.**
+**Task 006 is blocked on the Mastodon handle, which is now the only required unanswered
+input.** The domain, the logo set and the Pages URL are deferred rather than blocking, and
+food safety is open but deliberately skipped. **An `ARCHITECT` cannot promote Task 006 until
+the handle question is put to the owner** - including the possibility that the answer is
+"there is no account", which is an answer and not a deferral.
 
 `npm run check:config` **continues to ship red after Task 005**, on `GROUP_DOMAIN` and the two
-Mastodon tokens. That is still the guard working, not a regression.
+Mastodon tokens, plus the three legitimate `GROUP_DOMAIN` occurrences the new MDX copy
+introduces. That is still the guard working, not a regression.
 
 **How an unanswered input is represented in `site.config.ts`** (shipped in Task 004b), because
 the distinction is load-bearing and easy to get backwards:
@@ -663,9 +721,9 @@ the withdrawn Signal link is `null` (the owner *decided* against it on 2026-07-3
 |                                      # plugin; a fonts[] entry self-hosts Inter (Task 003)
 |-- package.json                      # engines.node >=22.18.0; check, prebuild, verify
 |-- tsconfig.json                     # Astro strict TypeScript
-|-- site.config.ts                    # Identity constants (Task 004b); GROUP_NAME,
-|                                      # GROUP_TAGLINE, GROUP_DOMAIN and the Mastodon handle
-|                                      # are still unfilled tokens; city/region are filled
+|-- site.config.ts                    # Identity constants (Task 004b). groupName, tagline,
+|                                      # city and region are FILLED; GROUP_DOMAIN and the two
+|                                      # Mastodon tokens remain unfilled owner inputs
 |-- docs/
 |   |-- DECISIONS_ARCHIVE.md          # Historical; not part of the session payload
 |   `-- ENVIRONMENT.md                # Workstation setup; not part of the session payload
@@ -679,18 +737,22 @@ the withdrawn Signal link is `null` (the owner *decided* against it on 2026-07-3
 |   |                                 # while site.config.ts carries an unfilled token
 |   `-- verify-baseline.sh            # npm run verify; caches the lockfile-dependent half
 `-- src/
-    |-- content.config.ts             # Content collection; glob() loader
+    |-- content.config.ts             # Two collections: `pages` via glob(), and `locations`
+    |                                 # via file() with a kind-discriminated union (Task 005)
     |-- components/
     |   |-- Footer.astro
     |   |-- Header.astro
     |   `-- MastodonFeed.astro
-    |-- content/pages/                # about.mdx, donate.mdx, join.mdx
+    |-- content/pages/                # about.mdx, help.mdx, join.mdx  (help.mdx was
+    |                                 # donate.mdx until Task 005)
     |-- data/
-    |   |-- locations.json            # Unapproved scaffold records
+    |   |-- locations.json            # ONE record: the rented garden plot. Owner-approved
+    |   |                             # and validated by the `locations` collection
     |   `-- mastodon-posts.json       # Generated cache; currently an empty array
     |-- env.d.ts
     |-- layouts/BaseLayout.astro
-    |-- pages/                        # about, donate, index, join, locations, posts
+    |-- pages/                        # about, help, index, join, locations, posts
+    |                                 # (`donate.astro` was renamed to `help.astro`)
     |-- styles/
     |   `-- global.css                # tailwindcss import, @plugin typography; a :root
     |                                 # brand-inputs block feeding @theme's semantic colour
@@ -718,33 +780,45 @@ architecture unless a task explicitly creates them.
 
 ### Session role
 
-**`IMPLEMENTER`, next.** The prior session ran as `ARCHITECT`: it archived Task 004b, corrected
-that task's stale `ACTIVE` status line in `ROADMAP.md`, collected six owner inputs, and
-promoted Task 005.
+**`ARCHITECT`, next.** The prior session ran as `IMPLEMENTER` and then `MEMORY SYNC`: it
+implemented and verified Task 005 in full, removed the group's internal circumstances from two
+tracked documents at the owner's instruction, and wrote this document up to date.
 
-### Active task
+### What the next `ARCHITECT` session is for
 
-**Task 005 - Real content, on-model. Promoted 2026-07-31 and specified in `TASK_SPEC.md`,
-which is the only authority on its scope and acceptance.** Read that file in full before
-touching anything. Its planned scope was **cut** from `ROADMAP.md`, whose entry is now a status
-line pointing at it.
+Two jobs, in this order.
 
-Three things about this task in particular:
+**1. Archive Task 005.** It is implemented and verified but only **partly committed** - run
+`git log` and `git status` first, and read the commit-boundary note in section 4. Archiving
+means: cut its verification record into
+`docs/DECISIONS_ARCHIVE.md` under `## Verification history`, collapse its `ROADMAP.md` entry to
+a status line, and clear `TASK_SPEC.md` for the next promotion. **Nothing of Task 005's spec
+should survive in `TASK_SPEC.md`** - a queued entry that outlives promotion becomes a second,
+competing spec, which has already happened twice in this project.
 
-- **Its dominant failure mode is linguistic, not technical.** The most likely way to fail it is
-  to smooth a true-but-awkward sentence into a false-but-natural one - "our community garden"
-  instead of "a plot at Presidio Garden, one of the Community Gardens of Tucson". The spec
-  carries a table of these traps. Read it before writing copy, not after.
-- **The organization name is filled in `site.config.ts` and forbidden in `src/`.** See the
-  dated naming decision in section 4.
-- **`npm run check:config` must still exit non-zero when you finish**, on `GROUP_DOMAIN` and
-  the two Mastodon tokens. Do not fill a token or weaken the check to turn `verify` green.
+**2. Promote Task 006 (Mastodon integration) - but it is blocked.** The Mastodon handle is the
+**only** required unanswered owner input, and Task 006 cannot be specified without it. Put the
+question to the owner before promoting, and note that **"there is no account" is a valid answer,
+not a deferral**: it makes `social.mastodon` `null`, which passes `check:config`. A token means
+*unknown*; `null` means *decided against*. Getting this backwards silently converts an open
+question into a settled decision.
 
-Tasks 001, 001b, 001c, 002, 003, 004, 004b and 004c are complete and merged to `main` - 003 as
-`faf489e`, 004c as `bcef6db`, 004 as `15dd164`, 004b as `0fd7d5e`, with the promotion and
-memory-sync commits after it - and the working tree was clean at promotion. **Do not infer
-commit state from a status word in this file; check `git log` / `git status`.** These documents
-have gone stale on exactly this point three times.
+Three things to carry into that session:
+
+- **Grep the repository before trusting the `ROADMAP.md` Task 006 entry's file list.** Three
+  separate roadmap entries have had a wrong file inventory - 004b's twice, 005's once. This is
+  the single most reliable failure mode in this project's own notes.
+- **`MastodonFeed.astro`'s raw-markup defect is Task 006's** and is still open and unfixed;
+  Task 005 deliberately did not touch it. It is confirmed empirically, not predicted - see the
+  open-defects list.
+- **Task 005 is only partly committed**, so `git log` shows two of its file operations inside a
+  commit named "Project management" and nothing else. Do not read that as "not done", do not
+  read this document's "implemented" as "on `main`", and do not expect `HEAD` alone to build.
+
+**Verification baselines moved with Task 005** and the numbers in section 4 are the current
+ones: `npm run check` is **21 hints**, `check:config` names **7 tokens**, and the six routes now
+include `/help` rather than `/donate`. A task comparing against 12 and 6 is comparing against a
+stale baseline.
 
 ### Required inputs
 

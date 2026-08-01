@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import MastodonFeed from '../components/MastodonFeed.astro';
-import locations from '../data/locations.json';
+import siteConfig from '../../site.config';
 ---
 
 <BaseLayout
@@ -13,17 +13,18 @@ import locations from '../data/locations.json';
     <div class="container">
       <div class="max-w-3xl">
         <h1 class="text-display font-bold text-ink-inverse">
-          Nourishing Our Community
+          We Cook Together and Hand the Food Out
         </h1>
         <p class="text-lead text-ink-inverse max-w-lede mt-stack">
-          Building a more food-secure future through connection, education, and community action.
+          A mutual aid group in Tucson, Arizona. Everything we cook is vegan, and it goes
+          straight to people around town.
         </p>
         <div class="flex flex-wrap gap-4 mt-stack">
           <a href="/join" class="btn-secondary bg-surface-raised text-brand-ink hover:bg-surface">
-            Join us
+            Cook with us
           </a>
-          <a href="/donate" class="btn-primary bg-surface text-brand-ink hover:bg-surface-raised">
-            Donate
+          <a href="/help" class="btn-primary bg-surface text-brand-ink hover:bg-surface-raised">
+            Ways to help
           </a>
         </div>
       </div>
@@ -47,35 +48,37 @@ import locations from '../data/locations.json';
     </div>
   </section>
 
-  <!-- Locations Preview -->
+  <!--
+    How It Works. This replaces the old three-up locations grid: the group names no cook
+    or distribution site publicly, so there is one record and nothing to lay out in a
+    three-column grid. Copy plus a link to /locations, not a card list.
+  -->
   <section class="section bg-surface-raised">
     <div class="container">
-      <h2 class="text-heading font-bold text-brand-ink">
-        Our Locations
-      </h2>
-      <p class="text-lead text-ink-muted max-w-lede mt-stack-sm">
-        Visit us at any of our community locations. We're here to serve you.
-      </p>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-stack mt-stack">
-        {locations.slice(0, 3).map((location) => (
-          <div class="card">
-            <h3 class="text-subheading font-semibold text-brand-ink">
-              {location.name}
-            </h3>
-            <p class="text-label text-ink-muted mt-2">{location.address}</p>
-            <p class="text-ink mt-stack-sm">{location.description}</p>
-            <a
-              href={`/locations#${location.id}`}
-              class="text-label text-brand-ink hover:text-brand-hover font-medium inline-flex items-center mt-stack-sm"
-            >
-              Learn more →
-            </a>
-          </div>
-        ))}
+      <div class="max-w-lede">
+        <h2 class="text-heading font-bold text-brand-ink">
+          How It Works
+        </h2>
+        <p class="text-lead text-ink-muted mt-stack-sm">
+          Once a month we get together, cook, and then take the food out and hand it to
+          people directly - including at street locations like bus stops.
+        </p>
+        <p class="text-ink mt-stack-sm">
+          We do not publish a time or a place in advance. The arrangements are made close to
+          the date and they genuinely change, so anything printed here would be wrong more
+          often than it was right. Write to{' '}
+          <a href={`mailto:${siteConfig.contactEmail}`} class="text-brand-ink hover:text-brand-hover font-medium"
+            >{siteConfig.contactEmail}</a
+          >{' '}and a person will write back with the details.
+        </p>
+        <p class="text-ink mt-stack-sm">
+          There is one place we can name: a plot we rent at a community garden, which grows
+          some of what we cook.
+        </p>
       </div>
-      <div class="mt-stack text-center">
+      <div class="mt-stack">
         <a href="/locations" class="btn-primary">
-          View all locations
+          Where we are
         </a>
       </div>
     </div>
@@ -85,17 +88,18 @@ import locations from '../data/locations.json';
   <section class="section-tight bg-accent text-ink-inverse">
     <div class="container text-center">
       <h2 class="text-heading font-bold text-ink-inverse">
-        Ready to Make a Difference?
+        Come and Cook
       </h2>
       <p class="text-lead text-ink-inverse max-w-lede mx-auto mt-stack-sm">
-        Whether you have an hour or a day, your contribution helps build a stronger community.
+        There is no form and no sign-up. Ingredients, containers, kitchen time and a vehicle
+        help just as much as an afternoon of cooking.
       </p>
       <div class="flex flex-wrap justify-center gap-4 mt-stack">
         <a href="/join" class="btn-primary bg-surface-raised text-accent-ink hover:bg-surface">
-          Volunteer today
+          Get involved
         </a>
-        <a href="/donate" class="btn-secondary bg-surface text-accent-ink hover:bg-surface-raised">
-          Support our mission
+        <a href="/help" class="btn-secondary bg-surface text-accent-ink hover:bg-surface-raised">
+          Ways to help
         </a>
       </div>
     </div>

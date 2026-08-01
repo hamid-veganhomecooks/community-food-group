@@ -130,7 +130,14 @@ expect this harness to catch a regression, not just the layout assertions below.
 **Stale preview servers can steal port 4321.** A `astro preview` process left running (even
 suspended, job-control state `T`) from an earlier session still holds the port. `npm run
 preview` then silently falls back to 4322 and prints which port it actually bound - read that
-line rather than assuming 4321, and pass the real port to `verify.mjs` via `BASE=`.
+line rather than assuming 4321, and pass the real port to `verify.mjs` via `BASE=`. Observed
+again in Task 005, which ran the whole browser pass against `BASE=http://localhost:4322`.
+
+**[2026-07-31] `verify.mjs` hardcodes the route list in three places** - lines 19, 113 and 178
+- and it is **not** in the repository, so a route rename in the project does not reach it. Task
+005 renamed `/donate` to `/help` and had to update all three by hand or the harness would have
+driven a 404 and failed on a route that no longer exists. **A route rename is a two-repository
+change.** Check the harness's route lists whenever `src/pages/` gains or loses a file.
 
 **Outstanding - `libasound.so.2`.** Missing system-wide and not apt-installable without sudo.
 Chromium will not start without it. Extract it into a user-local directory:
@@ -226,3 +233,49 @@ Raise it as a `TASK_SPEC.md` scope question rather than deciding it silently.
   need an architectural decision under constraint 3.6.
 - Serve the built site with `npm run preview` and point the browser at that, rather than
   loading `dist/` over `file://`.
+
+---
+
+## 4. `grep` in the agent shell is not GNU grep
+
+**[2026-07-31] Discovered during Task 005, and it silently invalidates grep-based acceptance
+criteria.** `PROJECT_CONTEXT.md` section 4 carries the operational rule; this is the mechanism.
+
+In the agent shell, `grep` resolves to a **shell function**, not `/usr/bin/grep`:
+
+```bash
+type grep      # => "grep is a function"
+which -a grep  # => /usr/bin/grep, /bin/grep   (misleading - `which` does not see functions)
+```
+
+The function delegates to a `ugrep`-style binary with `--ignore-files` set, which makes it
+**honour `.gitignore`**. In this repository that means `dist/`, `.astro/` and `.verify-cache/`
+are skipped - **even when named as an explicit path argument**. It also prints paths without
+the `./` prefix that `grep -r … .` would produce, which is the tell.
+
+**Why this matters more here than in most projects.** This project's acceptance criteria are
+largely greps, several of them explicitly over `dist/` - the built output is where a copy
+defect actually becomes visible. Under the wrapper those criteria report "no output" whether or
+not the string is present, so a criterion designed to catch a shipped falsehood **passes
+without testing anything**. That is a direct constraint 3.10 failure that looks exactly like a
+pass.
+
+**How Task 005 caught it.** Criterion 8 greps the whole repository for the group's name and
+expects hits outside `src/`. It returned no `dist/` hits - but criterion 12 requires the name to
+render into `<title>` in `dist/`, and both cannot be true. Re-running with `/usr/bin/grep`
+showed the `dist/` hits immediately.
+
+**The rule:**
+
+```bash
+/usr/bin/grep -rn 'pattern' src/ dist/      # verification: always the absolute path
+```
+
+Use the absolute path for **any** grep whose result is being reported as evidence. The wrapper
+is fine for ordinary code search, where skipping build output is what you want. When a
+repository-root grep is used as a criterion, pair it with
+`--exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=.astro`, since
+real grep will otherwise report generated artifacts as violations.
+
+The project's own tooling is unaffected: `scripts/check-contrast.mjs` and
+`scripts/check-config.mjs` read files through Node, not through the shell.

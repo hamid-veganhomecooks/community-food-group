@@ -27,8 +27,8 @@ export interface SiteConfig {
 }
 
 const siteConfig = {
-  groupName: 'GROUP_NAME',
-  tagline: 'GROUP_TAGLINE',
+  groupName: 'Vegans Against Fascism',
+  tagline: 'a counter-cultural, total liberation collective',
   city: 'Tucson',
   region: 'Arizona',
   domain: 'GROUP_DOMAIN',

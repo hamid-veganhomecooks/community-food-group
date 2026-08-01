@@ -8,10 +8,10 @@ Built with Astro 7, Tailwind CSS 4, and MDX. Static output, intended for Cloudfl
 
 > **This site is not ready to publish.**
 >
-> The public-facing copy and every record in `src/data/locations.json` are generated
-> scaffold data: invented addresses, phone numbers, email addresses, opening hours, a
-> founding date, and a donation statistic. None of it describes a real organisation. It
-> must be replaced with owner-approved content before any deployment.
+> The copy and the location record now describe the real group, but two owner inputs are
+> still unfilled: the domain (the contact address is written as the literal
+> `info@GROUP_DOMAIN` token) and the Mastodon account. `npm run check:config` exits
+> non-zero while any token remains, and **no build carrying one may be deployed.**
 >
 > See `PROJECT_CONTEXT.md` for the project's single source of truth, `TASK_SPEC.md` for the
 > active task, and `ROADMAP.md` for the ordered backlog.
@@ -105,7 +105,7 @@ environment variable.
 scripts/fetch-mastodon.ts   Build-time Mastodon ingestion
 scripts/check-contrast.mjs  WCAG 2.2 AA check for the colour tokens
 src/content.config.ts       Content collection definition
-src/content/pages/          Editorial MDX: about, join, donate
+src/content/pages/          Editorial MDX: about, join, help
 src/data/                   Location records and the generated Mastodon cache
 src/pages/                  Routes
 src/components/             Header, Footer, MastodonFeed
@@ -205,13 +205,28 @@ below threshold.
 
 ### 3. `src/data/locations.json` - locations
 
-Where the group cooks and where it hands out food, plus any other named locations. This
-group's records describe real places in Tucson, Arizona and are not sample data - replace the
-records wholesale with your own rather than editing them in place.
+Named places, loaded as an Astro data collection through the content layer's `file()` loader
+and validated in `src/content.config.ts`. This group's single record describes a real place in
+Tucson, Arizona and is not sample data - replace it wholesale with your own rather than editing
+it in place.
+
+The schema is a **discriminated union on `kind`**, because different kinds of place carry
+genuinely different facts and one flat shape forces a record to publish a falsehood or render
+a dead field. Exactly one variant exists today, `garden`: a rented plot, which has a real
+address and a real cadence but deliberately no map link, because access needs a plot fee and a
+membership with the garden's operator.
+
+A group that does name its distribution or cook sites publicly **adds a variant to the union**
+rather than widening the existing one - a new member of `z.discriminatedUnion('kind', [...])`
+and a matching branch in `src/pages/locations.astro`. The discriminator exists so that is
+additive rather than a refactor.
+
+There is no `phone`, `email`, `hours`, `coordinates` or `features` field. This group has no
+staffed sites, so none of them had data behind them.
 
 ### 4. `src/content/pages/*.mdx` - editorial prose
 
-`about.mdx`, `join.mdx`, and `donate.mdx`. **This prose is rewritten, not tokenized.** A group
+`about.mdx`, `join.mdx`, and `help.mdx`. **This prose is rewritten, not tokenized.** A group
 in another city does not need this group's sentences with a name swapped in - they have a
 different model, different programs, and no rented garden plot at a specific address. Do not
 add config interpolation (`{siteConfig.groupName}` and similar) into these documents: a
@@ -288,8 +303,7 @@ with the text it introduces instead of floating midway between two blocks.
 - **Title Case** for page titles (`h1`) and section headings (`h2`).
 - **Sentence case** for sub-headings (`h3` and below), UI labels, buttons, and links.
 
-Headings inside the MDX documents still mix both. They are brought into line in Task 005,
-which rewrites that copy anyway.
+The MDX documents follow this convention as of Task 005, which rewrote that copy.
 
 ## Known gaps
 

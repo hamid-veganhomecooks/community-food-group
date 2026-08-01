@@ -1,100 +1,75 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import locations from '../data/locations.json';
-import { MapPin, Clock, Phone, Mail } from 'lucide-astro';
+import { getCollection } from 'astro:content';
+import { MapPin, CalendarDays } from 'lucide-astro';
+import siteConfig from '../../site.config';
+
+const locations = await getCollection('locations');
 ---
 
 <BaseLayout
-  title="Locations"
-  description="Find a community food group location near you"
-  pageTitle="Our Locations"
+  title="Places"
+  description="The one place we can name is a rented garden plot. Cooking and distribution move around town."
+  pageTitle="Where We Are"
 >
   <div class="section bg-surface">
     <div class="container">
       <div class="max-w-3xl mx-auto text-center mb-stack">
         <h1 class="text-title font-bold text-brand-ink">
-          Find Us
+          Where We Are
         </h1>
         <p class="text-lead text-ink-muted max-w-lede mx-auto mt-stack-sm">
-          Visit any of our locations to get involved, pick up food, or learn more about our programs.
+          Most of what we do has no fixed address. We cook together and hand the food out
+          around town, monthly, and the arrangements are made close to the date - so there is
+          no place or time here to turn up to. To come along, or to find out where the next
+          one is, write to{' '}
+          <a href={`mailto:${siteConfig.contactEmail}`} class="text-brand-ink hover:text-brand-hover font-medium"
+            >{siteConfig.contactEmail}</a
+          >{' '}and a person will write back.
         </p>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-stack">
+      <h2 class="text-heading font-bold text-brand-ink text-center">
+        The One Place We Can Name
+      </h2>
+
+      <div class="grid grid-cols-1 gap-stack mt-stack max-w-3xl mx-auto">
         {locations.map((location) => (
           <article id={location.id} class="card">
-            <h2 class="text-subheading font-bold text-brand-ink mb-stack-sm">
-              {location.name}
-            </h2>
+            <h3 class="text-subheading font-bold text-brand-ink mb-stack-sm">
+              {location.data.name}
+            </h3>
 
             <div class="space-y-4 text-ink">
+              {/*
+                The address is published; a directions link deliberately is not. Access
+                needs a plot fee and a membership with the garden's operator, so routing
+                a neighbor there would be a promise the site cannot keep.
+              */}
               <div class="flex items-start space-x-2">
                 <MapPin class="w-5 h-5 text-brand-ink shrink-0 mt-0.5" aria-hidden="true" />
-                <div>
-                  <p>{location.address}</p>
-                  <a
-                    href={`https://www.google.com/maps?q=${location.coordinates.lat},${location.coordinates.lng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-label text-brand-ink hover:text-brand-hover"
-                    aria-label={`Get directions to ${location.name}`}
-                  >
-                    Get Directions →
-                  </a>
-                </div>
+                <p>{location.data.address}</p>
               </div>
 
               <div class="flex items-start space-x-2">
-                <Clock class="w-5 h-5 text-brand-ink shrink-0 mt-0.5" aria-hidden="true" />
-                <div>
-                  <p class="font-medium text-ink">Hours:</p>
-                  <ul class="text-label" aria-label="Operating hours">
-                    {Object.entries(location.hours).map(([day, hours]) => (
-                      <li class="flex justify-between gap-4">
-                        <span class="capitalize">{day}</span>
-                        <span class="text-ink-muted">{hours}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <CalendarDays class="w-5 h-5 text-brand-ink shrink-0 mt-0.5" aria-hidden="true" />
+                <p>{location.data.cadence}</p>
               </div>
-
-              {location.phone && (
-                <div class="flex items-center space-x-2">
-                  <Phone class="w-5 h-5 text-brand-ink shrink-0" aria-hidden="true" />
-                  <a href={`tel:${location.phone}`} class="hover:text-brand-ink">
-                    {location.phone}
-                  </a>
-                </div>
-              )}
-
-              {location.email && (
-                <div class="flex items-center space-x-2">
-                  <Mail class="w-5 h-5 text-brand-ink shrink-0" aria-hidden="true" />
-                  <a href={`mailto:${location.email}`} class="hover:text-brand-ink">
-                    {location.email}
-                  </a>
-                </div>
-              )}
             </div>
 
-            {location.features && (
-              <div class="mt-stack-sm">
-                <h3 class="text-label font-semibold text-ink mb-2">Features:</h3>
-                <div class="flex flex-wrap gap-2">
-                  {location.features.map((feature) => (
-                    <span
-                      class="bg-accent-soft text-accent-ink px-3 py-1 rounded-full text-label"
-                    >
-                      {feature}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
             <p class="mt-stack-sm text-ink">
-              {location.description}
+              {location.data.description}
+            </p>
+
+            <p class="mt-stack-sm text-label text-ink-muted">
+              Operated by{' '}
+              <a
+                href={location.data.operatorUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-brand-ink hover:text-brand-hover font-medium"
+                >{location.data.operatorName}</a
+              >
             </p>
           </article>
         ))}
