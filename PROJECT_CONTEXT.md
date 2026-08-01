@@ -480,6 +480,71 @@ to `docs/DECISIONS_ARCHIVE.md`.
   the usual case. **The fix is not a rule change, it is one test email**, plus telling the
   friends round that site email may not be live yet.
 
+### Dependency decisions under constraint 3.6
+
+Three were put to the owner on 2026-08-01 and answered. **Constraint 3.6 requires an explicit
+architectural decision for a new package; these are those decisions.**
+
+- **[2026-08-01] `zod` becomes a direct dependency, and the import moves off `astro:content`.**
+  Owner decision, **explicitly delegated to the recommendation** rather than independently
+  reasoned - recorded that way so a future session does not treat it as a strongly held position
+  if a good reason to reverse it appears.
+
+  **This declares a dependency that is already installed rather than adding a new one.**
+  `zod@4.4.3` is on disk today as a child of `astro@7.1.6`, and every schema in
+  `src/content.config.ts` already runs it via Astro's re-export. Declaring it downloads nothing
+  and ships no new code.
+
+  - Add `"zod": "^4.4.3"` to `package.json`, **range aligned with whatever Astro pulls**, so npm
+    dedupes to one copy. Astro passes these schemas into its own zod internals, so a major-version
+    skew is not purely cosmetic.
+  - Change `src/content.config.ts` to `import { z } from 'zod'`.
+  - **The 21 `ts(6385)` hints go to zero.** That is the visible effect, but not the reason - the
+    reason is that `astro:content`'s re-export is deprecated and will eventually go.
+  - **Never import from `'zod'` without declaring it.** That works only because npm happens to
+    flatten the package to the top of `node_modules`, and it is the fragile state this decision
+    exists to leave. Tracked in Task 009.
+
+- **[2026-08-01] Mastodon post HTML is sanitized to an allowlist, not stripped to plain text.**
+  Owner input: **the posts are image-first and carry links.** They are largely mirrors of the
+  group's Instagram posts - images carrying community information, announcements about people in
+  the group, and pictures of the garden plot.
+
+  Plain-text conversion would discard links inside post text, which the owner wants kept. So the
+  allowlist approach is chosen, and it **requires a sanitizer dependency** - the tradeoff
+  constraint 3.6 exists to surface. Sanitize at **build time**, never in the browser; constraint
+  3.8 continues to forbid `set:html` on unsanitized input.
+
+- **[2026-08-01] `@astrojs/sitemap` is approved** for Task 007. First-party Astro integration, and
+  a genuine new dependency rather than a redeclared one.
+
+### Two Mastodon media findings, from reading the component on 2026-08-01
+
+**Images are already implemented** - `src/types/mastodon.ts` declares `media_attachments`,
+`scripts/fetch-mastodon.ts` stores them, and `MastodonFeed.astro:64-75` renders up to four per
+post. **This was nearly written up as missing work and is not.** But the owner's image-first
+content model turns two existing details into real problems:
+
+- **[2026-08-01] The images are hot-linked from the Mastodon instance**, via
+  `src={media.preview_url || media.url}`. **Every visitor's browser therefore fetches from a
+  third party, which is exactly what Task 003 eliminated when it moved Inter off the Google
+  Fonts CDN** so that "no visitor IP reaches a third party". Hot-linked media reintroduces it,
+  and the posts are image-first, so it is on most posts rather than an edge case. Images also
+  break if a post is deleted upstream. **Fetching them at build time and serving from the site's
+  own origin is the consistent choice** - the fetch script already runs at build time. Cost:
+  build duration and repository or build size.
+
+- **[2026-08-01] The alt-text fallback is `'Post attachment'`**, which describes nothing.
+  Mastodon populates `media.description` only when the poster wrote alt text. **Because the
+  information in these posts lives in the image**, a screen-reader user gets a bare "Post
+  attachment" where a sighted user gets the whole announcement. Accessibility is a release
+  requirement here, not an enhancement.
+
+  **Half of this fix is not code: alt text has to be written on the Mastodon posts themselves.**
+  The site cannot invent a description for an image it has never seen - that would be constraint
+  3.1. What the site can do is handle a missing description honestly rather than papering over it
+  with a generic string. Both halves belong to Task 006a.
+
 ### Copy register
 
 - **[2026-07-31] The Task 005 traps table is RETIRED, in full, by owner decision.** The owner's
@@ -912,13 +977,15 @@ verifies, and both were found by executing rather than by reading.
   predicted: seeding the cache with one post containing `<p>` tags and building produced
   `...not erased&lt;/p&gt;` in `dist/index.html`. Visitors would see literal `</p>` on the
   page. Safe handling requires sanitization or an explicit HTML-to-text conversion at build
-  time; it does not mean leaving the escape in place. Tracked as Task 006.
+  time; it does not mean leaving the escape in place. **[2026-08-01] The approach is DECIDED -
+  sanitize to an allowlist, keeping links - and the task is now 006a**, which needs no Mastodon
+  account. Two further media findings sit alongside it: hot-linked images and a useless alt-text
+  fallback. See the dependency decisions above.
 - **zod deprecation.** Astro 7 moved to zod v4 and deprecated the `z` re-export from
   `astro:content`, producing **21** non-blocking hints in `src/content.config.ts` since Task
-  005 added the `locations` schema (was 12). Resolving it means taking `zod` as a direct
-  dependency, which needs an owner decision under constraint 3.6. `zod@4.4.3` is currently
-  present only as a transitive dependency of astro, so importing it directly today would rely
-  on hoisting and is not safe. Tracked as Task 009.
+  005 added the `locations` schema (was 12). **[2026-08-01] The dependency question is ANSWERED**
+  - see the dependency decisions above. Tracked as Task 009; it is now a mechanical fix, not an
+  open decision.
 - `public/` contains no files. `BaseLayout.astro` references `/favicon.svg` and
   `/images/og-default.jpg`, so both 404 on every route. Tracked as Task 007, and **now on the
   critical path** because it makes every shared preview link render a broken card - see the

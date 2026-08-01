@@ -28,27 +28,46 @@ Two tracks were independent and ran in parallel:
 
 ## The current order
 
-**[2026-07-31] Revised by owner decision.** The owner wants friends looking at a real URL before
-the copy is finished, which reorders the tail of the backlog:
+**[2026-08-01] Restructured. Tasks 005b and 008a are done; the site is live on `pages.dev` and
+the feedback round is running.**
 
-| # | Task | Why here |
-| --- | --- | --- |
-| 1 | **005b** - zero user-visible copy in `.astro`, fill the domain | **ACTIVE.** Structure settles before copy is rewritten, so the copy is touched once. Also fills `GROUP_DOMAIN`, which is what actually unblocks the preview. **Scope widened 2026-07-31** to include the home page, header and footer |
-| 2 | **008a** - preview deployment | Friends need something to look at. Needs the domain fill, an output token scan, and a `noindex` mechanism |
-| 3 | *(the feedback round)* | Not a task. See `PROJECT_CONTEXT.md` section 4 for who is asked and what is not open for comment |
-| 4 | **005c** - copy register pass | **Must wait for the feedback rather than pre-empt it.** One pass, over already-consolidated files |
+### The DNS framing is retired, and it was wrong
 
-**Recommended but not scheduled: 007a** (favicon and OG image) ahead of step 2, so shared links
-do not render broken preview cards. It needs an owner input that is still deferred.
+Earlier drafts of this file treated the production domain as a gate on Tasks 007, 008 and the
+release generally. **It is not, and the repository was already built so that it isn't.**
 
-**The competing argument, recorded because it was real.** Splitting first and deploying second
-means friends see the current copy, including the `Our Community Garden Plot` heading and a
-garbled `/locations` meta description. Deploying first would have let feedback inform 005c
-without the split intervening, at the cost of one extra pass over the prose. **The owner chose
-split-then-deploy-then-copy knowingly**, and separately decided the heading is fine as it
-stands.
+`astro.config.mjs` reads `site` from `process.env.SITE_URL` rather than hardcoding it, with a
+comment at the point of use explaining why. **Set `SITE_URL` to the `pages.dev` URL and canonical
+URLs, `og:url` and a sitemap all work correctly today.** When the domain arrives it is one
+environment variable and a rebuild.
 
-Tasks 008 and 009 close out the release.
+**The only things that genuinely require DNS are pointing DNS and the mailbox.** Nothing else in
+this backlog is stalled on it, and a future session must not reintroduce "blocked on the domain"
+against work that is not.
+
+### What is actually unblocked
+
+Ready to start now, in no forced order:
+
+| Task | Why it is ready |
+| --- | --- |
+| **008a remainder** | The `dist/` token scan, confirming the Pages build ran on Node 22, and the **overdue** CGT re-verification |
+| **006a** | The feed's correctness problems need no account - they are verifiable against a seeded cache |
+| **007** | Metadata, canonical URLs and sitemap all work against `SITE_URL`. Only the brand *assets* are blocked |
+| **009** | No blocker at all, and it is the task that would have caught most of what went wrong in 001-005 |
+| **004d** | `CONTRIBUTING.md`. Open since 004c and never tracked until now |
+
+### What waits on an owner input
+
+| Task | Waiting on |
+| --- | --- |
+| **005c** | The feedback round to finish |
+| **007a** | Logo, favicon, social image |
+| **006b** | A Mastodon handle - **and the anticipated name change, which is the real constraint** |
+| **008** | DNS, and a working mailbox |
+
+**The largest lever is not sequencing, it is closing owner inputs**, because three of them each
+unblock a whole task and one of them (Mastodon) can *delete* work rather than enable it.
 
 ---
 
@@ -254,6 +273,33 @@ dedicated under CC0 is needed. Cheap now, painful to retrofit once patches have 
 
 ---
 
+## Task 004d - Contributor guidance
+
+**Status:** queued. **Unblocked. Small.**
+**Blocked on:** nothing.
+
+**[2026-08-01] Promoted from a loose note to a tracked task.** Task 004c flagged this on
+2026-07-31 and nothing ever carried it: "CC0 only covers what the owner holds, so if
+contributors arrive, a `CONTRIBUTING.md` stating that contributions are dedicated under CC0 is
+needed. Cheap now, painful to retrofit once patches have landed."
+
+The repository is public and deliberately shaped for reuse, so the gap is real rather than
+theoretical.
+
+### Planned scope
+
+- `CONTRIBUTING.md` dedicating contributions under CC0 1.0, matching `LICENSE`.
+- State the three carve-outs `README.md` already documents, since a contributor hits them
+  first: the group's name and identity are **not** waived by CC0 (trademark), Inter is **SIL OFL
+  1.1**, and the page copy describes a real group and would be false if republished unchanged.
+- Note that prose is **rewritten, not tokenized**, by an adopting fork - the reuse model in
+  `PROJECT_CONTEXT.md` section 2.
+
+**Do not invent a code of conduct, a review process, or a maintainer list.** None exist, and
+constraint 3.1 covers process claims as much as it covers addresses.
+
+---
+
 ## Task 005 - Real content, on-model
 
 **Status: COMPLETE**, 2026-07-31. Merged to `main` as `375d860`, followed by two owner copy
@@ -344,11 +390,11 @@ go-live so friends can look and comment, with the real domain wired later. That 
 backlog: a preview-only slice of Task 008 now runs ahead of Mastodon integration and the full
 brand-asset pass.
 
-The reorder is cheap because the thing that was supposed to block it does not. **Task 008 as
-written is blocked on the domain purchase and a confirmed Pages URL**; the domain is now
-answered, and a preview does not need the production URL. The remaining Task 008 scope -
-security headers, the canonical `site` value, real-device verification against the production
-domain - stays queued as Task 008.
+The reorder was cheap because the thing that was supposed to block it did not. **The preview
+never needed the production URL**, and in the event it did not need the domain at all - Task
+005b filled `GROUP_DOMAIN` from a registered domain the owner does not yet have DNS access to,
+and the site has been running on `pages.dev` since 2026-08-01. What remains for production is
+Task 008, which blocks nothing.
 
 ### Planned scope
 
@@ -416,117 +462,173 @@ task the order was designed to avoid.
 
 ---
 
-## Task 006 - Mastodon integration, wired end to end
+## Task 006 - Mastodon: SPLIT into 006a and 006b
 
-**Status:** queued and **BLOCKED. Out of the current order.**
-**Blocked on:** the Mastodon handle in `PROJECT_CONTEXT.md` section 4.
+**[2026-08-01] Task 006 was one task blocked on one owner input, and most of it never needed
+that input.** The owner wants the feed to exist eventually and is some way off having an
+account. Splitting converts a fully blocked task into a mostly unblocked one.
 
-**[2026-07-31] The handle question was put to the owner and came back "undecided."** That is
-neither a handle nor a decision that there is no account, so the tokens stay and this task
-cannot be specified. It **keeps its number but yields its position** to 005b, 008a and 005c.
+**The reason not to register a stub account now, recorded because it is the whole argument:**
+**a name change is anticipated**, and a Mastodon handle is the one identifier in this project
+that is *not* a one-line config edit. Handles can be migrated, but it is messy, the old handle
+is burned, and `rel="me"` verification has to be redone. **Registering a handle before the name
+settles locks in the thing the owner expects to change.**
 
-**It no longer blocks anything else.** `MASTODON_HANDLE` and `MASTODON_URL` are consumed by no
-template and never reach `dist/` - verified 2026-07-31 - so they do not stand between the
-project and the preview deploy.
+**The tokens stay until a real handle exists.** `social.mastodon` must not be set to `null` -
+that would mean *decided against*, and the owner has decided *for*, just not yet.
 
-**If the answer turns out to be "there is no account", this task shrinks or vanishes:**
-`social.mastodon` becomes `null`, `check:config` goes fully green, and `/posts` plus
-`MastodonFeed.astro` need a decision about whether they have any reason to exist. **Do not
-pre-empt that by writing `null` for an undecided input.**
+---
 
-### Why
+## Task 006a - Fix the feed, no account required
 
-The integration is currently non-functional on two independent levels: the fetch script
-cannot execute on Node 20 at all, and even with a populated cache the feed component would
-print raw HTML markup to visitors.
+**Status:** queued. **Unblocked.**
+**Blocked on:** nothing.
+
+### Why it needs no account
+
+Every correctness problem below is verifiable against a **seeded cache**. That is not a
+workaround - it is how the rendering defect was *proven* in the first place, on 2026-07-30, by
+writing one fake post into `src/data/mastodon-posts.json` and building. The cache is currently
+`[]`, so the feature has only ever been claimed against an empty array.
 
 ### Planned scope
 
-- Confirm the account, then run a real ingestion and inspect the cached payload. Every claim
-  about this feature so far has been made against an empty array.
-- **Resolve the HTML rendering defect.** `MastodonFeed.astro` interpolates `post.content`,
-  an HTML string, into a text node, so visitors see literal `<p>` tags. Two viable
-  approaches, to be decided explicitly:
-  - Convert to plain text at **build time** in the fetch script, storing a clean text field
-    alongside the original. Simple, no runtime dependency, loses links inside posts.
-  - Sanitize to an allowlist of elements (`p`, `br`, `a`, `em`, `strong`) at build time and
-    render the sanitized result. Preserves links, requires a sanitizer dependency and an
-    explicit architectural decision under constraint 3.6.
-  - Either way the transformation happens at build time, never in the browser, and
-    constraint 3.8 continues to forbid `set:html` on unsanitized input.
-- Handle Mastodon custom emoji and mentions, which arrive as markup and will otherwise look
-  broken.
-- Design real empty and unconfigured states. "No updates available at the moment" is shown
-  today for both "the group has not posted" and "no account is configured", which are very
-  different situations.
-- Decide a cache-staleness policy: a static site shows whatever was cached at build time,
-  so a feed can silently go months stale. Either show the post date prominently or trigger
-  periodic rebuilds.
-- Add the real Mastodon link with `rel="me"` so the account can verify the site back.
-- Consider whether media attachments should be proxied or hot-linked from the instance.
+- **Resolve the HTML rendering defect.** `src/components/MastodonFeed.astro:61` interpolates
+  `post.content` - an HTML string - into a text node, so visitors would see literal `<p>` tags.
+  **Confirmed empirically, not predicted.**
+
+  **[2026-08-01] DECIDED: sanitize to an allowlist** (`p`, `br`, `a`, `em`, `strong`), not
+  plain-text stripping. Owner input - the posts carry links and plain text would discard them.
+  **This authorizes a sanitizer dependency** under constraint 3.6. Sanitize at **build time**,
+  never in the browser; constraint 3.8 still forbids `set:html` on unsanitized input.
+- Handle custom emoji and mentions, which arrive as markup and will otherwise look broken.
+- **Stop hot-linking media, and fetch it at build time instead.**
+  `MastodonFeed.astro:68` uses `src={media.preview_url || media.url}`, pointing at the Mastodon
+  instance. **Every visitor's browser then contacts a third party - precisely what Task 003
+  removed** when it took Inter off the Google Fonts CDN so no visitor IP reaches one. The owner's
+  posts are image-first, so this is most posts, not an edge case. Hot-linked images also die if a
+  post is deleted upstream. The fetch script already runs at build time.
+- **Fix the alt-text fallback.** `MastodonFeed.astro:69` falls back to `'Post attachment'`, which
+  describes nothing, and **the information in these posts lives in the image** - announcements,
+  community notices, garden pictures. Accessibility is a release requirement here.
+  **Half this fix is not code:** Mastodon only supplies `media.description` when the poster wrote
+  alt text, and the site must not invent one (constraint 3.1). Handle a missing description
+  honestly rather than papering over it, and flag to the owner that alt text needs writing at
+  post time.
+
+**Images are already implemented and this task does not add them.** `src/types/mastodon.ts`,
+`scripts/fetch-mastodon.ts` and `MastodonFeed.astro:64-75` all handle `media_attachments`
+today, rendering up to four per post. The two items above are corrections to existing behaviour.
+- **Distinguish the two empty states.** "No updates available at the moment" is shown today for
+  both *the group has not posted* and *no account is configured*. With the account genuinely
+  unconfigured, the second is the state that actually ships - and it is the one a visitor sees
+  right now on `/` and `/posts`.
+- Decide a cache-staleness policy. A static site shows whatever was cached at build time, so a
+  feed can silently go months stale.
 
 ### Acceptance
 
-- A real ingestion produces a non-empty cache, and the rendered page shows readable text
-  with no visible markup.
-- Build succeeds with the account configured and with it unset.
+- With a seeded cache containing markup, the rendered page shows readable text and **no visible
+  tags** - verified in `dist/`, with `/usr/bin/grep`.
+- The unconfigured state renders distinctly from the empty state.
+- Build succeeds with the cache seeded and with it `[]`.
 - No client-side request to any Mastodon instance.
+- **The seeded fixture is removed before completion**, or is clearly a fixture. Do not ship
+  invented posts - constraint 3.1.
 
 ---
 
-## Task 007a - Favicon and OG image, ahead of the preview
+## Task 006b - Wire the real account
 
-**Status:** queued, **recommended before Task 008a. Not yet an owner decision.**
-**Blocked on:** the logo/favicon/social-image owner input in `PROJECT_CONTEXT.md` section 4.
+**Status:** queued. **Blocked on an owner input.**
+**Blocked on:** a Mastodon handle, which in turn waits on the name settling.
 
-`public/` is empty and `BaseLayout.astro` references `/favicon.svg` and
-`/images/og-default.jpg`, so both 404 on every route. That has been a cosmetic gap so far.
-**Once a preview link is shared with friends it stops being cosmetic:** every browser tab shows
-a default icon and every link anyone pastes into a chat renders a broken preview card. The
-first impression the feedback round is meant to gather would be partly an impression of missing
-assets.
+Small once the handle exists - roughly a config edit plus a verification pass.
 
-**An implementer cannot resolve this** - the assets are a deferred owner input, not a technical
-gap. The owner needs to supply them or approve a deliberate placeholder. Flagged rather than
-scheduled, because the answer is theirs.
+- Fill `social.mastodon`; the two remaining tokens disappear and `check:config` goes green.
+- Run a real ingestion and inspect the actual payload against what 006a assumed.
+- Add the Mastodon link with `rel="me"` so the account can verify the site back.
+- Decide whether media attachments are proxied or hot-linked.
 
-The rest of Task 007 stays queued below.
+**If the answer ever becomes "there is no account" instead:** `social.mastodon` becomes `null`,
+and `/posts` plus `MastodonFeed.astro` need a decision about whether they have any reason to
+exist. That is a route deletion, not a config change - worth settling before Task 007 does
+metadata work on a page that might go.
 
 ---
 
-## Task 007 - Brand assets and metadata
+## Task 007a - Favicon and OG image
 
-**Status:** queued. **Track B.**
-**Blocked on:** Task 003 palette, and the logo/wordmark in `PROJECT_CONTEXT.md` section 4.
+**Status:** queued. **Blocked on an owner input.**
+**Blocked on:** the logo/favicon/social-image row in `PROJECT_CONTEXT.md` section 4.
+
+**`public/` does not exist as a directory** - git does not track empty directories, so it is
+absent rather than empty. `BaseLayout.astro:37` references `/favicon.svg` and line 19 defaults
+`ogImage` to `/images/og-default.jpg`; both 404 on every route. **The preview is live and shared,
+so every browser tab shows a default icon and every pasted link renders a broken card right
+now.**
+
+**An implementer cannot resolve this** - the assets are an owner input, not a technical gap. The
+owner supplies them or approves a deliberate placeholder.
+
+---
+
+## Task 007 - Metadata, sitemap and the wordmark
+
+**Status:** queued. **Unblocked, except for the wordmark.**
+**Blocked on:** nothing for the metadata half. The wordmark waits on the same owner input
+as 007a.
+
+**[2026-08-01] This task is no longer blocked on the production domain.** Earlier drafts said it
+was. `astro.config.mjs` reads `site` from `process.env.SITE_URL`, so **setting that to the
+`pages.dev` URL makes canonical URLs, `og:url` and a sitemap correct today.** Swapping in the
+real domain later is one environment variable and a rebuild.
 
 ### Planned scope
 
-- Create `public/favicon.svg` and the OG image at `/images/og-default.jpg`, if 007a has not
-  already. Both are referenced by `BaseLayout.astro` today and both 404 on every route.
-- Replace the emoji logo in `Header.astro` with a real wordmark or a deliberate typographic
-  treatment.
+- **Set `SITE_URL` in the Pages environment.** It must be a real environment variable -
+  `astro.config.mjs` is evaluated before Astro loads `.env` files, and says so at the point of
+  use.
 - Complete metadata: canonical URLs, `og:url`, `og:site_name`, `og:locale`, and per-page
-  descriptions. Several pages currently inherit the generic default.
-- Add `sitemap` and `robots.txt`.
+  descriptions. Several routes still inherit the generic default.
+- Add a sitemap and `robots.txt`. **[2026-08-01] `@astrojs/sitemap` is approved by the owner** -
+  a genuine new dependency under constraint 3.6, first-party Astro. **Note the `robots.txt` must
+  not fight the preview's manual `noindex`** - see the deployment decision in
+  `PROJECT_CONTEXT.md` section 4.
+- Replace the `🌯` emoji logo in `Header.astro` with a real wordmark or a deliberate typographic
+  treatment. *(This part waits on the owner input.)*
+
+**Settle Task 006b's fate first if convenient** - if the answer becomes "there is no account",
+`/posts` may be deleted, and doing per-page metadata for a route that disappears is wasted work.
 
 ---
 
-## Task 008 - Production deployment
+## Task 008 - Production launch
 
-**Status:** queued. **The preview slice has been cut out as Task 008a**, above; what remains
-here is production.
-**Blocked on:** Task 008a, and pointing `vegansagainstfascism.org` at Cloudflare.
+**Status:** queued. **Blocked on owner-side infrastructure, and blocking nothing.**
+**Blocked on:** DNS access for `vegansagainstfascism.org`, and a working mailbox.
+
+**[2026-08-01] This is a launch step, not a gate.** The owner does not have domain access yet
+and the site works fine on `pages.dev`. **Nothing else in this backlog waits on it.** The plan
+is to gather feedback on `pages.dev`, take the preview down, and add the domain whenever it
+becomes available.
 
 ### Planned scope
 
-- Wire the real domain and record the production URL as a dated decision.
-- Set the canonical `site` in `astro.config.mjs` only once the URL is confirmed.
-- Confirm production does **not** inherit the preview's `noindex`. This is the enforcement half
-  of the owner's preview decision and it is easy to get backwards in exactly the direction that
-  hurts.
-- Configure `MASTODON_ACCOUNT` in the Pages environment, if Task 006 ever unblocks.
+- Point the domain at Cloudflare and record the production URL as a dated decision.
+- **Change `SITE_URL` to the real origin.** If Task 007 has run, that is the whole canonical-URL
+  change.
+- **Confirm `info@vegansagainstfascism.org` actually receives mail.** It is live on all six
+  routes as the site's only call to action, and a plausible address that silently bounces is
+  worse than a visible placeholder was. **Cost to close: one test email.**
+- **Rename the Cloudflare Pages project.** It is currently `community-food-group` - the retired
+  invented scaffold name - which is baked into the `*.pages.dev` hostname and persists as the
+  fallback origin after the domain is attached.
+- **Confirm production does not inherit the preview's `noindex`.** The preview's was set
+  manually, so this is now a dashboard check rather than a code one, and it is easy to get
+  backwards in exactly the direction that hurts.
 - Add security headers.
-- Verify the deployed build against a real mobile device, not only a narrow viewport.
+- Verify the deployed build on a real mobile device, not only a narrow viewport.
 
 ---
 
@@ -538,11 +640,12 @@ here is production.
 ### Planned scope
 
 - CI running `npm ci`, `npm run check`, `npm run build`, and `npm audit` on pull requests.
-- **Resolve the zod deprecation.** Astro 7 deprecated the `z` re-export from
-  `astro:content`, producing 12 hints in `src/content.config.ts`. Fixing it means declaring
-  `zod` as a direct dependency, which needs an owner decision under constraint 3.6. It is
-  currently present only as a transitive dependency of astro, so importing it directly today
-  would depend on npm hoisting and is not safe.
+- **Resolve the zod deprecation. [2026-08-01] DECIDED and no longer an open question.** Add
+  `"zod": "^4.4.3"` to `package.json` with the range aligned to whatever Astro pulls, and change
+  `src/content.config.ts` to `import { z } from 'zod'`. **This declares a dependency that is
+  already installed** - `zod@4.4.3` is on disk as a child of `astro@7.1.6` and every schema
+  already runs it. **21** hints go to zero. **Never import from `'zod'` without declaring it** -
+  that works only via npm's flattening and is the fragile state this fixes.
 - A link checker, given how many dead and invented links the scaffold shipped with.
 - An automated accessibility pass on built HTML.
 - Dependency update automation.
