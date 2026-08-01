@@ -1,0 +1,52 @@
+---
+/**
+ * A row of call-to-action buttons.
+ *
+ * Labels and destinations are passed in from `src/content/pages/home.mdx`, so
+ * a button's wording is edited in the content file like everything else on the
+ * page. `tone` selects the on-colour treatment the surrounding band needs; the
+ * base `.btn-*` classes come from `src/styles/global.css`.
+ */
+
+export type ActionTone = 'default' | 'on-brand' | 'on-accent';
+export type ActionVariant = 'primary' | 'secondary';
+
+export interface ActionItem {
+  label: string;
+  href: string;
+  variant?: ActionVariant;
+}
+
+export interface Props {
+  items: readonly ActionItem[];
+  tone?: ActionTone;
+  align?: 'start' | 'center';
+}
+
+const { items, tone = 'default', align = 'start' } = Astro.props;
+
+const buttonClass: Record<ActionTone, Record<ActionVariant, string>> = {
+  default: {
+    primary: 'btn-primary',
+    secondary: 'btn-secondary',
+  },
+  'on-brand': {
+    primary: 'btn-primary bg-surface text-brand-ink hover:bg-surface-raised',
+    secondary: 'btn-secondary bg-surface-raised text-brand-ink hover:bg-surface',
+  },
+  'on-accent': {
+    primary: 'btn-primary bg-surface-raised text-accent-ink hover:bg-surface',
+    secondary: 'btn-secondary bg-surface text-accent-ink hover:bg-surface-raised',
+  },
+};
+---
+
+<div class:list={['flex flex-wrap gap-4', align === 'center' ? 'justify-center' : '']}>
+  {
+    items.map((item) => (
+      <a href={item.href} class={buttonClass[tone][item.variant ?? 'primary']}>
+        {item.label}
+      </a>
+    ))
+  }
+</div>

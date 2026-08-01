@@ -1,5 +1,21 @@
 ---
+import { getEntry, render } from 'astro:content';
 import siteConfig from '../../site.config';
+
+// A fragment, not a route: nothing looks it up by id and nothing enumerates
+// the collection, so it renders here and nowhere else.
+const footerBlurb = await getEntry('pages', 'footer');
+
+if (!footerBlurb) {
+  throw new Error("Content entry 'pages/footer' was not found");
+}
+
+const { Content } = await render(footerBlurb);
+
+// One navigation list, shared with the header. The footer has never carried a
+// home link - the header wordmark already is one - so it drops that entry
+// rather than keeping a second, disagreeing list.
+const quickLinks = siteConfig.nav.filter((item) => item.href !== '/');
 ---
 
 <footer class="bg-surface-inverse text-ink-inverse-muted py-12" role="contentinfo">
@@ -8,42 +24,50 @@ import siteConfig from '../../site.config';
       <!-- About Section -->
       <div>
         <h3 class="text-ink-inverse font-semibold text-lg mb-4">{siteConfig.groupName}</h3>
-        <p class="text-sm">
-          A mutual aid group in Tucson, Arizona. We cook vegan food together and hand it directly to people around town.
-        </p>
+        <div class="text-sm">
+          <Content />
+        </div>
       </div>
 
       <!-- Quick Links -->
       <div>
-        <h4 class="text-ink-inverse font-semibold text-lg mb-4">Quick Links</h4>
+        <h4 class="text-ink-inverse font-semibold text-lg mb-4">
+          {siteConfig.footer.quickLinksHeading}
+        </h4>
         <ul class="space-y-2 text-sm">
-          <li>
-            <a href="/about" class="hover:text-ink-inverse transition-colors">About Us</a>
-          </li>
-          <li>
-            <a href="/locations" class="hover:text-ink-inverse transition-colors">Locations</a>
-          </li>
-          <li>
-            <a href="/join" class="hover:text-ink-inverse transition-colors">Join Us</a>
-          </li>
-          <li>
-            <a href="/help" class="hover:text-ink-inverse transition-colors">Ways to help</a>
-          </li>
+          {
+            quickLinks.map((item) => (
+              <li>
+                <a href={item.href} class="hover:text-ink-inverse transition-colors">
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
         </ul>
       </div>
 
       <!-- Connect -->
       <div>
-        <h4 class="text-ink-inverse font-semibold text-lg mb-4">Connect With Us</h4>
+        <h4 class="text-ink-inverse font-semibold text-lg mb-4">
+          {siteConfig.footer.connectHeading}
+        </h4>
         <ul class="space-y-2 text-sm">
           <li>
-            <a href={`mailto:${siteConfig.contactEmail}`} class="hover:text-ink-inverse transition-colors">
-              <span aria-hidden="true">📧</span> Email us
+            <a
+              href={`mailto:${siteConfig.contactEmail}`}
+              class="hover:text-ink-inverse transition-colors"
+            >
+              <span aria-hidden="true">{siteConfig.footer.emailEmoji}</span>{' '}{
+                siteConfig.footer.emailLabel
+              }
             </a>
           </li>
           <li>
-            <a href="/join" class="hover:text-ink-inverse transition-colors">
-              <span aria-hidden="true">🤝</span> Volunteer
+            <a href={siteConfig.footer.joinHref} class="hover:text-ink-inverse transition-colors">
+              <span aria-hidden="true">{siteConfig.footer.joinEmoji}</span>{' '}{
+                siteConfig.footer.joinLabel
+              }
             </a>
           </li>
         </ul>
@@ -53,10 +77,10 @@ import siteConfig from '../../site.config';
     <!-- Bottom Bar -->
     <div class="border-t border-ink-inverse-muted/30 mt-8 pt-6 text-sm text-center md:text-left">
       <p>
-        &copy; {new Date().getFullYear()} {siteConfig.groupName}. All rights reserved.
+        &copy; {new Date().getFullYear()} {siteConfig.groupName}. {siteConfig.footer.rightsNotice}
       </p>
       <p class="mt-1 text-xs">
-        Built with 💚 for our community
+        {siteConfig.footer.colophon}
       </p>
     </div>
   </div>

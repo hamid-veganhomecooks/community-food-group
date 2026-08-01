@@ -1,43 +1,44 @@
 ---
 import { Menu, X } from 'lucide-astro';
 import siteConfig from '../../site.config';
+
+// One list, read twice. The desktop and mobile navigations were two hand-kept
+// copies of the same five labels, so a rename meant two edits and the footer
+// silently disagreed with both.
+const navItems = siteConfig.nav;
+
+const desktopLinkClass = 'text-ink-muted hover:text-brand-ink transition-colors font-medium';
+const desktopCtaClass = 'btn-primary text-sm';
+const mobileLinkClass = 'block text-ink-muted hover:text-brand-ink transition-colors font-medium';
+const mobileCtaClass = 'inline-block btn-primary text-sm w-full text-center';
 ---
 
 <header class="bg-surface-raised shadow-xs sticky top-0 z-50" role="banner">
-  <nav class="container flex items-center justify-between h-16" aria-label="Primary navigation">
+  <nav
+    class="container flex items-center justify-between h-16"
+    aria-label={siteConfig.header.primaryNavLabel}
+  >
     <!-- Logo -->
-    <a href="/" class="flex items-center space-x-2 text-xl font-bold text-brand-ink hover:text-brand-hover transition-colors" aria-label={`${siteConfig.groupName} Home`}>
-      <span class="text-2xl">🌯</span>
+    <a
+      href="/"
+      class="flex items-center space-x-2 text-xl font-bold text-brand-ink hover:text-brand-hover transition-colors"
+      aria-label={`${siteConfig.groupName} ${siteConfig.header.homeLabel}`}
+    >
+      <span class="text-2xl">{siteConfig.header.logoEmoji}</span>
       <span>{siteConfig.groupName}</span>
     </a>
 
     <!-- Desktop Navigation -->
     <ul class="hidden md:flex items-center space-x-6">
-      <li>
-        <a href="/" class="text-ink-muted hover:text-brand-ink transition-colors font-medium">
-          Home
-        </a>
-      </li>
-      <li>
-        <a href="/about" class="text-ink-muted hover:text-brand-ink transition-colors font-medium">
-          About
-        </a>
-      </li>
-      <li>
-        <a href="/locations" class="text-ink-muted hover:text-brand-ink transition-colors font-medium">
-          Locations
-        </a>
-      </li>
-      <li>
-        <a href="/join" class="text-ink-muted hover:text-brand-ink transition-colors font-medium">
-          Join
-        </a>
-      </li>
-      <li>
-        <a href="/help" class="btn-primary text-sm">
-          Ways to help
-        </a>
-      </li>
+      {
+        navItems.map((item) => (
+          <li>
+            <a href={item.href} class={item.cta ? desktopCtaClass : desktopLinkClass}>
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
     </ul>
 
     <!-- Mobile Menu Toggle -->
@@ -46,7 +47,7 @@ import siteConfig from '../../site.config';
       class="md:hidden p-2 rounded-lg hover:bg-surface-sunken transition-colors focus:outline-hidden focus:ring-2 focus:ring-focus"
       aria-controls="mobile-menu"
       aria-expanded="false"
-      aria-label="Toggle navigation menu"
+      aria-label={siteConfig.header.menuToggleLabel}
       id="mobile-menu-toggle"
       data-mobile-toggle
     >
@@ -56,33 +57,22 @@ import siteConfig from '../../site.config';
   </nav>
 
   <!-- Mobile Navigation -->
-  <nav id="mobile-menu" class="md:hidden hidden bg-surface-raised border-t border-border" aria-label="Mobile navigation" data-mobile-menu>
+  <nav
+    id="mobile-menu"
+    class="md:hidden hidden bg-surface-raised border-t border-border"
+    aria-label={siteConfig.header.mobileNavLabel}
+    data-mobile-menu
+  >
     <ul class="container py-4 space-y-3">
-      <li>
-        <a href="/" class="block text-ink-muted hover:text-brand-ink transition-colors font-medium">
-          Home
-        </a>
-      </li>
-      <li>
-        <a href="/about" class="block text-ink-muted hover:text-brand-ink transition-colors font-medium">
-          About
-        </a>
-      </li>
-      <li>
-        <a href="/locations" class="block text-ink-muted hover:text-brand-ink transition-colors font-medium">
-          Locations
-        </a>
-      </li>
-      <li>
-        <a href="/join" class="block text-ink-muted hover:text-brand-ink transition-colors font-medium">
-          Join
-        </a>
-      </li>
-      <li>
-        <a href="/help" class="inline-block btn-primary text-sm w-full text-center">
-          Ways to help
-        </a>
-      </li>
+      {
+        navItems.map((item) => (
+          <li>
+            <a href={item.href} class={item.cta ? mobileCtaClass : mobileLinkClass}>
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
     </ul>
   </nav>
 </header>

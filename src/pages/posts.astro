@@ -1,22 +1,35 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import MastodonFeed from '../components/MastodonFeed.astro';
+import { getEntry, render } from 'astro:content';
+
+const postsPage = await getEntry('pages', 'posts');
+
+if (!postsPage) {
+  throw new Error("Content entry 'pages/posts' was not found");
+}
+
+const { Content } = await render(postsPage);
 ---
 
 <BaseLayout
-  title="Updates"
-  description="Latest updates from our community"
-  pageTitle="All Updates"
+  title={postsPage.data.title}
+  description={postsPage.data.description}
+  pageTitle={postsPage.data.heroTitle || postsPage.data.title}
 >
   <div class="section bg-surface">
     <div class="container">
-      <div class="max-w-3xl mx-auto text-center mb-stack">
-        <h1 class="text-title font-bold text-brand-ink">
-          Community Updates
-        </h1>
-        <p class="text-lead text-ink-muted max-w-lede mx-auto mt-stack-sm">
-          Short updates from the group, posted as things happen.
-        </p>
+      {/*
+        The centred treatment this route has always used, kept deliberately:
+        the copy is a short standfirst introducing the feed below it, not an
+        editorial document, so it does not take the `prose-card` the three
+        long-form MDX routes use. The classes live here rather than in the
+        content file because markdown emits bare elements.
+      */}
+      <div
+        class="max-w-3xl mx-auto text-center mb-stack [&>h1]:text-title [&>p]:text-lead [&>p]:text-ink-muted [&>p]:max-w-lede [&>p]:mx-auto [&>p]:mt-stack-sm"
+      >
+        <Content />
       </div>
 
       <MastodonFeed limit={20} />

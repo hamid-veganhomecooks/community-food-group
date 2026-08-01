@@ -1,37 +1,39 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getCollection } from 'astro:content';
+import { getCollection, getEntry, render } from 'astro:content';
 import { MapPin, CalendarDays } from 'lucide-astro';
 import siteConfig from '../../site.config';
+
+const locationsPage = await getEntry('pages', 'locations');
+
+if (!locationsPage) {
+  throw new Error("Content entry 'pages/locations' was not found");
+}
+
+const { Content } = await render(locationsPage);
 
 const locations = await getCollection('locations');
 ---
 
 <BaseLayout
-  title="Places"
-  description="Community garden information. Explanation of cooking and distribution move around town."
-  pageTitle="Where We Are"
+  title={locationsPage.data.title}
+  description={locationsPage.data.description}
+  pageTitle={locationsPage.data.heroTitle || locationsPage.data.title}
 >
   <div class="section bg-surface">
     <div class="container">
-      <div class="max-w-3xl mx-auto text-center mb-stack">
-        <h1 class="text-title font-bold text-brand-ink">
-          Where We Are
-        </h1>
-        <p class="text-lead text-ink-muted max-w-lede mx-auto mt-stack-sm">
-          Most of what we do has no fixed address. We cook together and hand the food out
-          around town, monthly, and the arrangements are made close to the date - so there is
-          no place or time here to turn up to. To come along, or to find out where the next
-          one is, write to{' '}
-          <a href={`mailto:${siteConfig.contactEmail}`} class="text-brand-ink hover:text-brand-hover font-medium"
-            >{siteConfig.contactEmail}</a
-          >{' '}and a person will write back.
-        </p>
+      {/*
+        The centred treatment this route has always used, kept deliberately:
+        the copy introduces the cards below it rather than standing on its own,
+        so it does not take the `prose-card` the three long-form MDX routes
+        use. The classes live here rather than in the content file because
+        markdown emits bare elements.
+      */}
+      <div
+        class="max-w-3xl mx-auto text-center [&>h1]:text-title [&>h2]:text-heading [&>h2]:mt-stack [&>p]:text-lead [&>p]:text-ink-muted [&>p]:max-w-lede [&>p]:mx-auto [&>p]:mt-stack-sm [&_a]:font-medium"
+      >
+        <Content />
       </div>
-
-      <h2 class="text-heading font-bold text-brand-ink text-center">
-        Our Community Garden Plot
-      </h2>
 
       <div class="grid grid-cols-1 gap-stack mt-stack max-w-3xl mx-auto">
         {locations.map((location) => (
@@ -62,7 +64,7 @@ const locations = await getCollection('locations');
             </p>
 
             <p class="mt-stack-sm text-label text-ink-muted">
-              Operated by{' '}
+              {siteConfig.locations.operatedByLabel}{' '}
               <a
                 href={location.data.operatorUrl}
                 target="_blank"

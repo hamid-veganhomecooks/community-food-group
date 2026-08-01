@@ -1,0 +1,68 @@
+---
+/**
+ * A home page section band. One component covers the three non-hero bands; the
+ * differences between them are background tone, rhythm, alignment and whether
+ * the copy is held to a measure.
+ *
+ * As with the hero, the band carries no copy - headings and paragraphs come
+ * from `src/content/pages/home.mdx` as markdown, so the band styles its own
+ * children instead.
+ *
+ * Every class string below is written out in full. Tailwind scans source text,
+ * so a class assembled from fragments at run time would never be generated.
+ */
+
+export type BandTone = 'surface' | 'raised' | 'accent';
+export type BandRhythm = 'section' | 'tight';
+export type BandAlign = 'start' | 'center';
+
+export interface Props {
+  tone?: BandTone;
+  rhythm?: BandRhythm;
+  align?: BandAlign;
+  /** Hold the copy to the lede measure rather than the full container. */
+  measure?: boolean;
+}
+
+const {
+  tone = 'surface',
+  rhythm = 'section',
+  align = 'start',
+  measure = false,
+} = Astro.props;
+
+const toneClass: Record<BandTone, string> = {
+  surface: 'bg-surface',
+  raised: 'bg-surface-raised',
+  accent: 'bg-accent text-ink-inverse',
+};
+
+const rhythmClass: Record<BandRhythm, string> = {
+  section: 'section',
+  tight: 'section-tight',
+};
+
+// Ink roles differ on a dark band; sizes and spacing do not.
+const inkClass: Record<BandTone, string> = {
+  surface: '[&>p]:text-ink [&>p:first-of-type]:text-ink-muted',
+  raised: '[&>p]:text-ink [&>p:first-of-type]:text-ink-muted',
+  accent: '[&>h2]:text-ink-inverse [&>p]:text-ink-inverse',
+};
+
+const typeClass =
+  '[&>h2]:text-heading [&>p]:mt-stack-sm [&>p:first-of-type]:text-lead [&>div]:mt-stack [&_a]:font-medium';
+
+const measureClass = measure
+  ? align === 'center'
+    ? 'max-w-lede mx-auto'
+    : 'max-w-lede'
+  : '';
+---
+
+<section class:list={[rhythmClass[rhythm], toneClass[tone]]}>
+  <div class:list={['container', align === 'center' ? 'text-center' : '']}>
+    <div class:list={[measureClass, typeClass, inkClass[tone]]}>
+      <slot />
+    </div>
+  </div>
+</section>

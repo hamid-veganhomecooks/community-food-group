@@ -8,10 +8,11 @@ Built with Astro 7, Tailwind CSS 4, and MDX. Static output, intended for Cloudfl
 
 > **This site is not ready to publish.**
 >
-> The copy and the location record now describe the real group, but two owner inputs are
-> still unfilled: the domain (the contact address is written as the literal
-> `info@GROUP_DOMAIN` token) and the Mastodon account. `npm run check:config` exits
-> non-zero while any token remains, and **no build carrying one may be deployed.**
+> The copy and the location record describe the real group, and the domain is now filled, so
+> the contact address is a real one. The **Mastodon account is still an unfilled owner
+> input**, and `npm run check:config` exits non-zero while any token remains. `public/` is
+> also still empty, so the favicon and social preview image referenced by the layout return
+> 404, and no deployment exists yet.
 >
 > See `PROJECT_CONTEXT.md` for the project's single source of truth, `TASK_SPEC.md` for the
 > active task, and `ROADMAP.md` for the ordered backlog.
@@ -105,13 +106,22 @@ environment variable.
 scripts/fetch-mastodon.ts   Build-time Mastodon ingestion
 scripts/check-contrast.mjs  WCAG 2.2 AA check for the colour tokens
 src/content.config.ts       Content collection definition
-src/content/pages/          Editorial MDX: about, join, help
+src/content/pages/          Every route's prose, as MDX: home, about, locations,
+                            join, help, posts - plus footer.mdx, a fragment
 src/data/                   Location records and the generated Mastodon cache
-src/pages/                  Routes
+src/pages/                  Routes. Each one is a thin wrapper that looks up its
+                            MDX document and renders it; none holds copy
 src/components/             Header, Footer, MastodonFeed
+src/components/home/        Hero, Band, Actions - the three components the home
+                            page's MDX uses to keep its band layout
 src/layouts/BaseLayout.astro
 src/styles/global.css
 ```
+
+**No `.astro` file contains a user-visible string.** Prose lives in `src/content/pages/`,
+short labels (navigation, buttons, footer headings) live in `site.config.ts`, and structured
+facts live in `src/data/`. Changing any sentence on the site means opening a content file or
+the config - never a template.
 
 ## Rebranding this site
 
@@ -120,10 +130,10 @@ means editing four documented surfaces, and nothing else:
 
 | Surface | What you edit |
 | --- | --- |
-| `site.config.ts` | Identity constants: group name, tagline, city, contact, social accounts |
+| `site.config.ts` | Identity constants: group name, tagline, city, contact, social accounts - **and the navigation and footer labels** |
 | `:root` brand inputs in `src/styles/global.css` | Fourteen colour values (below) |
 | `src/data/locations.json` | Replace the records wholesale with your own |
-| `src/content/pages/*.mdx` | Rewrite the prose wholesale |
+| `src/content/pages/*.mdx` | Rewrite the prose wholesale - **every route, including the home page** |
 
 ### 1. `site.config.ts` - identity
 
@@ -131,6 +141,12 @@ A typed config file at the repository root holding this group's identity constan
 tagline, city, region, domain, contact email, and social accounts. Every template reads it
 instead of hardcoding a name, so `npm run check` (TypeScript) catches a missing or
 mistyped field.
+
+It also holds the site's **short labels**, which are not prose and do not belong in a content
+file: the `nav` list (one entry per destination, read by the header's desktop and mobile
+navigations *and* the footer's quick links, so a rename is one edit), the header's accessible
+names and wordmark glyph, and the footer's column headings, link labels, rights notice and
+colophon.
 
 A field you have not filled in yet holds a placeholder **token** instead of a guess -
 `SCREAMING_SNAKE_CASE`, matching `/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b/`, e.g. `GROUP_NAME` or
@@ -226,12 +242,22 @@ staffed sites, so none of them had data behind them.
 
 ### 4. `src/content/pages/*.mdx` - editorial prose
 
-`about.mdx`, `join.mdx`, and `help.mdx`. **This prose is rewritten, not tokenized.** A group
-in another city does not need this group's sentences with a name swapped in - they have a
-different model, different programs, and no rented garden plot at a specific address. Do not
-add config interpolation (`{siteConfig.groupName}` and similar) into these documents: a
-sentence that needs a token to make sense belongs to the adopting group, not to the template.
-Write your own copy describing your own group.
+**Every route's prose lives here**, one document per route - `home.mdx`, `about.mdx`,
+`locations.mdx`, `join.mdx`, `help.mdx`, `posts.mdx` - plus `footer.mdx`, which is a fragment
+rather than a route and holds the footer blurb. Each `src/pages/*.astro` file is a thin
+wrapper that looks its document up and renders it.
+
+`home.mdx` keeps the home page's band layout by using three components - `Hero`, `Band` and
+`Actions` - which `src/pages/index.astro` passes in, so the content file carries no import
+lines. Button labels and destinations are written inline in that file with the band they
+belong to.
+
+**This prose is rewritten, not tokenized.** A group in another city does not need this
+group's sentences with a name swapped in - they have a different model, different programs,
+and no rented garden plot at a specific address. Do not add config interpolation
+(`{siteConfig.groupName}` and similar) into these documents: a sentence that needs a token to
+make sense belongs to the adopting group, not to the template. Write your own copy describing
+your own group.
 
 ## Typography and spacing
 
@@ -317,7 +343,6 @@ Recorded so they are not mistaken for finished work. Details and sequencing are 
 - Accessibility is a project **target**, not a verified state. No audit has been run and no
   conformance is claimed. Task 002 did measure heading structure in a browser - every route
   has exactly one `h1` and none skips a level - but that is one check, not an audit.
-  `Header.astro` still applies application-menu ARIA roles to ordinary site navigation.
 - There is no CI, test suite, linter, or formatter.
 - No deployment exists. Cloudflare Pages has not been configured.
 

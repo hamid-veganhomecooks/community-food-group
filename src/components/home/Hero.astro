@@ -1,0 +1,20 @@
+---
+/**
+ * The home page's gradient hero band.
+ *
+ * It carries no copy of its own: the `h1` and the lede arrive as markdown from
+ * `src/content/pages/home.mdx`, which is the only place either can be edited.
+ * Because markdown emits bare elements, the band styles its own children with
+ * child variants rather than asking the content file to carry classes.
+ */
+---
+
+<section class="section-lg bg-linear-to-r from-brand to-brand-hover text-ink-inverse">
+  <div class="container">
+    <div
+      class="max-w-3xl [&>h1]:text-display [&>h1]:text-ink-inverse [&>p]:text-lead [&>p]:text-ink-inverse [&>p]:max-w-lede [&>p]:mt-stack [&>div]:mt-stack"
+    >
+      <slot />
+    </div>
+  </div>
+</section>
