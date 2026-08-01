@@ -348,3 +348,62 @@ their effects were carried forward as work rather than archived:
 2. **A CGT link drift appeared**: `about.mdx` links to the operator's site root while
    `locations.json` links to the `/garden-locations` listing, which is the URL actually
    verified on 2026-07-31. Reconciling the two is Task 005b's.
+
+### Task 005b, verified 2026-08-01
+
+Zero user-visible copy in `.astro`, and the domain fill. Merged as `716ddd3` - **18 files, 531
+insertions, 234 deletions** - on branch `task/005b-content-consolidation`. The `MEMORY SYNC`
+followed as `3ea2583`.
+
+**The task's own goal, restated because it is what the record has to show:** changing any
+sentence on the site means opening a file under `src/content/` or `site.config.ts`, never a
+`.astro` file.
+
+Verified by execution on Node v22.23.2, **re-confirmed independently at archive time** rather
+than taken from the implementer's report:
+
+- `npm run build` emits the **same six** routes. **Exactly one `h1` per route in `dist/`** -
+  counted on all six built HTML files, the criterion most at risk from moving headings into MDX.
+- **Zero tokens in built output.** The documented token pattern over `dist/**/*.html` returns no
+  `GROUP_*` or `MASTODON_*` match. `GROUP_DOMAIN` was the only token that ever reached `dist/`
+  and Task 005b filled it.
+- `npm run check:config` drops from **7** tokens to **2** - `MASTODON_HANDLE` and
+  `MASTODON_URL`, both in `site.config.ts`, both consumed by no template. Still exits non-zero,
+  which is the correct end state.
+- `npm run check`: 0 errors, 0 warnings, **21 hints**, unmoved. Seven new files changed the hint
+  count not at all; the file count `astro check` reports rose from 19 to 22.
+- `npm run check:contrast`: all sixteen role pairs pass, `global.css` untouched.
+- Four new MDX documents (`home`, `locations`, `posts`, `footer`) and three new home-page
+  components (`Hero`, `Band`, `Actions`) - the vocabulary cap of three was respected.
+
+**Four implementation decisions the task was asked to make and report:**
+
+1. **Components are passed into MDX from the route**, via
+   `<Content components={{ Hero, Band, Actions, MastodonFeed }} />`, rather than imported inside
+   the document. Verified by building, not assumed - the spec required checking which mechanism
+   actually works. This is what keeps import lines out of the file the owner edits.
+2. **`/locations` and `/posts` kept their centred treatment** rather than adopting the
+   `prose-card` used by the three long-form routes. Deliberate: both are a short standfirst over
+   a data-driven block, not editorial documents. **Changing this is a later design decision, not
+   a cleanup.**
+3. **One nav list, three consumers.** `site.config.ts` holds `nav`; the header's desktop and
+   mobile lists and the footer's quick links all read it, retiring the `About`/`About Us` and
+   `Join`/`Join Us` disagreement. Each item carries a **required** `cta: boolean` so `as const`
+   narrowing keeps the property on every union member and `astro check` stays clean.
+4. **The two permitted footer wording changes** were made - `All rights reserved`, which
+   contradicted the CC0 dedication, and the off-model `Volunteer` quick link. Both grep to
+   nothing in `src/`.
+
+**The mobile menu's keyboard contract survived the `Header.astro` rewrite**, verified in a
+browser rather than inferred: Escape from a link inside, Escape from the toggle, focus return to
+the toggle, tab-out close, and an explicit assertion that focus is **never trapped**. This was
+flagged in the spec as the task's main regression risk, because the component was rebuilt around
+a loop.
+
+**Three verification facts outlived the task** and are recorded in `PROJECT_CONTEXT.md` section 4
+rather than only here, because they change how future work is built. The first directly
+constrains Task 008a: **Astro emits `>` unescaped inside a computed attribute value**, so a naive
+`<[^>]+>` regex over `dist/` terminates tags early and emits class lists as page text. The home
+page's band components use Tailwind child variants (`[&>p]:text-ink`), so three `class`
+attributes in `dist/index.html` carry a raw `>`. It is legal HTML and renders correctly; the trap
+is in the tooling, not the output.

@@ -11,6 +11,7 @@
     "check": "astro check",
     "check:contrast": "node scripts/check-contrast.mjs",
     "check:config": "node scripts/check-config.mjs",
+    "check:dist": "node scripts/check-dist.mjs",
     "fetch-mastodon": "node --env-file-if-exists=.env scripts/fetch-mastodon.ts",
     "prebuild": "npm run fetch-mastodon",
     "build": "astro build",
@@ -24,7 +25,8 @@
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.1.6",
     "lucide-astro": "^0.468.0",
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "^4.3.3",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",

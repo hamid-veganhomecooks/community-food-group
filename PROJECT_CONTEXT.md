@@ -168,8 +168,17 @@ and does not waive patent rights, which a static site has no meaningful surface 
   false if republished unchanged. This is constraint 1 reaching an adopter rather than an
   implementer, and it is why the reuse model says prose is rewritten, not interpolated.
 
-**Open:** contributor guidance. CC0 covers only what the owner holds, so a `CONTRIBUTING.md`
-dedicating contributions under CC0 is needed before outside patches are accepted.
+**[2026-08-01] CLOSED by Task 004d. `CONTRIBUTING.md` exists.** CC0 covers only what the owner
+holds, so contributions are now explicitly dedicated under CC0 1.0 as well, which is what lets
+the repository keep claiming public domain once outside patches land. The file states the three
+carve-outs, the rewrite-don't-tokenize rule, and the no-invented-facts rule, and it points at
+`README.md` rather than restating it. `README.md`'s licence section links to it.
+
+**It deliberately contains no code of conduct, no review process, no maintainer list, no
+response-time promise and no CLA - none of those exist.** Constraint 3.1 covers a fabricated
+process exactly as it covers a fabricated address. **A future session must not "complete" the
+file by adding them**, and a contributor asking for them is asking for an invented fact about
+how this project operates.
 
 **The load-bearing distinction is between chrome and prose.** Config drives chrome - header,
 footer, `<title>`, OG and Twitter metadata, the copyright line, the content-collection author
@@ -269,6 +278,9 @@ to `docs/DECISIONS_ARCHIVE.md`.
   - **Standing dependency:** these are facts about a third party and about a rental that can
     lapse. If the plot is given up, the card and the about-page claim both go stale. Re-verify
     the CGT listing before publication rather than assuming this entry still holds.
+    **Last re-verified 2026-08-01 - name, address and operator all unchanged.** See the
+    content-architecture entry below for the record. This is a recurring check, not a
+    one-time clearance.
 - **The route is `/help`, labelled "Ways to help".** Renamed from `/donate` by Task 005. It
   presents concrete material and time needs - vegan ingredients, containers, kitchen time,
   transport - rather than a donation-platform flow. The invented "90% of all donations"
@@ -420,14 +432,23 @@ to `docs/DECISIONS_ARCHIVE.md`.
   genuinely unknown - while publishing nothing. **No token reaches `dist/` today**, so a
   `pages.dev` build violates no rule in this document on token grounds.
 
-  **The mechanism gap this exposes is real and must be closed, not remembered.**
-  `scripts/check-config.mjs` scans `site.config.ts` and `src/` - it has never looked at build
-  output, so nothing in the project actually enforces the sentence "no deployed build may
-  contain one." **Task 008a adds an output scan** over `dist/` using the same documented token
-  pattern, reading files through Node's `fs` rather than the shell, which sidesteps the
-  git-ignored-`dist/` wrapper problem recorded below. That scan is what gates publishing.
-  `check:config` keeps gating "source contains an unanswered owner input." **Two different
-  questions, two different checks. Do not merge them, and do not weaken either.**
+  **[2026-08-01] The mechanism gap is CLOSED. `scripts/check-dist.mjs` exists and is wired in.**
+  `scripts/check-config.mjs` scans `site.config.ts` and `src/` and had never looked at build
+  output, so for the whole life of the project **nothing enforced the sentence "no deployed build
+  may contain one"** - it was a remembered rule, which is exactly what this project keeps
+  learning does not hold.
+
+  `check:dist` applies the same documented token pattern over `dist/`, **reading files through
+  Node's `fs` rather than the shell**, which sidesteps the git-ignored-`dist/` wrapper problem
+  recorded below. It exits non-zero on any match **and on a missing `dist/`** - a scan that
+  passes because there was nothing to scan is worse than no scan. That scan is what gates
+  publishing; `check:config` keeps gating "source contains an unanswered owner input." **Two
+  different questions, two different checks. Do not merge them, and do not weaken either.**
+
+  **It was proven in both directions, not merely observed to pass** (constraint 3.10): a token
+  reintroduced into `about.mdx` was caught at `dist/about/index.html:15` with the right file,
+  line and token, the run exited non-zero, and reverting returned it to green. It was also
+  confirmed fatal *inside* `verify`, and confirmed to exit non-zero with `dist/` absent.
 
 - **[2026-07-31] The preview is `noindex`, and the link is shared directly.** Owner decision.
   A `pages.dev` URL is public and indexable by default, and "only friends have the link" is not
@@ -470,7 +491,7 @@ to `docs/DECISIONS_ARCHIVE.md`.
   | Mailbox confirmed before sharing | **RELAXED.** Downgraded from a sharing gate to a **production** gate - see the owner-inputs table |
   | `SITE_URL` / canonical URL | **Deferred.** Cosmetic on a friends preview; required for production |
   | `NODE_VERSION` on Pages | **Still required** - the build must run on Node 22, not only locally |
-  | Re-verify the CGT listing | **STANDS. Not relaxed.** It is unrelated to the domain and it is a published claim about a third party, which constraint 1 governs regardless of who is looking |
+  | Re-verify the CGT listing | **DONE 2026-08-01, unchanged.** Was never relaxed - it is unrelated to the domain and is a published claim about a third party, which constraint 1 governs regardless of who is looking. **Standing: check again before production** |
 
   **The one live consequence, recorded because it is easy to miss.** Task 005b published
   `info@vegansagainstfascism.org` on all six routes as the site's only call to action, and the
@@ -499,8 +520,22 @@ architectural decision for a new package; these are those decisions.**
     dedupes to one copy. Astro passes these schemas into its own zod internals, so a major-version
     skew is not purely cosmetic.
   - Change `src/content.config.ts` to `import { z } from 'zod'`.
-  - **The 21 `ts(6385)` hints go to zero.** That is the visible effect, but not the reason - the
-    reason is that `astro:content`'s re-export is deprecated and will eventually go.
+  - **[2026-08-01] DELIVERED by Task 009a.** `"zod": "^4.4.3"` is declared, `src/content.config.ts`
+    line 1 is split, and `npm ls zod` resolves **exactly one** deduped copy. Nothing was
+    downloaded and no schema changed.
+  - **The hints went 21 -> 1, not 21 -> 0, and the promoted spec's premise was wrong.** Verified
+    by reverting line 1 and re-counting rather than by inference: the baseline 21 was **20**
+    `'z' is deprecated` hints **plus one unrelated `z.string().url()` deprecation** at
+    `src/content.config.ts:61`, which the blanket `z` deprecation had been masking. Task 009a
+    removed all 20 it targets.
+
+    **The survivor is not a regression and not a failure of 009a.** It is a zod-v4 API
+    deprecation whose fix is `z.string().url()` -> `z.url()` - a schema line 009a was explicitly
+    forbidden to touch, so it was reported rather than silently changed. **A future task
+    comparing against "0 hints" is comparing against a baseline that never existed.** Whichever
+    task next has `content.config.ts` in scope should take the one-line fix.
+  - Removing the deprecation was the visible effect, but not the reason - the reason is that
+    `astro:content`'s re-export is deprecated and will eventually go.
   - **Never import from `'zod'` without declaring it.** That works only because npm happens to
     flatten the package to the top of `node_modules`, and it is the fragile state this decision
     exists to leave. Tracked in Task 009.
@@ -736,12 +771,24 @@ content model turns two existing details into real problems:
   rental that can lapse. Re-verify the CGT listing against the operator's own site rather than
   assuming this entry still holds.
 
-  **[2026-08-01] This was supposed to happen before the preview went up, and it did not.** The
-  preview is live and shared, so the Presidio address, the operator's name and the outbound link
-  are published to whoever holds the link, **last verified 2026-07-31 and not since.** It is
-  **overdue rather than pending**, and it is **explicitly not covered by the owner's relaxation
-  of the domain-related gates** - it has nothing to do with the domain, and constraint 1 governs
-  a published claim about a third party regardless of how small the audience is.
+  **[2026-08-01] RE-VERIFIED, and it still holds.** Checked against the operator's own listing
+  at `https://www.communitygardensoftucson.org/garden-locations` during the 008a-remainder task.
+  All three published facts are unchanged from 2026-07-31:
+
+  - **`Presidio Garden` is still listed**, under that exact name.
+  - **The address is still `3440 E Presidio Rd`**, matching `src/data/locations.json` exactly.
+  - **It is still one of the gardens operated by Community Gardens of Tucson** - the page states
+    "The Community Gardens of Tucson has 18 gardens to choose from", the same count as before.
+
+  **Nothing was edited**, because nothing had changed; `locations.json` is owner-approved copy and
+  a change there would have been an owner decision, not an implementer's. This closes the entry
+  that had gone overdue: the preview went live on 2026-08-01 with the claim last verified
+  2026-07-31, and it was **explicitly not covered by the owner's relaxation of the
+  domain-related gates** - it has nothing to do with the domain, and constraint 1 governs a
+  published claim about a third party regardless of how small the audience is.
+
+  **The dependency is standing, not discharged.** It is a fact about a third party and about a
+  rental that can lapse, so it needs checking again before a production launch, not just once.
 
 ### The feedback round
 
@@ -848,6 +895,23 @@ tree is clean at `716ddd3`. `16ddb2c` ("Project Management for Task 005b") sits 
 `83838b8` and changed only the four project documents. **Check `git log` rather than trusting
 this paragraph.**
 
+**[2026-08-01] Tasks 004d, 009a and the 008a remainder are IMPLEMENTED AND VERIFIED BUT NOT
+COMMITTED. The working tree is dirty, and it carries TWO sessions' work at once.** `HEAD` is
+still `2081c8c`. Do not read the completions recorded in this document as commits - **check
+`git log` and `git status`**, which is the warning immediately below and it is live right now.
+
+What is in the tree, and who wrote it:
+
+| Files | Session |
+| --- | --- |
+| `PROJECT_CONTEXT.md`, `ROADMAP.md`, `TASK_SPEC.md`, `docs/DECISIONS_ARCHIVE.md` | The `ARCHITECT` that archived 005b and promoted the three-part bundle |
+| `CONTRIBUTING.md`, `scripts/check-dist.mjs` (new); `package.json`, `package-lock.json`, `src/content.config.ts`, `scripts/verify-baseline.sh`, `README.md` (modified) | The `IMPLEMENTER` that ran the bundle |
+
+**Both are unpushed and unreviewed.** The implementer verified it changed none of the four
+`ARCHITECT` documents by diffing them against a snapshot taken at session start - line counts
+identical - so the two sets do not overlap except that `README.md` was touched by both, for
+different sections. The owner is reviewing before committing.
+
 **[2026-07-31] Task 005's commit split is closed.** The working tree is clean at `83838b8`.
 The previous draft of this entry described Task 005 as split across a commit boundary with the
 bulk uncommitted; that was true when written and is now stale. What actually happened: two file
@@ -875,11 +939,12 @@ exits 0 - that is the correct, honest state**, not a regression to chase:
 | Check | Expected result |
 | --- | --- |
 | `npm ci` / `npm audit` | exits 0 / **0 vulnerabilities** |
-| `npm run check` | **0 errors, 0 warnings, 21 hints.** Was 12 before Task 005. The rise is the **same** zod deprecation counted in one more place - the new `locations` schema in `src/content.config.ts`. **21 is the baseline; it is not a regression.** Task 005b added seven files and moved the count not at all, but the file count `astro check` reports rose from 19 to **22**. |
+| `npm run check` | **[2026-08-01, Task 009a] 0 errors, 0 warnings, 1 hint**, over **23** files. Was 21 hints over 22 files. The file count rose because `scripts/check-dist.mjs` is type-checked and contributes no diagnostics. **The one remaining hint is NOT the zod re-export deprecation** - it is the `z.string().url()` deprecation the old count was masking; see the dependency decisions above before treating it as a regression. |
 | `npm run build` | the same **six** routes, `/`, `/about`, `/help`, `/join`, `/locations`, `/posts`. **`/donate` no longer exists** |
 | `npm run check:contrast` | all **sixteen** role pairs pass |
 | `npm run check:config` | **exits non-zero, naming exactly 2 tokens** - `MASTODON_HANDLE` and `MASTODON_URL`, both on one line of `site.config.ts`. **Was 7 before Task 005b**, which filled `GROUP_DOMAIN` in both config fields and all three MDX documents. `GROUP_NAME` and `GROUP_TAGLINE` were filled by Task 005. Do not weaken this check, do not fill a token with a guess, and **do not write `null`**, to turn it green. |
-| `npm run verify` | **exits non-zero**, at the `check:config` step only |
+| `npm run check:dist` | **[2026-08-01, NEW] exits 0.** Scans **7** files in `dist/`, skipping **2** binary font assets. No token reaches build output |
+| `npm run verify` | **[2026-08-01] exits 0 and now REACHES `build`**, then `check:dist`. `check:config` is non-fatal **inside `verify` only**; its redness is restated in the closing summary, so the run does not read as fully green. **Was: exited non-zero at `check:config` and never reached `build`** |
 
 **Task 005 deliberately ended Task 004b's "`site.config.ts` is the only file carrying a
 token" invariant, and Task 005b happens to have restored it by filling the domain.** Do not
@@ -901,12 +966,30 @@ byte-identical; the address is simply clickable now, matching `/` and `/location
 markdown behaviour, not something Task 005b authored, and suppressing it would need escaping.
 Spacing was checked - no glued link text.
 
-`npm run verify` runs `check`, `check:contrast`, `check:config` and `build`, in that order, in
-its **uncached** half, so a source edit always re-runs them; only `npm ci` / `npm audit` are
-cached, keyed on the lockfile and Node version. Task 004 wired `check:contrast` in; Task 004b
-wired `check:config` in, before `build`. Because the script uses `set -e`, a failing
-`check:config` currently stops `verify` before `build` runs - run `npm run build` directly to
-confirm it still emits six routes while tokens remain unfilled.
+`npm run verify` runs `check`, `check:contrast`, `check:config`, `build` and **`check:dist`**, in
+that order, in its **uncached** half, so a source edit always re-runs them; only `npm ci` /
+`npm audit` are cached, keyed on the lockfile and Node version. Task 004 wired `check:contrast`
+in; Task 004b wired `check:config` in, before `build`; the **008a remainder** added `check:dist`
+after `build` and rewired the fatality.
+
+**[2026-08-01] `check:config` is non-fatal inside `verify`, and ONLY inside `verify`. This is not
+a weakening of the guard, and a reviewer will misread it as one if this entry is missing.**
+Standalone, `npm run check:config` still exits non-zero while any token remains, and
+`scripts/check-config.mjs` is **unchanged** - only how `verify` reacts to it changed. The script
+carries a comment saying so at the point of the change.
+
+The reason is the two-questions split this document already recorded as needed:
+
+| Check | Question it answers | Inside `verify` |
+| --- | --- | --- |
+| `check:config` | does **source** carry an unanswered owner input? | **Non-fatal.** A known, accepted project state, not a build failure |
+| `check:dist` | did a token reach **build output**? | **Fatal.** This is the publishing gate |
+
+Under `set -e` a red `check:config` stopped the whole run before `build`, so the local loop could
+not reach the build **or** the output scan while a single owner input was outstanding - which is
+how the project ended up never running the check that actually matters. **`verify` exits 0 with
+`check:config` red, but its closing summary states plainly that the run is NOT fully green.** Do
+not "tidy" that summary away, and do not make `check:dist` non-fatal to match.
 
 **The per-task execution records for Tasks 002, 003, 004 and 004b are in
 `docs/DECISIONS_ARCHIVE.md` under `## Verification history`.** They are evidence that finished
@@ -930,9 +1013,17 @@ how **Task 008a** must be built.
   **The trap:** a regex like `<[^>]+>` terminates the tag early at the `>` inside the attribute
   and emits the rest of the class list **as page text**. Task 005b's own copy-comparison
   extractor hit this and briefly appeared to show class names rendering on the page; the
-  browser's `innerText` disproved it. **Task 008a's `dist/` output scan must use a real HTML
-  parser or a quote-aware regex, not `<[^>]+>`.** Switching the components to `class={...}` was
-  tried and does **not** help; the idiomatic `class:list` was kept.
+  browser's `innerText` disproved it. Switching the components to `class={...}` was tried and
+  does **not** help; the idiomatic `class:list` was kept.
+
+  **[2026-08-01] The instruction this entry used to carry - that the `dist/` scan "must use a
+  real HTML parser or a quote-aware regex" - is SUPERSEDED, and the better answer is to not
+  parse tags at all.** `check-dist.mjs` scans **raw file text**. A token matters wherever it
+  appears - body copy, a `mailto:` href, a `<meta>` tag - so extracting "visible text" would be
+  both more complex **and less correct**, and it would have walked straight into this trap.
+  **The trap does not apply to a scan that never tokenizes markup. Keep it that way**, and treat
+  "I need to strip tags" as a signal to re-examine the requirement. The escaping fact itself
+  stands and still binds anything that *does* parse `dist/` HTML.
 
 - **[2026-07-31] Components can be passed into an MDX document from the route**, via
   `<Content components={{ Hero, Band, Actions, MastodonFeed }} />`. Verified by building, not
@@ -952,13 +1043,36 @@ how **Task 008a** must be built.
 Both are recorded here rather than in a task file because they change how **any** future task
 verifies, and both were found by executing rather than by reading.
 
-- **[2026-07-31] Grep-based acceptance criteria must be run with `/usr/bin/grep`.** In the
-  agent shell, `grep` is a **wrapper function, not GNU grep**, and it honours `.gitignore` -
-  including when an ignored directory is named as an explicit argument. `dist/` and `.astro/`
-  are git-ignored, so **every criterion that greps `dist/` passes vacuously under the wrapper**,
-  reporting "no output" whether or not the string is there. This defeats constraint 3.10 while
-  looking exactly like a pass. Task 005 caught it only because a criterion returned no `dist/`
-  hits for a string that provably renders there. Mechanism in `docs/ENVIRONMENT.md` section 4.
+- **[2026-07-31, CORRECTED 2026-08-01] Grep-based acceptance criteria must be run with
+  `/usr/bin/grep`.** In the agent shell, `grep` is a **wrapper function, not GNU grep** (a
+  `ugrep` invocation carrying `--ignore-files`), and it honours `.gitignore`. `dist/` and
+  `.astro/` are git-ignored, so a criterion that greps built output can pass vacuously under the
+  wrapper - reporting "no output" whether or not the string is there. This defeats constraint
+  3.10 while looking exactly like a pass. Task 005 caught it only because a criterion returned no
+  `dist/` hits for a string that provably renders there. Mechanism in `docs/ENVIRONMENT.md`
+  section 4.
+
+  **The correction: this entry used to say the wrapper skips an ignored directory "including when
+  it is named as an explicit argument." That is not what the wrapper does.** Measured on
+  2026-08-01 with a token deliberately present in `dist/about/index.html`, the wrapper active and
+  `dist/` confirmed ignored by `git check-ignore`:
+
+  | Invocation | Result |
+  | --- | --- |
+  | `grep -rn TOKEN dist/` - ignored dir named explicitly | **Found it.** Not skipped |
+  | `grep -rn TOKEN .` - recursing from a non-ignored root | **Skipped `dist/` entirely** |
+  | `grep -c TOKEN dist/about/index.html` - explicit file | **Found it** |
+
+  So the trap is real but **narrower than recorded**: it bites when recursing from a
+  non-ignored root, not when the ignored path is named. **The practical rule is unchanged -
+  use `/usr/bin/grep` for anything touching `dist/`** - because the wrapper is a tool
+  implementation that can change under us, and a criterion whose correctness depends on which
+  form was typed is a bad criterion. **This is one session's measurement of one wrapper version,
+  not a guarantee.**
+
+  **The durable lesson is the one that made `check-dist.mjs` read through `fs`:** do not build a
+  verification mechanism on top of a shell tool whose file selection you do not control.
+
   **A criterion that greps `dist/` should also say `--exclude-dir=dist --exclude-dir=.astro`
   when it greps the repository root**, or it will report generated artifacts as violations.
 
@@ -981,15 +1095,24 @@ verifies, and both were found by executing rather than by reading.
   sanitize to an allowlist, keeping links - and the task is now 006a**, which needs no Mastodon
   account. Two further media findings sit alongside it: hot-linked images and a useless alt-text
   fallback. See the dependency decisions above.
-- **zod deprecation.** Astro 7 moved to zod v4 and deprecated the `z` re-export from
-  `astro:content`, producing **21** non-blocking hints in `src/content.config.ts` since Task
-  005 added the `locations` schema (was 12). **[2026-08-01] The dependency question is ANSWERED**
-  - see the dependency decisions above. Tracked as Task 009; it is now a mechanical fix, not an
-  open decision.
-- `public/` contains no files. `BaseLayout.astro` references `/favicon.svg` and
-  `/images/og-default.jpg`, so both 404 on every route. Tracked as Task 007, and **now on the
-  critical path** because it makes every shared preview link render a broken card - see the
-  pulled-forward `007a` recommendation.
+- **[2026-08-01] zod deprecation: RESOLVED by Task 009a**, and removed as a defect. `zod` is a
+  declared dependency, `src/content.config.ts` imports `z` from `'zod'`, and the 20 `z`
+  deprecation hints are gone. **Two residuals, both small and both real:**
+  - **One hint survives** - `z.string().url()` at `src/content.config.ts:61`, an unrelated
+    zod-v4 deprecation the old count was masking. One-line fix, `z.url()`. See the dependency
+    decisions above for why 009a did not take it.
+  - **`src/content.config.ts:43-45` now carries a FALSE comment.** It still says `z` "is the
+    re-export from `astro:content`, not a direct `zod` import", that zod "is only a transitive
+    dependency of astro today", and that taking it directly is "a separate, still-open
+    decision". **All three statements are now untrue.** Task 009a was scoped to line 1 only and
+    reported this rather than silently widening. **It should be corrected by whichever task next
+    has that file in scope**, because a future session reading it would conclude the declaration
+    was a mistake and revert it - constraint 3.4 against the repository's notes about itself,
+    which is the failure mode this project keeps hitting.
+- **`public/` does not exist at all** - confirmed 2026-08-01, not merely empty; git does not
+  track empty directories, so it never survived a clone. `BaseLayout.astro` references
+  `/favicon.svg` and `/images/og-default.jpg`, so both 404 on every route. Tracked as Task 007a,
+  and **on the critical path** because it makes every shared preview link render a broken card.
 - **[2026-07-31] The garbled `/locations` meta description is still open, and it has MOVED.**
   It reads `Community garden information. Explanation of cooking and distribution move around
   town.` and ships as `<meta name="description">`, `og:description` and `twitter:description` on
@@ -1075,13 +1198,13 @@ section for the URL, what was verified, and which gates the owner relaxed.
 **What genuinely remains is smaller than the earlier draft of this paragraph claimed**, and it
 splits by whether it is preview work or production work:
 
-- **Still wanted, and now the main practical annoyance:** an **output scan over `dist/`**.
-  `check:config` exits non-zero on the two Mastodon tokens, and because `verify` uses `set -e`,
-  it never reaches `build`. The fix is the split already recorded above - source scan reports
-  unanswered owner inputs and does not block; a `dist/` scan blocks publishing. **That is the
-  check the project never had, not a weakening of the one it has.** The attribute-escaping fact
-  above constrains how it may be written.
-- **Still required:** `NODE_VERSION` on Pages, and re-verifying the CGT listing.
+- **[2026-08-01] DONE: the output scan over `dist/` exists.** This was the main practical
+  annoyance - `check:config` exits non-zero on the two Mastodon tokens and `verify` used
+  `set -e`, so the local loop never reached `build`. The split shipped as recorded: the source
+  scan reports unanswered owner inputs and does not block, and `check:dist` blocks publishing.
+  **It was the check the project never had, not a weakening of the one it has.**
+- **Still required:** `NODE_VERSION` on Pages. **The CGT listing was re-verified 2026-08-01** and
+  had not changed; it remains a recurring check before production, not a discharged one.
 - **Deferred to production:** `SITE_URL` and the canonical URL, a re-mechanized `noindex`, and
   confirming the mailbox. The owner set `noindex` manually and accepted the mailbox risk for a
   friends-only preview.
@@ -1093,7 +1216,8 @@ in part** - see the brand-asset note below. **The owner has flagged that the tas
 blocking relationships will be revisited** after the feedback round; treat `ROADMAP.md`'s
 sequence as provisional until that happens.
 
-**[2026-07-31] `public/` is still empty and this now has a consequence it did not have before.**
+**[2026-07-31] `public/` is absent (not merely empty, confirmed 2026-08-01) and this now has a
+consequence it did not have before.**
 `BaseLayout.astro` references `/favicon.svg` and `/images/og-default.jpg`; both 404 on every
 route. **Sharing a preview link with friends means every preview card and every browser tab is
 broken.** The logo/favicon/social-image row is still a deferred owner input, so this cannot be
@@ -1233,14 +1357,21 @@ the withdrawn Signal link is `null` (the owner *decided* against it on 2026-07-3
 |-- .env.example                      # Scaffold Mastodon variables; values unverified
 |-- .nvmrc                            # Pins Node 22.23.2
 |-- LICENSE                           # CC0 1.0 Universal, canonical text (Task 004c)
-|-- README.md                         # Documents the type system; licence and OFL carve-outs
+|-- CONTRIBUTING.md                   # Task 004d. Contributions dedicated under CC0; the three
+|                                      # carve-outs; prose is rewritten, not tokenized. NO code
+|                                      # of conduct, review process, maintainer list, response
+|                                      # -time promise or CLA - none exist. Do not add them
+|-- README.md                         # Documents the type system; licence and OFL carve-outs;
+|                                      # Commands table lists every npm script
 |-- PROJECT_CONTEXT.md                # Project-level SSOT
 |-- TASK_SPEC.md                      # Active task-level SSOT
 |-- ROADMAP.md                        # Ordered backlog beyond the active task
 |-- PRE-CONTXT-GENERATOR-PROTOCOL.md  # Workflow bootstrap protocol
 |-- astro.config.mjs                  # Static output; site from SITE_URL; Tailwind Vite
 |                                      # plugin; a fonts[] entry self-hosts Inter (Task 003)
-|-- package.json                      # engines.node >=22.18.0; check, prebuild, verify
+|-- package.json                      # engines.node >=22.18.0; check, check:contrast,
+|                                      # check:config, check:dist, prebuild, build, verify.
+|                                      # zod is a DECLARED dependency as of Task 009a
 |-- tsconfig.json                     # Astro strict TypeScript
 |-- site.config.ts                    # Identity constants (Task 004b) PLUS the nav list and
 |                                      # every header/footer label (Task 005b). groupName,
@@ -1249,15 +1380,26 @@ the withdrawn Signal link is `null` (the owner *decided* against it on 2026-07-3
 |-- docs/
 |   |-- DECISIONS_ARCHIVE.md          # Historical; not part of the session payload
 |   `-- ENVIRONMENT.md                # Workstation setup; not part of the session payload
-|-- public/                           # Empty; referenced favicon and OG image are absent
+|-- (public/ IS ABSENT)               # Does NOT exist - git does not track empty directories.
+|                                      # The favicon and OG image referenced by BaseLayout 404
+|                                      # on every route. Task 007a; needs an owner input
 |-- scripts/
 |   |-- fetch-mastodon.ts             # Run by the prebuild hook; needs Node 22.18+
 |   |-- check-contrast.mjs            # npm run check:contrast; zero deps; wired into the
 |   |                                 # UNCACHED half of verify by Task 004
 |   |-- check-config.mjs              # npm run check:config; zero deps; wired into the
 |   |                                 # UNCACHED half of verify by Task 004b; exits non-zero
-|   |                                 # while site.config.ts carries an unfilled token
-|   `-- verify-baseline.sh            # npm run verify; caches the lockfile-dependent half
+|   |                                 # while site.config.ts carries an unfilled token.
+|   |                                 # UNCHANGED by the 008a remainder - only verify's
+|   |                                 # reaction to it changed
+|   |-- check-dist.mjs                # npm run check:dist; zero deps; the PUBLISHING GATE.
+|   |                                 # Scans dist/ for tokens through Node's fs, never the
+|   |                                 # shell, because dist/ is git-ignored. Scans RAW TEXT -
+|   |                                 # no tag parsing, deliberately. Denylists binary assets
+|   |                                 # so new output formats are scanned by default. Fatal,
+|   |                                 # and fatal on a missing dist/
+|   `-- verify-baseline.sh            # npm run verify; caches the lockfile-dependent half.
+|                                      # check:config non-fatal HERE ONLY; check:dist fatal
 `-- src/
     |-- content.config.ts             # Two collections: `pages` via glob(), and `locations`
     |                                 # via file() with a kind-discriminated union (Task 005)
@@ -1308,29 +1450,93 @@ architecture unless a task explicitly creates them.
 
 ## 6. ACTIVE SESSION TASK PAYLOAD
 
+### YOU ARE HERE - written 2026-08-01, updated the same day after the close-out bundle
+
+**Read this paragraph first if you are returning after a break.**
+
+**The site is live, honest, and editable.** It runs as a `noindex` Cloudflare Pages preview,
+friends have the link, and the feedback round is open. Every sentence on it is edited from a
+file under `src/content/` or `site.config.ts` - **no `.astro` file holds a user-visible string.**
+Six routes, one `h1` each, zero tokens in built output. **Nothing is broken and nothing is
+half-finished.**
+
+**[2026-08-01] The three-part close-out bundle is DONE - all three parts, not two.**
+`CONTRIBUTING.md` exists (004d), `zod` is declared (009a), and the `dist/` output scan exists,
+is wired into `verify`, and was proven to fail as well as to pass (008a remainder). The CGT
+listing was re-verified the same day and had not changed.
+
+**THE WORK IS IN THE WORKING TREE, NOT COMMITTED.** `HEAD` is `2081c8c` and the tree carries
+both the `ARCHITECT`'s promotion documents and the `IMPLEMENTER`'s changes. **Run `git status`
+before anything else.** See the dated entry in section 4 for who wrote which files.
+
+**What is genuinely outstanding, in the order it will bite:**
+
+1. **Owner review of the uncommitted tree**, then the commit. This is the immediate next step
+   and everything else waits behind it.
+2. **Feedback from friends** is arriving through the owner's own channels. It is input to a
+   promotion decision, never authorization to change code. **Task 005c** is the task that
+   consumes it.
+3. **`info@vegansagainstfascism.org` is live on all six routes and the mailbox may not be.**
+   One test email closes it. **The domain is registered but not pointed at Cloudflare.**
+4. **`public/` does not exist**, so the favicon and OG image 404 and shared links render broken
+   cards. Needs an owner input - the assets.
+5. **`NODE_VERSION` on Cloudflare Pages** must be set to `22.23.2`. Owner dashboard check,
+   never implementer work, and still not done.
+
+**Two small, real residuals left by the bundle, both reported rather than silently fixed:** one
+surviving `astro check` hint (`z.string().url()`), and a **now-false comment** at
+`src/content.config.ts:43-45` that still describes zod as undeclared. Both are in the open
+defects list, and the comment is the one that could actively mislead a future session.
+
+**What is NOT a blocker, despite how earlier drafts of this document read:** the domain. The
+repository reads `SITE_URL` from the environment, so everything works against `pages.dev` and
+the real origin is one variable away. **Do not reintroduce "blocked on the domain" against work
+that is not.**
+
 ### Session role
 
-**`ARCHITECT`, next.** The prior session ran as `IMPLEMENTER` and completed **Task 005b**,
-committed as `716ddd3` on the published branch `task/005b-content-consolidation`. A `MEMORY
-SYNC` then wrote this document. **`TASK_SPEC.md` still holds the finished Task 005b and is
-awaiting promotion of the next task.**
+**Owner review, then `ARCHITECT` consultation.** The owner is reviewing the uncommitted tree and
+has said an architect consultation follows.
+
+The prior sessions: an `IMPLEMENTER` completed **Task 005b** as `716ddd3`; a `MEMORY SYNC` wrote
+this document as `3ea2583`; an `ARCHITECT` archived 005b, recorded four owner decisions,
+restructured `ROADMAP.md` and promoted the three-part bundle; an `IMPLEMENTER` completed all
+three parts of that bundle; and this `MEMORY SYNC` wrote this document.
+
+**This `MEMORY SYNC` wrote `PROJECT_CONTEXT.md` ONLY.** It did not touch `ROADMAP.md` or
+`docs/DECISIONS_ARCHIVE.md`, both `ARCHITECT` documents written at promotion and archive time -
+the same boundary the Task 005b sync observed.
 
 ### What the next session is for
 
-**Archiving Task 005b and promoting the next task.** Concretely:
+**Two things the `ARCHITECT` still owes this bundle**, because a `MEMORY SYNC` may not write
+either file:
 
-- **Cut Task 005b's verification record into `docs/DECISIONS_ARCHIVE.md`** under
-  `## Verification history`. **Task 005's record is already there; Task 005b's is not.**
-- **Collapse the `ROADMAP.md` entries** for Tasks 005 and 005b to status lines, and confirm the
-  order. `ROADMAP.md` is an `ARCHITECT` document and this `MEMORY SYNC` deliberately did not
-  touch it.
-- **Promote the next task into `TASK_SPEC.md`**, cutting its scope out of `ROADMAP.md` rather
-  than copying it. **Grep the repository before writing any file list into that spec** - four
-  roadmap entries in this project have shipped a wrong inventory.
+- **Cut the 004d / 009a / 008a-remainder verification record into `docs/DECISIONS_ARCHIVE.md`**
+  under `## Verification history`.
+- **Collapse the `ROADMAP.md` entries** for Tasks 004d, 009a and 008a to status lines, and fold
+  the two residuals below into whichever task should carry them.
 
-**The order is unchanged: 008a (preview deployment), then the feedback round, then 005c.** Task
-006 stays blocked and out of the order. **Task 007a (favicon and OG image) is recommended ahead
-of the preview** and needs a still-deferred owner input.
+**Two residuals needing a home**, both small, both deliberately left rather than silently fixed:
+
+- `z.string().url()` -> `z.url()` at `src/content.config.ts:61` - clears the last `astro check`
+  hint.
+- The **false comment** at `src/content.config.ts:43-45`, which still says zod is undeclared and
+  would mislead a session into reverting Task 009a.
+
+Both want the same file, so they are one edit, and neither is worth a task of its own.
+
+**The unblocked work is Task 006a** (the Mastodon feed's rendering defect, hot-linked media and
+the alt-text fallback - the largest remaining task) and **Task 007** (metadata and sitemap; the
+wordmark waits on an owner input). **Task 007 will add a sitemap `.xml` to `dist/`, which
+`check:dist` will scan automatically** - the scan denylists binary assets rather than
+allowlisting known text formats, precisely so a new output format is not silently skipped.
+
+**Still blocked on the owner:** 005c (feedback), 007a (brand assets), 006b (the Mastodon handle,
+which waits on the anticipated name change), 008 (DNS and the mailbox).
+
+**The task order is provisional.** The owner has flagged that it and its blocking relationships
+will be revisited after the feedback round.
 
 Things to carry into that session:
 
@@ -1349,11 +1555,13 @@ Things to carry into that session:
 - **The name-in-prose rule still holds.** Re-verified after 005b: **zero occurrences of the
   group's name in `src/`**, one in `site.config.ts`. A rebrand is still a two-field edit.
 
-**Verification baselines are the ones in section 4, and three of them moved with 005b:**
-`npm run check` is **0 errors, 0 warnings, 21 hints** (unchanged, but over 22 files rather than
-19), `check:config` now names **exactly 2 tokens** and still exits non-zero, `check:contrast`
-passes all sixteen pairs, and `npm run build` emits **six** routes. **A task comparing against
-7 tokens, 12 hints, or a `/donate` route is comparing against a stale baseline.**
+**Verification baselines are the ones in section 4, and three of them moved again on 2026-08-01:**
+`npm run check` is now **0 errors, 0 warnings, 1 hint** over **23** files (was 21 hints over 22),
+**`npm run check:dist` is new and exits 0**, and **`npm run verify` now reaches `build` and exits
+0** while stating plainly that `check:config` is red. Unchanged: `check:config` names **exactly 2
+tokens** and still exits non-zero standalone, `check:contrast` passes all sixteen pairs, and
+`npm run build` emits **six** routes. **A task comparing against 21 hints, 7 tokens, 12 hints, a
+`/donate` route, or a `verify` that stops before `build` is comparing against a stale baseline.**
 
 ### Required inputs
 

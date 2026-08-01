@@ -6,13 +6,14 @@ forked and adopted by other groups. See [Rebranding this site](#rebranding-this-
 
 Built with Astro 7, Tailwind CSS 4, and MDX. Static output, intended for Cloudflare Pages.
 
-> **This site is not ready to publish.**
+> **This site is running as a `noindex` preview, and is not ready for a production launch.**
 >
-> The copy and the location record describe the real group, and the domain is now filled, so
-> the contact address is a real one. The **Mastodon account is still an unfilled owner
-> input**, and `npm run check:config` exits non-zero while any token remains. `public/` is
-> also still empty, so the favicon and social preview image referenced by the layout return
-> 404, and no deployment exists yet.
+> The copy and the location record describe the real group, and the domain is filled, so the
+> contact address is a real one - **though the mailbox is not yet live**, so mail to it may
+> bounce. The **Mastodon account is still an unfilled owner input**, and
+> `npm run check:config` exits non-zero while any token remains; the two that remain are
+> consumed by no template and reach no built page. `public/` does not exist, so the favicon
+> and social preview image referenced by the layout return 404 on every route.
 >
 > See `PROJECT_CONTEXT.md` for the project's single source of truth, `TASK_SPEC.md` for the
 > active task, and `ROADMAP.md` for the ordered backlog.
@@ -55,12 +56,24 @@ All commands run from the project root.
 | --- | --- |
 | `npm run dev` | Start the development server at `localhost:4321` |
 | `npm run check` | Run `astro check` for type and content validation |
+| `npm run check:contrast` | Audit the palette's sixteen role pairs against WCAG 2.2 AA |
+| `npm run check:config` | Report unfilled owner-fill tokens in `site.config.ts` and `src/` |
+| `npm run check:dist` | Fail if any owner-fill token reached the build output in `dist/` |
 | `npm run build` | Fetch Mastodon posts, then build to `dist/` |
 | `npm run preview` | Preview the built site locally |
 | `npm run fetch-mastodon` | Refresh the Mastodon cache without building |
+| `npm run verify` | Run the whole baseline: the checks above, the build, then `check:dist` |
 
 `npm run build` runs `prebuild` first, which runs `fetch-mastodon`. A build with no Mastodon
 account configured succeeds; see below.
+
+**`check:config` and `check:dist` ask different questions and are not interchangeable.**
+`check:config` asks whether the *source* still carries an unanswered owner input; that is a
+known project state, so `npm run verify` reports it loudly but does not stop for it.
+`check:dist` asks whether a token reached *build output*, which is the rule that no deployed
+build may contain one - so it runs after the build and is fatal. `check:dist` reads `dist/`
+through Node's `fs` rather than shelling out, because `dist/` is git-ignored and a
+`.gitignore`-aware `grep` can skip it and report a vacuous pass.
 
 ## Mastodon feed
 
@@ -336,15 +349,23 @@ The MDX documents follow this convention as of Task 005, which rewrote that copy
 Recorded so they are not mistaken for finished work. Details and sequencing are in
 `ROADMAP.md`.
 
-- `public/` is empty, so the favicon and social preview image referenced by the layout
-  return 404.
+- `public/` does not exist - git does not track empty directories - so the favicon and social
+  preview image referenced by the layout return 404 on every route. Tracked as Task 007a.
 - `MastodonFeed.astro` renders post HTML as escaped text, which would display literal markup
-  once the cache is populated. Tracked as Task 006.
+  once the cache is populated. Tracked as Task 006a. The cache is currently `[]`, so the feed
+  has only ever been exercised empty.
+- **Mastodon media is hot-linked from the instance.** `MastodonFeed.astro` points image `src`
+  at the remote CDN, so a visitor's browser contacts a third party - the same thing self-hosting
+  the font was done to avoid. Also tracked as Task 006a.
+- **The image alt-text fallback is `'Post attachment'`**, which describes nothing. Mastodon
+  supplies a real description only when the poster wrote alt text at post time.
 - Accessibility is a project **target**, not a verified state. No audit has been run and no
   conformance is claimed. Task 002 did measure heading structure in a browser - every route
   has exactly one `h1` and none skips a level - but that is one check, not an audit.
 - There is no CI, test suite, linter, or formatter.
-- No deployment exists. Cloudflare Pages has not been configured.
+- **No production deployment.** The site runs as a `noindex` Cloudflare Pages preview while
+  feedback is gathered. The production domain is registered but not yet pointed at Cloudflare,
+  and `info@` is not yet receiving mail.
 
 ## Licence
 
@@ -364,3 +385,6 @@ Three things CC0 does not cover, because they were never this project's to give:
   specific real group, including a rented plot at a garden operated by another organization.
   You are free to copy it, but publishing it unchanged would make false claims about your own
   group. Rewrite it - see [Rebranding this site](#rebranding-this-site).
+
+Contributions are dedicated under CC0 too, since CC0 covers only what the owner holds. See
+[CONTRIBUTING.md](CONTRIBUTING.md).

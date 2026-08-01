@@ -275,28 +275,14 @@ dedicated under CC0 is needed. Cheap now, painful to retrofit once patches have 
 
 ## Task 004d - Contributor guidance
 
-**Status:** queued. **Unblocked. Small.**
+**Status: ACTIVE**, promoted 2026-08-01 as **Part A** of the three-part close-out bundle in
+`TASK_SPEC.md`, which is the only authority on its scope and acceptance.
 **Blocked on:** nothing.
 
-**[2026-08-01] Promoted from a loose note to a tracked task.** Task 004c flagged this on
-2026-07-31 and nothing ever carried it: "CC0 only covers what the owner holds, so if
-contributors arrive, a `CONTRIBUTING.md` stating that contributions are dedicated under CC0 is
-needed. Cheap now, painful to retrofit once patches have landed."
+The planned scope that stood here has been **cut into `TASK_SPEC.md`**, not copied.
 
-The repository is public and deliberately shaped for reuse, so the gap is real rather than
-theoretical.
-
-### Planned scope
-
-- `CONTRIBUTING.md` dedicating contributions under CC0 1.0, matching `LICENSE`.
-- State the three carve-outs `README.md` already documents, since a contributor hits them
-  first: the group's name and identity are **not** waived by CC0 (trademark), Inter is **SIL OFL
-  1.1**, and the page copy describes a real group and would be false if republished unchanged.
-- Note that prose is **rewritten, not tokenized**, by an adopting fork - the reuse model in
-  `PROJECT_CONTEXT.md` section 2.
-
-**Do not invent a code of conduct, a review process, or a maintainer list.** None exist, and
-constraint 3.1 covers process claims as much as it covers addresses.
+Flagged open by Task 004c on 2026-07-31 - "CC0 only covers what the owner holds" - and carried
+by no task until now.
 
 ---
 
@@ -328,11 +314,14 @@ facts are consolidating to one owner.
 
 ## Task 005b - Zero user-visible copy in `.astro`, and fill the domain
 
-**Status: ACTIVE**, promoted 2026-07-31, **scope widened the same day by owner decision.**
-**Specified in `TASK_SPEC.md`, which is the only authority on its scope and acceptance.**
-**Blocked on:** nothing.
+**Status: COMPLETE**, 2026-08-01. Merged as `716ddd3` on `task/005b-content-consolidation`;
+`MEMORY SYNC` as `3ea2583`. **Verification record in `docs/DECISIONS_ARCHIVE.md` under
+`## Verification history`.**
 
-The planned scope that stood here has been **cut into `TASK_SPEC.md`**, not copied.
+Moved every user-visible string out of `.astro`: four new MDX documents (`home`, `locations`,
+`posts`, `footer`), three capped home-page components, one nav list in `site.config.ts` read by
+three consumers, and the domain filled. **Six routes, one `h1` each, zero tokens in `dist/`** -
+re-confirmed at archive time.
 
 Numbered `005b` by the precedent 004b and 004c set: work that follows a completed task on the
 same material takes a letter suffix rather than a new number.
@@ -379,9 +368,12 @@ full in `PROJECT_CONTEXT.md` section 4, which is the authority. Summary of what 
 | Confirm the mailbox | **Downgraded to a production gate.** Accepted risk for the preview |
 | `SITE_URL` / canonical | **Deferred to production** |
 
-**The output scan is the piece worth doing next.** `check:config` exits non-zero on the two
-Mastodon tokens and `verify` uses `set -e`, so the local loop never reaches `build`. The fix is
-the split below - **not** weakening `check:config`.
+**[2026-08-01] The remainder is ACTIVE** as **Part C** of the three-part close-out bundle in
+`TASK_SPEC.md`, which is the only authority on its scope: the `dist/` output scan, rewiring
+`verify` so it reaches `build`, and the **overdue** CGT re-verification. That scope has been
+**cut into `TASK_SPEC.md`**, not copied.
+
+**`NODE_VERSION` on Pages stays here** - it is an owner dashboard check, not implementer work.
 
 ### Why this moved ahead of Tasks 006 and 007
 
@@ -640,12 +632,10 @@ becomes available.
 ### Planned scope
 
 - CI running `npm ci`, `npm run check`, `npm run build`, and `npm audit` on pull requests.
-- **Resolve the zod deprecation. [2026-08-01] DECIDED and no longer an open question.** Add
-  `"zod": "^4.4.3"` to `package.json` with the range aligned to whatever Astro pulls, and change
-  `src/content.config.ts` to `import { z } from 'zod'`. **This declares a dependency that is
-  already installed** - `zod@4.4.3` is on disk as a child of `astro@7.1.6` and every schema
-  already runs it. **21** hints go to zero. **Never import from `'zod'` without declaring it** -
-  that works only via npm's flattening and is the fragile state this fixes.
+- ~~Resolve the zod deprecation.~~ **Split out as Task 009a and ACTIVE**, as **Part B** of the
+  three-part close-out bundle in `TASK_SPEC.md`, which is the only authority on its scope. Decided
+  2026-08-01: declare `zod` and move the import off `astro:content`. **The rest of Task 009 - CI,
+  link checker, automated accessibility, dependency updates - stays queued here.**
 - A link checker, given how many dead and invented links the scaffold shipped with.
 - An automated accessibility pass on built HTML.
 - Dependency update automation.
