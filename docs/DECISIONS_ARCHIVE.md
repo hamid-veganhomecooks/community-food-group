@@ -287,3 +287,64 @@ positives rather than to weaken the pattern: `src/env.d.ts` is excluded by path 
 `MASTODON_ACCOUNT` is a fixed Vite ambient-env interface member, not an owner-fill token), and
 `.css` is excluded from the scanned extensions (`global.css`'s doc comment references
 `TASK_SPEC.md` by name). Both are commented inline in `scripts/check-config.mjs`.
+
+### Task 005, verified 2026-07-31
+
+Real content, on-model. **Implemented and verified at `375d860`, which is the state this
+record describes.** Two of its file operations landed earlier, inside the docs commit
+`54f5442` (the deletion of `donate.mdx` and the `donate.astro` -> `help.astro` rename), because
+both were staged in the index when that commit was amended. The remainder is `375d860`. **The
+commit split is bookkeeping, not a defect in the work**, and it is now closed - the working
+tree is clean and every Task 005 change is on `main`.
+
+Verified by execution on Node v22.23.2, including the required browser pass at 375px and
+1440px:
+
+- `npm run check`: 0 errors, 0 warnings, **21 hints**, up from 12. The rise is the same zod
+  deprecation counted in one more place - the new `locations` schema in `src/content.config.ts`.
+  21 is the new baseline, not a regression.
+- `npm run check:config`: exits 1, naming **7** tokens - four in `site.config.ts`
+  (`GROUP_DOMAIN` twice, `MASTODON_HANDLE`, `MASTODON_URL`) and three legitimate `GROUP_DOMAIN`
+  occurrences in `src/content/pages/*.mdx`, where the contact route is written as the literal
+  `info@GROUP_DOMAIN`. `GROUP_NAME` and `GROUP_TAGLINE` are gone, filled with the real values.
+  Red is the correct end state for this task.
+- `npm run build`: **six** routes - `/`, `/about`, `/help`, `/join`, `/locations`, `/posts`.
+  `/donate` no longer exists.
+- `npm run check:contrast`: all sixteen role pairs pass, unmoved.
+  `git diff HEAD -- src/styles/global.css` empty.
+- Scaffold-fact grep over `src/` for `springfield|\(555\)|communityfood\.org|90%|founded in
+  2024|community food group` returns nothing. Springfield addresses, the `(555)` numbers, the
+  `communityfood.org` addresses, the 2024 founding date, the 90% donation claim, the membership
+  tiers and the storefront framing are all gone from source **and** from `dist/`.
+- The naming ruling held: `Vegans Against Fascism` appears zero times in `src/`, once in
+  `site.config.ts`, and otherwise only in the project documents.
+- `/donate` greps to nothing in `src/`. Task 004's accessibility work confirmed intact -
+  `role="menubar"`/`role="menuitem"`/`role="none"` and `href="#"` both still return nothing.
+- The single garden record validates through the content layer's `file()` loader against a
+  `kind`-discriminated union with exactly one variant. No new dependency was taken; `z` is the
+  re-export from `astro:content`.
+- Browser pass at both widths: the one-record locations grid resolves to a single column with
+  one child, and no route overflows horizontally. The homepage three-up grid was replaced with
+  copy plus a link to `/locations` rather than shrunk.
+
+**Two verification facts were found here that outlive the task** and are recorded in
+`PROJECT_CONTEXT.md` section 4 rather than only here, because they change how any future task
+verifies: the shell's `grep` wrapper honours `.gitignore` and therefore makes every
+`dist/`-grepping criterion pass vacuously (use `/usr/bin/grep`), and Astro's HTML compressor
+strips whitespace-only text nodes around inline elements, gluing words to link text (fix:
+explicit `{' '}` on both sides).
+
+**Two post-implementation owner commits followed and are not covered by this record.**
+`0f7aff2` ("Updated some language") and `83838b8` ("Copy clarification") are the owner's own
+copy edits to `about.mdx`, `join.mdx`, `help.mdx`, `index.astro`, `Header.astro`,
+`locations.astro` and `locations.json`. They are owner copy decisions, not defects. Two of
+their effects were carried forward as work rather than archived:
+
+1. **`locations.astro:33` became `Our Community Garden Plot`**, which fails this task's own
+   acceptance criterion 7. **This is not being treated as a regression to revert** - the owner
+   has since retired the phrasing ban outright (see the register decision in
+   `PROJECT_CONTEXT.md` section 4). It is recorded here so the criterion-7 result in this
+   record is not later read as still holding.
+2. **A CGT link drift appeared**: `about.mdx` links to the operator's site root while
+   `locations.json` links to the `/garden-locations` listing, which is the URL actually
+   verified on 2026-07-31. Reconciling the two is Task 005b's.

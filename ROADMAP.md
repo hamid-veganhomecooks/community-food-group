@@ -17,15 +17,38 @@ paragraphs have `margin: 0` would hide the spacing defect behind new prose, and 
 a palette around placeholder copy would tune the design to text that is about to be
 deleted.
 
-Two tracks are independent and can proceed in parallel:
+Two tracks were independent and ran in parallel:
 
 - **Track A (complete):** Tasks 001-004, 004b and 004c. Purely structural. Required no owner
-  facts - 004b centralized the identity values without filling them. **Every Track A task is
-  complete and merged to `main`; the working tree is clean.**
-- **Track B (blocked on owner input):** Tasks 005-007. **Task 005 is now unblocked and
-  active** - see its entry below.
+  facts - 004b centralized the identity values without filling them.
+- **Track B:** Tasks 005-007. **Task 005 is complete.** Task 006 is blocked; Task 007 is
+  partly pulled forward as 007a.
 
-Tasks 008-009 close out the release and depend on both tracks.
+**Every task 001 through 005 is merged to `main` and the working tree is clean.**
+
+## The current order
+
+**[2026-07-31] Revised by owner decision.** The owner wants friends looking at a real URL before
+the copy is finished, which reorders the tail of the backlog:
+
+| # | Task | Why here |
+| --- | --- | --- |
+| 1 | **005b** - zero user-visible copy in `.astro`, fill the domain | **ACTIVE.** Structure settles before copy is rewritten, so the copy is touched once. Also fills `GROUP_DOMAIN`, which is what actually unblocks the preview. **Scope widened 2026-07-31** to include the home page, header and footer |
+| 2 | **008a** - preview deployment | Friends need something to look at. Needs the domain fill, an output token scan, and a `noindex` mechanism |
+| 3 | *(the feedback round)* | Not a task. See `PROJECT_CONTEXT.md` section 4 for who is asked and what is not open for comment |
+| 4 | **005c** - copy register pass | **Must wait for the feedback rather than pre-empt it.** One pass, over already-consolidated files |
+
+**Recommended but not scheduled: 007a** (favicon and OG image) ahead of step 2, so shared links
+do not render broken preview cards. It needs an owner input that is still deferred.
+
+**The competing argument, recorded because it was real.** Splitting first and deploying second
+means friends see the current copy, including the `Our Community Garden Plot` heading and a
+garbled `/locations` meta description. Deploying first would have let feedback inform 005c
+without the split intervening, at the cost of one extra pass over the prose. **The owner chose
+split-then-deploy-then-copy knowingly**, and separately decided the heading is fine as it
+stands.
+
+Tasks 008 and 009 close out the release.
 
 ---
 
@@ -233,51 +256,154 @@ dedicated under CC0 is needed. Cheap now, painful to retrofit once patches have 
 
 ## Task 005 - Real content, on-model
 
-**Status: ACTIVE**, promoted 2026-07-31. **Specified in `TASK_SPEC.md`, which is the only
-authority on its scope and acceptance.**
-**Blocked on:** nothing. Every blocker cleared at promotion - see below.
-**Touches:** `site.config.ts`; `about.mdx`, `join.mdx`, `donate.mdx` -> `help.mdx`;
-`donate.astro` -> `help.astro`; `index.astro`, `locations.astro`, `posts.astro`;
-`Header.astro`, `Footer.astro`; `locations.json`, `content.config.ts`; `README.md`.
+**Status: COMPLETE**, 2026-07-31. Merged to `main` as `375d860`, followed by two owner copy
+commits, `0f7aff2` and `83838b8`. Verification record in `docs/DECISIONS_ARCHIVE.md` under
+`## Verification history`.
 
-The planned scope that stood here has been **cut into `TASK_SPEC.md`**, not copied. The model
-it serves is in `PROJECT_CONTEXT.md` section 2 and the garden rulings in section 4, which
-remain their authority.
+Replaced every invented public fact in `src/` with owner-approved content describing the real
+group, and migrated `src/data/locations.json` from a flat storefront shape to a validated,
+`kind`-discriminated Astro data collection holding one record: the rented garden plot. Renamed
+`/donate` to `/help` across the route, the content file, both nav lists and the footer. **The
+site now describes the real group.**
 
-**Six owner inputs were answered at promotion**, all recorded in `PROJECT_CONTEXT.md`
-section 4: the organization name, the tagline, that **no cook or distribution site is named
-publicly** (so the garden is the only record), that **the food is vegan and the site says so**,
-the `/donate` -> `/help` rename, and that food-safety language is deferred rather than written.
+The dated decisions are in `PROJECT_CONTEXT.md` section 4, which is their only copy.
 
-**Four things changed at promotion, from grepping the repository rather than trusting this
-entry:**
+**Carries two durable lessons**, both found by executing rather than reading, and both now
+governing every future task: the shell's `grep` is a wrapper that honours `.gitignore`, so a
+criterion grepping `dist/` passes **vacuously** unless it says `/usr/bin/grep`; and Astro's HTML
+compressor strips whitespace-only text nodes around inline elements, gluing prose to link text
+in a way that is invisible in the source and the diff.
 
-1. **`index.astro` was missing from this entry's scope and could not stay out.** It imports
-   `locations.json` directly, so the data migration breaks it - not optional. Its prose is also
-   off-model scaffold carrying the same storefront framing this entry flags in `locations.astro`.
-2. **The single garden record breaks the homepage layout.** `locations.slice(0, 3)` renders one
-   card in a three-column grid. A layout decision, not a data swap.
-3. **The union ships with one variant, not three.** This entry sketched garden, distribution
-   and cook-session on the assumption distribution sites would be named. The owner answered
-   that none are, collapsing two of the three to zero records; shipping unexercised branches
-   would violate constraints 3.2 and 3.4.
-4. **`README.md` contradicts itself and one half is currently false.** Line 209 claims the
-   location records describe real places; lines 11-14 of the same file say they are invented
-   scaffold. Task 004b wrote the former in anticipation of this task.
+**Two of its rulings have since been changed by the owner** and this entry is not the authority
+on either - see `PROJECT_CONTEXT.md` section 4. The traps table is retired, and the garden's
+facts are consolidating to one owner.
 
-**The promoted spec also resolves a conflict this entry created.** It required "add a Zod
-schema" while `PROJECT_CONTEXT.md` records that importing `zod` directly is unsafe today and
-needs an owner decision under constraint 3.6. Resolved by using the content layer's `file()`
-loader with the `z` already re-exported from `astro:content` - the platform option constraint
-3.6 prefers, and no new dependency.
+---
+
+## Task 005b - Zero user-visible copy in `.astro`, and fill the domain
+
+**Status: ACTIVE**, promoted 2026-07-31, **scope widened the same day by owner decision.**
+**Specified in `TASK_SPEC.md`, which is the only authority on its scope and acceptance.**
+**Blocked on:** nothing.
+
+The planned scope that stood here has been **cut into `TASK_SPEC.md`**, not copied.
+
+Numbered `005b` by the precedent 004b and 004c set: work that follows a completed task on the
+same material takes a letter suffix rather than a new number.
+
+**Why it was widened.** As first promoted, this task moved only `/posts` and the `/locations`
+page copy, leaving the home page as "the one genuine template". **The owner rejected that**, and
+the count is why: the narrower version would have left about forty user-visible strings in
+`.astro` files, including the entire home page - four paragraphs, three section headings, six
+button labels - plus five nav labels duplicated across two lists and twelve footer strings.
+
+**The owner's stated expectation from Task 004b was that editing the site would mean editing
+content files.** That expectation was reasonable and the four-surfaces table has been promising
+it since 004b wrote it. It was not true. **The goal is now the promise: no `.astro` file
+contains a user-visible string.**
+
+This entry records the reversal rather than quietly replacing the earlier plan, because "the
+home page is structured layout, not prose" is a rationalization a future session could easily
+re-derive. It was measured and it is wrong: the home page is roughly 60% prose by volume.
+
+---
+
+## Task 008a - Preview deployment
+
+**Status:** queued. **Next after 005b.**
+**Blocked on:** Task 005b (the domain fill), and an owner-side Cloudflare Pages project.
+
+### Why this moved ahead of Tasks 006 and 007
+
+**Stated explicitly rather than left to drift.** The owner wants the site on `pages.dev` before
+go-live so friends can look and comment, with the real domain wired later. That reorders the
+backlog: a preview-only slice of Task 008 now runs ahead of Mastodon integration and the full
+brand-asset pass.
+
+The reorder is cheap because the thing that was supposed to block it does not. **Task 008 as
+written is blocked on the domain purchase and a confirmed Pages URL**; the domain is now
+answered, and a preview does not need the production URL. The remaining Task 008 scope -
+security headers, the canonical `site` value, real-device verification against the production
+domain - stays queued as Task 008.
+
+### Planned scope
+
+- **An output scan that enforces the rule the project actually has.** `scripts/check-config.mjs`
+  scans `site.config.ts` and `src/`; nothing scans `dist/`. Add a check that greps build output
+  for the documented token pattern, **reading files through Node's `fs`** rather than the shell,
+  because the shell's `grep` honours `.gitignore` and `dist/` is git-ignored. This is the check
+  that gates publishing. `check:config` keeps gating source. **Do not merge the two.**
+- **A `noindex` mechanism that distinguishes preview from production.** The owner's decision is
+  `noindex` on the preview with the link shared directly. A `public/_headers` file ships to
+  production as readily as to a preview, so this needs a real mechanism, not a remembered rule.
+  **Cloudflare's default behaviour for preview aliases has not been verified from this
+  workstation - confirm it against the dashboard rather than assuming it.**
+- Create or confirm the Cloudflare Pages project. **Set `NODE_VERSION` to `22.23.2`** to match
+  `.nvmrc`, or the `prebuild` Mastodon step fails in CI. **Set `SITE_URL` as a real environment
+  variable** - `astro.config.mjs` is evaluated before `.env` loads.
+- **Re-verify the Community Gardens of Tucson listing before the preview goes up.**
+  `PROJECT_CONTEXT.md` records this as a standing dependency: they are facts about a third party
+  and about a rental that can lapse.
+- **Confirm `info@vegansagainstfascism.org` is actually receiving mail.** It is the site's only
+  call to action on all six routes.
+
+### Acceptance
+
+- The preview build carries **zero** tokens in `dist/`, proven by the new output scan run with
+  the shell wrapper problem accounted for.
+- The preview responds with `noindex`, and production provably does not inherit it.
+- The build runs on Node 22 in Pages, not only locally.
+
+---
+
+## Task 005c - Copy register pass
+
+**Status:** queued. **Runs after the feedback round.**
+**Blocked on:** Task 005b (so the copy is in one place before it is rewritten), Task 008a, and
+the friends' feedback itself.
+
+### Why it is last
+
+Rewriting copy across six files and then moving it does the work twice, and that duplication is
+exactly what produced the CGT link drift within an hour of being created. 005b moves; 005c
+writes. **One pass, over consolidated files.**
+
+The owner chose to have friends see the current copy first, so **005c must wait for the feedback
+rather than pre-empt it.** A session that starts 005c before the round has happened is doing the
+task the order was designed to avoid.
+
+### Planned scope
+
+- One register pass over the consolidated MDX. **The traps table is retired** - see
+  `PROJECT_CONTEXT.md` section 4. Warmth comes from sentence rhythm, contractions, concrete
+  nouns and speaking as people rather than as an organization.
+- **Constraint 3.1 is untouched and was never in scope of that retirement.** For the four
+  retired entries that were truth rules rather than tone rules, there is no truthful warmer copy
+  available: no efficiency figure exists, no distribution time is known in advance, there is no
+  chat, and CGT is a real third party.
+- Fold in the friends' feedback, minus what section 4 records as not open for comment.
+- **Report every occurrence of the group name it introduces into `src/`**, so the cost to the
+  anticipated rebrand is visible rather than discovered later. Currently zero.
 
 ---
 
 ## Task 006 - Mastodon integration, wired end to end
 
-**Status:** queued. **Track B.**
-**Blocked on:** the Mastodon handle in `PROJECT_CONTEXT.md` section 4, and Task 001 for the
-runtime and the honest-config work.
+**Status:** queued and **BLOCKED. Out of the current order.**
+**Blocked on:** the Mastodon handle in `PROJECT_CONTEXT.md` section 4.
+
+**[2026-07-31] The handle question was put to the owner and came back "undecided."** That is
+neither a handle nor a decision that there is no account, so the tokens stay and this task
+cannot be specified. It **keeps its number but yields its position** to 005b, 008a and 005c.
+
+**It no longer blocks anything else.** `MASTODON_HANDLE` and `MASTODON_URL` are consumed by no
+template and never reach `dist/` - verified 2026-07-31 - so they do not stand between the
+project and the preview deploy.
+
+**If the answer turns out to be "there is no account", this task shrinks or vanishes:**
+`social.mastodon` becomes `null`, `check:config` goes fully green, and `/posts` plus
+`MastodonFeed.astro` need a decision about whether they have any reason to exist. **Do not
+pre-empt that by writing `null` for an undecided input.**
 
 ### Why
 
@@ -319,6 +445,26 @@ print raw HTML markup to visitors.
 
 ---
 
+## Task 007a - Favicon and OG image, ahead of the preview
+
+**Status:** queued, **recommended before Task 008a. Not yet an owner decision.**
+**Blocked on:** the logo/favicon/social-image owner input in `PROJECT_CONTEXT.md` section 4.
+
+`public/` is empty and `BaseLayout.astro` references `/favicon.svg` and
+`/images/og-default.jpg`, so both 404 on every route. That has been a cosmetic gap so far.
+**Once a preview link is shared with friends it stops being cosmetic:** every browser tab shows
+a default icon and every link anyone pastes into a chat renders a broken preview card. The
+first impression the feedback round is meant to gather would be partly an impression of missing
+assets.
+
+**An implementer cannot resolve this** - the assets are a deferred owner input, not a technical
+gap. The owner needs to supply them or approve a deliberate placeholder. Flagged rather than
+scheduled, because the answer is theirs.
+
+The rest of Task 007 stays queued below.
+
+---
+
 ## Task 007 - Brand assets and metadata
 
 **Status:** queued. **Track B.**
@@ -326,8 +472,8 @@ print raw HTML markup to visitors.
 
 ### Planned scope
 
-- Create `public/favicon.svg` and the OG image at `/images/og-default.jpg`. Both are
-  referenced by `BaseLayout.astro` today and both 404 on every route.
+- Create `public/favicon.svg` and the OG image at `/images/og-default.jpg`, if 007a has not
+  already. Both are referenced by `BaseLayout.astro` today and both 404 on every route.
 - Replace the emoji logo in `Header.astro` with a real wordmark or a deliberate typographic
   treatment.
 - Complete metadata: canonical URLs, `og:url`, `og:site_name`, `og:locale`, and per-page
@@ -336,20 +482,20 @@ print raw HTML markup to visitors.
 
 ---
 
-## Task 008 - Deployment
+## Task 008 - Production deployment
 
-**Status:** queued.
-**Blocked on:** the domain purchase and the Cloudflare Pages URL in `PROJECT_CONTEXT.md`
-section 4, and Tasks 001-007 for anything publishable. The domain also fills the
-`GROUP_DOMAIN` token in the contact address, so it gates the pre-publication token check.
+**Status:** queued. **The preview slice has been cut out as Task 008a**, above; what remains
+here is production.
+**Blocked on:** Task 008a, and pointing `vegansagainstfascism.org` at Cloudflare.
 
 ### Planned scope
 
-- Create or confirm the Cloudflare Pages project; record the real URL as a dated decision.
-- Set `NODE_VERSION` to match `.nvmrc`, or the `prebuild` Mastodon step will fail in CI the
-  same way it fails locally on Node 20.
-- Configure `MASTODON_ACCOUNT` and the canonical site variable in the Pages environment.
+- Wire the real domain and record the production URL as a dated decision.
 - Set the canonical `site` in `astro.config.mjs` only once the URL is confirmed.
+- Confirm production does **not** inherit the preview's `noindex`. This is the enforcement half
+  of the owner's preview decision and it is easy to get backwards in exactly the direction that
+  hurts.
+- Configure `MASTODON_ACCOUNT` in the Pages environment, if Task 006 ever unblocks.
 - Add security headers.
 - Verify the deployed build against a real mobile device, not only a narrow viewport.
 
