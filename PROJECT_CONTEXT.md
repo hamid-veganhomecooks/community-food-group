@@ -439,12 +439,46 @@ to `docs/DECISIONS_ARCHIVE.md`.
   preview aliases has not been verified from this workstation and must not be assumed** - 008a
   confirms it against the dashboard before relying on it.
 
-- **Two mechanical items the deploy needs**, neither yet done:
+- **Two mechanical items the deploy needs:**
   - **`NODE_VERSION` on Pages must be set to `22.23.2`** to match `.nvmrc` and the Node 22
     contract. Without it the `prebuild` Mastodon step fails in CI.
   - **`SITE_URL` must be a real environment variable**, set in the Pages environment. It cannot
     live in `.env`: `astro.config.mjs` is evaluated before Astro loads `.env` files, and the
     file says so in a comment at the point of use.
+
+- **[2026-08-01] THE PREVIEW IS LIVE AND THE FRIENDS ROUND HAS STARTED.** Owner deployed
+  Cloudflare Pages from the `task/005b-content-consolidation` branch and shared the link.
+  Deployment alias: `https://2889d153.community-food-group.pages.dev/`.
+
+  **Nothing was bypassed to get there, and that is the point worth recording.** The rule is
+  "no deployed build may contain a token", and the deployed build contains **zero**. Task 005b
+  filled `GROUP_DOMAIN`, which was the only token that ever reached `dist/`; the two remaining
+  tokens are the Mastodon pair, consumed by no template. **Verified twice on 2026-08-01** -
+  `check:config` reports exactly those two, and the live page renders
+  `info@vegansagainstfascism.org` with no token text. The guard did its job and then got out of
+  the way. **A future session must not read this entry as a precedent for shipping tokens.**
+
+  **[2026-08-01] Owner decision: the domain-related gates are relaxed for the preview, and only
+  for the preview.** The owner's judgement is that these guardrails would be required in a
+  corporate setting and are disproportionate for a friends-only look at a `noindex` URL. That is
+  the owner's risk call to make and it is taken knowingly.
+
+  | Gate | Status |
+  | --- | --- |
+  | No token in a deployed build | **Stands, and is satisfied.** Nothing to relax |
+  | `noindex` on the preview | **Mechanism dropped.** Owner set it manually on Pages. Re-mechanize only when a production target exists, where the preview/production distinction becomes real |
+  | Mailbox confirmed before sharing | **RELAXED.** Downgraded from a sharing gate to a **production** gate - see the owner-inputs table |
+  | `SITE_URL` / canonical URL | **Deferred.** Cosmetic on a friends preview; required for production |
+  | `NODE_VERSION` on Pages | **Still required** - the build must run on Node 22, not only locally |
+  | Re-verify the CGT listing | **STANDS. Not relaxed.** It is unrelated to the domain and it is a published claim about a third party, which constraint 1 governs regardless of who is looking |
+
+  **The one live consequence, recorded because it is easy to miss.** Task 005b published
+  `info@vegansagainstfascism.org` on all six routes as the site's only call to action, and the
+  domain is not yet wired for mail. **A real-looking address that silently bounces is a worse
+  failure than a visible token was** - a token reads as "not real yet", a plausible address reads
+  as genuine and fails invisibly. This is constraint 1's own logic pointing the opposite way to
+  the usual case. **The fix is not a rule change, it is one test email**, plus telling the
+  friends round that site email may not be live yet.
 
 ### Copy register
 
@@ -633,9 +667,16 @@ to `docs/DECISIONS_ARCHIVE.md`.
   `communitygardensoftucson.org/` site-root form appears nowhere - the `/garden-locations`
   listing URL is the single outbound link.** The drift is closed.
 
-  **The standing dependency is unchanged and is now a publication gate:** these are facts about
-  a third party and about a rental that can lapse. **Task 008a re-verifies the CGT listing
-  before the preview goes up** rather than assuming this entry still holds.
+  **The standing dependency is unchanged:** these are facts about a third party and about a
+  rental that can lapse. Re-verify the CGT listing against the operator's own site rather than
+  assuming this entry still holds.
+
+  **[2026-08-01] This was supposed to happen before the preview went up, and it did not.** The
+  preview is live and shared, so the Presidio address, the operator's name and the outbound link
+  are published to whoever holds the link, **last verified 2026-07-31 and not since.** It is
+  **overdue rather than pending**, and it is **explicitly not covered by the owner's relaxation
+  of the domain-related gates** - it has nothing to do with the domain, and constraint 1 governs
+  a published claim about a third party regardless of how small the audience is.
 
 ### The feedback round
 
@@ -958,23 +999,32 @@ Task 005's roadmap status line. This `MEMORY SYNC` wrote `PROJECT_CONTEXT.md` on
 touch `ROADMAP.md` (an `ARCHITECT` document, written at promotion time) or
 `DECISIONS_ARCHIVE.md`.
 
-**[2026-07-31] The deployment block has lifted, and what remains is mechanical.** Until Task 005
-the repository could not be deployed because its copy was *untrue*; that reason is discharged.
-The narrower token reason is discharged too: **Task 005b filled the domain, so no token reaches
-`dist/` at all now.** What is left before a preview can go up is **build configuration and two
-guards that do not exist yet** - an output scan over `dist/`, a `noindex` mechanism that
-distinguishes preview from production, `NODE_VERSION`, and `SITE_URL`. All four are Task 008a's.
-See the deployment decision in this section, and **the attribute-escaping fact above, which
-constrains how that `dist/` scan may be written.**
+**[2026-08-01] THE DEPLOYMENT BLOCK IS FULLY DISCHARGED AND THE PREVIEW IS LIVE.** Until Task
+005 the repository could not be deployed because its copy was *untrue*; that reason went first.
+The narrower token reason went with Task 005b, which filled the domain, so **no token reaches
+`dist/` at all.** The preview is deployed and shared - see the dated deployment entry in this
+section for the URL, what was verified, and which gates the owner relaxed.
 
-**Two things 008a must confirm before the link is shared, both now sharper than before:** that
-`info@vegansagainstfascism.org` actually receives mail - the address is live on all six routes
-now, not a token - and that the CGT listing still stands.
+**What genuinely remains is smaller than the earlier draft of this paragraph claimed**, and it
+splits by whether it is preview work or production work:
 
-**The current order is 005b, then 008a, then a feedback round, then 005c.** Owner decision;
-the reasoning and the argument against it are in `ROADMAP.md`, which holds the ordered
-sequence. **Task 006 is blocked and out of the order. Task 007 is unblocked in part** - see the
-brand-asset note below.
+- **Still wanted, and now the main practical annoyance:** an **output scan over `dist/`**.
+  `check:config` exits non-zero on the two Mastodon tokens, and because `verify` uses `set -e`,
+  it never reaches `build`. The fix is the split already recorded above - source scan reports
+  unanswered owner inputs and does not block; a `dist/` scan blocks publishing. **That is the
+  check the project never had, not a weakening of the one it has.** The attribute-escaping fact
+  above constrains how it may be written.
+- **Still required:** `NODE_VERSION` on Pages, and re-verifying the CGT listing.
+- **Deferred to production:** `SITE_URL` and the canonical URL, a re-mechanized `noindex`, and
+  confirming the mailbox. The owner set `noindex` manually and accepted the mailbox risk for a
+  friends-only preview.
+
+**The current order was 005b, then 008a, then a feedback round, then 005c.** 005b is complete
+and **the preview and feedback round are underway**, so what is left of 008a is production work
+rather than a gate on anything. **Task 006 is blocked and out of the order. Task 007 is unblocked
+in part** - see the brand-asset note below. **The owner has flagged that the task order and its
+blocking relationships will be revisited** after the feedback round; treat `ROADMAP.md`'s
+sequence as provisional until that happens.
 
 **[2026-07-31] `public/` is still empty and this now has a consequence it did not have before.**
 `BaseLayout.astro` references `/favicon.svg` and `/images/og-default.jpg`; both 404 on every
@@ -1047,8 +1097,8 @@ enforces this and fails the build while any token remains unfilled.
 | Mastodon account handle, or confirmation there is none | **STILL OPEN. Put to the owner 2026-07-31; the answer was "undecided", which is neither a handle nor a decision that there is none.** The tokens stay, correctly - a token means *unknown*, `null` would mean *decided against*. **Task 006 stays blocked and is out of the current order.** It no longer blocks deployment: both tokens are consumed by no template and never reach `dist/`, verified. | **Task 006** only |
 | Approved food-safety language, if any is wanted | **Open, and deliberately deferred at the Task 005 promotion rather than answered.** Task 005 wrote none, as instructed. Do not invent a practices statement to fill the gap. | About or ways-to-help content |
 | Logo, favicon, social image | **Deferred, but now on the critical path.** `public/` is empty, so both referenced assets 404 on every route and **every preview card shared with a friend is broken**. An implementer cannot choose these. **Recommended: a minimal `007a` (favicon + OG image) ahead of the preview** - needs an owner answer or an owner-approved placeholder. | `public/` assets, brand pass, **and the quality of the 008a preview** |
-| Confirmed Cloudflare Pages project URL | **Open, and now required by 008a.** The domain `vegansagainstfascism.org` is registered but not yet pointed at Cloudflare, and no Pages project has been confirmed to exist. | `astro.config.mjs` `SITE_URL`, Task 008a |
-| **Is `info@vegansagainstfascism.org` receiving mail?** | **OPEN, and it now gates publishing outright.** The domain is answered and **Task 005b has published the real address on all six routes** - it is no longer a token that would obviously need filling, it is a live `mailto:` on every page. If the mailbox bounces, the site's single call to action is dead and looks genuine while being dead. **008a must confirm the mailbox before the preview is shared.** | Publishing the contact route |
+| Confirmed Cloudflare Pages project URL | **ANSWERED 2026-08-01.** A Pages project exists and is deployed from `task/005b-content-consolidation`; alias `https://2889d153.community-food-group.pages.dev/`. **The production domain is still not pointed at Cloudflare.** Note the project is named `community-food-group` - the retired invented scaffold name - which is baked into the `*.pages.dev` hostname and is worth renaming before the real domain goes live. | *(closed for preview; production URL still open)* |
+| **Is `info@vegansagainstfascism.org` receiving mail?** | **OPEN. Downgraded 2026-08-01 from a sharing gate to a production gate, by owner decision.** Task 005b published the real address on all six routes as the site's only call to action, and the domain is not yet wired for mail - so it may bounce or blackhole while looking genuine. **Accepted risk for the friends preview**, where feedback returns through channels the owner already has. **Not acceptable once the real domain is live.** Cost to close: one test email. | Production launch, not the preview |
 
 Answered on 2026-07-30 and recorded above. **Do not re-ask, and do not treat any of these as
 still open:**

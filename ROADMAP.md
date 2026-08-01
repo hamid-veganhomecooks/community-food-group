@@ -310,8 +310,32 @@ re-derive. It was measured and it is wrong: the home page is roughly 60% prose b
 
 ## Task 008a - Preview deployment
 
-**Status:** queued. **Next after 005b.**
-**Blocked on:** Task 005b (the domain fill), and an owner-side Cloudflare Pages project.
+**Status: LARGELY DONE BY THE OWNER, 2026-08-01, outside a task session.** The preview is
+deployed from `task/005b-content-consolidation` and the link has been shared with friends. Alias
+`https://2889d153.community-food-group.pages.dev/`. **The feedback round has started.**
+**Blocked on:** nothing.
+
+**Nothing was bypassed.** The deployed build contains zero tokens - Task 005b filled
+`GROUP_DOMAIN`, the only one that ever reached `dist/`. Verified 2026-08-01 against both
+`check:config` and the live page.
+
+**[2026-08-01] The owner relaxed the domain-related gates for the preview and only for the
+preview**, judging them disproportionate for a friends-only look at a `noindex` URL. Recorded in
+full in `PROJECT_CONTEXT.md` section 4, which is the authority. Summary of what is left:
+
+| Item | Status |
+| --- | --- |
+| `noindex` on the preview | **Done manually by the owner.** Mechanism deferred to production, where the preview/production distinction becomes real |
+| Cloudflare Pages project | **Done.** Note it is named `community-food-group` - the retired invented scaffold name, now baked into the `*.pages.dev` hostname. Rename before the real domain goes live |
+| Output scan over `dist/` | **Still wanted, and now the main practical annoyance** - see below |
+| `NODE_VERSION` = `22.23.2` | **Still required.** Confirm the Pages build actually ran on Node 22 |
+| Re-verify the CGT listing | **Still required. Not relaxed** - unrelated to the domain, and a published claim about a third party |
+| Confirm the mailbox | **Downgraded to a production gate.** Accepted risk for the preview |
+| `SITE_URL` / canonical | **Deferred to production** |
+
+**The output scan is the piece worth doing next.** `check:config` exits non-zero on the two
+Mastodon tokens and `verify` uses `set -e`, so the local loop never reaches `build`. The fix is
+the split below - **not** weakening `check:config`.
 
 ### Why this moved ahead of Tasks 006 and 007
 
@@ -333,26 +357,31 @@ domain - stays queued as Task 008.
   for the documented token pattern, **reading files through Node's `fs`** rather than the shell,
   because the shell's `grep` honours `.gitignore` and `dist/` is git-ignored. This is the check
   that gates publishing. `check:config` keeps gating source. **Do not merge the two.**
-- **A `noindex` mechanism that distinguishes preview from production.** The owner's decision is
-  `noindex` on the preview with the link shared directly. A `public/_headers` file ships to
-  production as readily as to a preview, so this needs a real mechanism, not a remembered rule.
-  **Cloudflare's default behaviour for preview aliases has not been verified from this
-  workstation - confirm it against the dashboard rather than assuming it.**
-- Create or confirm the Cloudflare Pages project. **Set `NODE_VERSION` to `22.23.2`** to match
-  `.nvmrc`, or the `prebuild` Mastodon step fails in CI. **Set `SITE_URL` as a real environment
-  variable** - `astro.config.mjs` is evaluated before `.env` loads.
-- **Re-verify the Community Gardens of Tucson listing before the preview goes up.**
-  `PROJECT_CONTEXT.md` records this as a standing dependency: they are facts about a third party
-  and about a rental that can lapse.
-- **Confirm `info@vegansagainstfascism.org` is actually receiving mail.** It is the site's only
-  call to action on all six routes.
+- ~~A `noindex` mechanism that distinguishes preview from production.~~ **Owner set it manually.
+  Deferred to production**, where a `public/_headers` file would ship to both and the
+  distinction stops being a remembered rule. **Cloudflare's default behaviour for preview
+  aliases has never been verified from this workstation - confirm it against the dashboard
+  rather than assuming it.**
+- ~~Create or confirm the Cloudflare Pages project.~~ **Done.** **Confirm the Pages build
+  actually ran on `NODE_VERSION` `22.23.2`** - a mismatch fails the `prebuild` Mastodon step.
+  ~~Set `SITE_URL`~~ - deferred to production; `astro.config.mjs` is evaluated before `.env`
+  loads, so it must be a real environment variable when it is set.
+- **Re-verify the Community Gardens of Tucson listing. STILL REQUIRED.**
+  `PROJECT_CONTEXT.md` records this as a standing dependency: facts about a third party and
+  about a rental that can lapse. **Not covered by the domain relaxation** - it has nothing to do
+  with the domain, and the claim is published to whoever holds the link.
+- ~~Confirm `info@vegansagainstfascism.org` is receiving mail.~~ **Downgraded to a production
+  gate by owner decision.** The address is live on all six routes and may bounce; accepted risk
+  for a friends preview. **Cost to close: one test email.**
 
-### Acceptance
+### Acceptance, for what remains
 
-- The preview build carries **zero** tokens in `dist/`, proven by the new output scan run with
-  the shell wrapper problem accounted for.
-- The preview responds with `noindex`, and production provably does not inherit it.
-- The build runs on Node 22 in Pages, not only locally.
+- `npm run verify` reaches `build` - the source scan reports unanswered owner inputs without
+  blocking, and a `dist/` scan blocks publishing instead.
+- The `dist/` scan is **proven to fail**, not merely to pass, by temporarily reintroducing a
+  token.
+- The Pages build is confirmed to have run on Node 22.
+- The CGT listing is re-verified against the operator's own site.
 
 ---
 
