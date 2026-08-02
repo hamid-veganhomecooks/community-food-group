@@ -823,6 +823,15 @@ it:
 Everything else - tone, structure, wording, what the site leads with - is fair game, and that is
 most of what the round is for.
 
+**[2026-08-01] Confirmed with the owner at the Task 006a promotion: the round has started but has
+returned NO comments yet.** So **Task 005c stays blocked** and was not promotable at that
+consultation.
+
+**A round being open is not a round having produced something, and the distinction decides whether
+005c can be promoted.** A session that reads "the feedback round is underway" as "feedback exists"
+would start the one task the whole ordering was designed to hold back. **Ask; do not infer it from
+the preview being live.**
+
 ### Styling and design system
 
 - **Tailwind is configured in CSS.** The theme lives in an `@theme` block in
@@ -1335,6 +1344,16 @@ deploy - see the deployment decision above.
 red on `MASTODON_HANDLE` and `MASTODON_URL` alone. **That is the guard working.** Do not fill
 either with a guess, and do not write `null`, to turn it green.
 
+**[2026-08-01] Two owner items are outstanding that are not owner *inputs* and do not belong in
+the table above.** Neither is a product-content decision, neither blocks a task, and **neither can
+be closed by any session** - which is exactly why they get lost. Recorded at the Task 006a
+promotion, where both were put to the owner.
+
+| Item | State | Who closes it |
+| --- | --- | --- |
+| **`NODE_VERSION` = `22.23.2` on Cloudflare Pages** | **Open.** The owner reports the Pages build is working but has not confirmed the setting. **A working build is not evidence the variable is set** - Pages has its own default, and the site builds today because `prebuild` exits successfully with no account configured. **Task 006a makes that step do real work**, so a Node mismatch stops being invisible | Owner, in the Pages dashboard |
+| **Merging `task/005b-content-consolidation` into `main`** | **Open. The owner runs it.** Five tasks sit on the branch. **`a0433d5` is not pushed** - `origin` is one commit behind, so the live preview is `2081c8c` and does not include the close-out bundle | Owner. **No session runs a git network command or `gh` in this project** |
+
 **How an unanswered input is represented in `site.config.ts`** (shipped in Task 004b), because
 the distinction is load-bearing and easy to get backwards:
 
@@ -1451,6 +1470,26 @@ architecture unless a task explicitly creates them.
 ## 6. ACTIVE SESSION TASK PAYLOAD
 
 ### YOU ARE HERE - written 2026-08-01, updated the same day after the close-out bundle
+
+> **[2026-08-01, added by the `ARCHITECT` that promoted Task 006a - read this before the block
+> below.]**
+>
+> **Two statements below are now stale, and one of them is the exact failure this project keeps
+> hitting.** They are corrected here rather than rewritten in place, because the paragraphs below
+> belong to `MEMORY SYNC`. **The next `MEMORY SYNC` should fold these in and delete this note.**
+>
+> 1. **"`HEAD` is `2081c8c`" and "THE WORK IS IN THE WORKING TREE, NOT COMMITTED" are both
+>    false.** The owner committed the tree as **`a0433d5`** ("Completed easy to manage tasks"),
+>    which carries both sessions' work. **The working tree is clean.** This is the sixth time a
+>    document here has gone stale on commit state - **check `git log`, always.**
+> 2. **`a0433d5` is not pushed.** `origin/task/005b-content-consolidation` is at `2081c8c`, so
+>    **the live Cloudflare Pages preview does not contain the close-out bundle.** Nothing renders
+>    differently - the bundle changed no output - but a session inspecting the live site is
+>    inspecting the previous commit. Local `main` is also one commit ahead of `origin/main`.
+> 3. **"What the next session is for" below has been done.** The bundle is archived, the roadmap
+>    entries are collapsed, and **Task 006a is promoted and ACTIVE in `TASK_SPEC.md`.** The two
+>    `src/content.config.ts` residuals were folded into it. The feedback round has returned **no
+>    comments yet**, confirmed with the owner, so **005c stays blocked**.
 
 **Read this paragraph first if you are returning after a break.**
 

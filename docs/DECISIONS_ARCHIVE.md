@@ -407,3 +407,114 @@ constrains Task 008a: **Astro emits `>` unescaped inside a computed attribute va
 page's band components use Tailwind child variants (`[&>p]:text-ink`), so three `class`
 attributes in `dist/index.html` carry a raw `>`. It is legal HTML and renders correctly; the trap
 is in the tooling, not the output.
+
+### Tasks 004d + 009a + 008a remainder, verified 2026-08-01
+
+The three-part close-out bundle. **Committed as `a0433d5` ("Completed easy to manage tasks"), on
+branch `task/005b-content-consolidation`.** Eleven files, 866 insertions, 475 deletions - **two
+sessions' work in one commit**: the `ARCHITECT` that archived 005b and promoted the bundle wrote
+the four project documents, and the `IMPLEMENTER` wrote the rest. The two sets overlap only in
+`README.md`, in different sections.
+
+**All three parts completed**, not two. They were bundled because the owner was away and the
+repository had to be left coherent rather than mid-task; the bundling was an explicit exception,
+not a precedent.
+
+Verified by execution on Node v22.23.2, **re-confirmed independently at archive time** rather than
+taken from the implementer's report:
+
+**Part A - `CONTRIBUTING.md` (Task 004d)**
+
+- The file exists, 71 lines. Contributions are dedicated under CC0 1.0, with the reason stated:
+  CC0 covers only what the owner holds, so the claim to public domain would not survive outside
+  patches without it.
+- All three carve-outs are named - trademark not waived, Inter under SIL OFL 1.1 with the
+  re-check-on-typeface-change rule, and the truthfulness of the page copy.
+- Prose is rewritten rather than tokenized, pointing at `README.md`'s rebranding section rather
+  than restating it. `README.md:390` links back.
+- **It contains no code of conduct, no review process, no maintainer list, no response-time
+  promise and no CLA** - confirmed by reading the whole file. None of them exist, and constraint
+  3.1 covers a fabricated process exactly as it covers a fabricated address. **A future session
+  must not "complete" the file by adding them.**
+
+**Part B - zod declared (Task 009a)**
+
+- `"zod": "^4.4.3"` is in `dependencies` in `package.json`. `npm ls zod` resolves **exactly one**
+  copy: `zod@4.4.3` at the top level with `astro@7.1.6`'s child marked `deduped`.
+- `src/content.config.ts:1-2` splits the import: `defineCollection` still comes from
+  `astro:content`, `z` now comes from `'zod'`. **The seven files importing `getEntry` / `render` /
+  `getCollection` from `astro:content` are untouched** - `Footer.astro` and all six routes,
+  confirmed by `/usr/bin/grep -rn "from 'astro:content'" src/`, which returns those seven plus
+  `content.config.ts` itself.
+- No schema changed. Nothing was downloaded; the package was already on disk as a child of Astro.
+- **`npm run check` went 21 hints -> 1, not 21 -> 0, and the promoted spec's premise was wrong.**
+  Established by reverting line 1 and re-counting rather than by inference: the 21 were **20** `'z'
+  is deprecated` hints plus **one unrelated `z.string().url()` deprecation** at
+  `src/content.config.ts:61` that the blanket `z` deprecation had masked. 009a removed all 20 it
+  targeted. **The survivor is not a regression** - it is a zod-v4 API deprecation on a schema line
+  009a was explicitly forbidden to touch, so it was reported rather than silently fixed. A future
+  task comparing against "0 hints" is comparing against a baseline that never existed.
+
+**Part C - the `dist/` output scan (Task 008a remainder)**
+
+- `scripts/check-dist.mjs` exists, zero dependencies, in the shape of `check-contrast.mjs` and
+  `check-config.mjs`. **It reads through Node's `fs` and contains no shell invocation and no
+  tag-stripping regex** - confirmed by reading the file. Both were the design constraints that
+  mattered: a shell-based scan passes vacuously over a git-ignored `dist/`, and a `<[^>]+>` regex
+  walks into the unescaped-`>` trap recorded above.
+- **The file selection was chosen from observed output, not guessed.** Running the raw pattern
+  over every file in `dist/` matched in exactly two places, both inside the self-hosted Inter
+  `.woff2` files (`J_2`, `G_E`) - font bytes that happen to decode as token-shaped text. No
+  `.html` or `.css` file matched. The exclusion is a **denylist of binary formats, not an
+  allowlist of known text formats**, deliberately: an allowlist would silently skip a new output
+  format a later task adds - a sitemap `.xml`, a `robots.txt` - and a skipped file is the same
+  vacuous pass the script exists to prevent.
+- `npm run check:dist` exits 0 against the current build, scanning **7** files and skipping **2**
+  binary assets.
+- **Proven to fail, not merely observed to pass** (constraint 3.10): a token reintroduced into
+  `about.mdx` was caught at `dist/about/index.html:15` with the right file, line and token, the run
+  exited non-zero, and reverting returned it to green. It was also confirmed fatal *inside*
+  `verify`, and confirmed to exit non-zero with `dist/` absent - a scan that passes because there
+  was nothing to scan is worse than no scan.
+- **`verify` was rewired and `check:config` was not weakened.** `scripts/verify-baseline.sh` now
+  captures `check:config`'s status instead of dying on it under `set -e`, prints a warning,
+  continues to `build`, then runs `check:dist` **fatally**. `npm run verify` reaches `build` and
+  exits 0, and its closing summary states plainly that the run is **NOT fully green** because
+  `check:config` is red. **Standalone, `npm run check:config` still exits 1**, naming
+  `MASTODON_HANDLE` and `MASTODON_URL` at `site.config.ts:99`. `scripts/check-config.mjs` is
+  unchanged; only how `verify` reacts to it changed, and the script carries a comment at the point
+  of the change saying so, because a reviewer will otherwise read it as the guard being softened.
+- `npm run check:contrast` still passes all sixteen role pairs; `npm run build` still emits the
+  same six routes.
+- **The CGT listing was re-verified the same day and had not changed** - `Presidio Garden`, still
+  at `3440 E Presidio Rd`, still one of the gardens operated by Community Gardens of Tucson, whose
+  page still states 18 gardens. Nothing was edited, because nothing had changed. **The dependency
+  is standing, not discharged:** it is a fact about a third party and about a rental that can
+  lapse, and it needs checking again before production.
+
+**Two residuals were deliberately left rather than silently fixed**, both in
+`src/content.config.ts`, because Part B's scope was confined to line 1 of that file:
+
+1. `z.string().url()` at line 61, which is the last surviving `astro check` hint.
+2. **A now-false comment at lines 43-45**, which still says `z` is the `astro:content` re-export,
+   that zod is "only a transitive dependency", and that declaring it is "a separate, still-open
+   decision". All three became untrue the moment 009a shipped. **This is the one that matters** -
+   a future session reading it would conclude the declaration was a mistake and revert it.
+
+Both were folded into **Task 006a** at its promotion on 2026-08-01, as a named two-line exception
+to that task's scope. They are one edit in one file and neither justified a task of its own.
+
+**`NODE_VERSION` = `22.23.2` on Cloudflare Pages was explicitly out of Part C's scope** and
+remains open. It is an owner dashboard check that no implementer session can close.
+
+**Carries two durable lessons.**
+
+**A masked count is not a measured count.** The "21 hints" baseline had been quoted in three
+documents and was treated as one homogeneous number; it was two different deprecations, and only
+reverting the change and re-counting revealed it. A task whose whole observable effect is a count
+must establish what the count is made of before claiming to have moved it.
+
+**"Report, do not silently widen" produced a better outcome than either alternative.** The false
+comment was found by an implementer forbidden to touch it. Fixing it silently would have hidden a
+scope breach; ignoring it would have left a booby trap that reverses a shipped owner decision.
+Reporting it put it in front of an `ARCHITECT`, which is where the decision belonged.

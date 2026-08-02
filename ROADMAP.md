@@ -19,12 +19,16 @@ deleted.
 
 Two tracks were independent and ran in parallel:
 
-- **Track A (complete):** Tasks 001-004, 004b and 004c. Purely structural. Required no owner
+- **Track A (complete):** Tasks 001-004, 004b, 004c and 004d. Purely structural. Required no owner
   facts - 004b centralized the identity values without filling them.
-- **Track B:** Tasks 005-007. **Task 005 is complete.** Task 006 is blocked; Task 007 is
-  partly pulled forward as 007a.
+- **Track B:** Tasks 005-007. **Tasks 005 and 005b are complete.** Task 006 has been split -
+  **006a is active**, 006b is blocked on an owner input. Task 007 is partly pulled forward as
+  007a.
 
-**Every task 001 through 005 is merged to `main` and the working tree is clean.**
+**Tasks 001 through 005 are merged to `main`. Tasks 005b, 004d, 009a and the 008a remainder are
+committed on `task/005b-content-consolidation` and are NOT merged**, and `a0433d5` is not yet
+pushed. See the open-owner-items table below. **Verify this against `git log` rather than against
+this paragraph** - that is the correction this project has had to make five times.
 
 ## The current order
 
@@ -47,24 +51,45 @@ against work that is not.
 
 ### What is actually unblocked
 
-Ready to start now, in no forced order:
+**[2026-08-01] This table was wrong and has been corrected.** It listed **004d** and the **008a
+remainder** as ready to start after both had been completed and verified. That is the fifth time a
+document in this project has gone stale on completion state, which is why the rule below the table
+exists.
+
+**Task 006a is now ACTIVE**, promoted 2026-08-01. Its scope has been **cut into `TASK_SPEC.md`**,
+which is the only authority on it.
+
+Ready to start after 006a, in no forced order:
 
 | Task | Why it is ready |
 | --- | --- |
-| **008a remainder** | The `dist/` token scan, confirming the Pages build ran on Node 22, and the **overdue** CGT re-verification |
-| **006a** | The feed's correctness problems need no account - they are verifiable against a seeded cache |
-| **007** | Metadata, canonical URLs and sitemap all work against `SITE_URL`. Only the brand *assets* are blocked |
-| **009** | No blocker at all, and it is the task that would have caught most of what went wrong in 001-005 |
-| **004d** | `CONTRIBUTING.md`. Open since 004c and never tracked until now |
+| **007** | Metadata, canonical URLs and sitemap all work against `SITE_URL`. Only the brand *assets* are blocked. **Settle 006b's fate first if convenient** - if there is never an account, `/posts` may be deleted, and per-page metadata for a route that disappears is wasted work |
+| **009** (the rest) | CI, link checker, automated accessibility, dependency updates. No blocker at all, and it is the task that would have caught most of what went wrong in 001-005 |
+
+**Completed, and no longer in this table:** **004d** (`CONTRIBUTING.md`) and the **008a remainder**
+(the `dist/` output scan and the `verify` rewiring), both 2026-08-01, both in `a0433d5`.
+Verification record in `docs/DECISIONS_ARCHIVE.md`.
+
+**Do not read a completion claim in this file as a commit.** Check `git log`.
 
 ### What waits on an owner input
 
 | Task | Waiting on |
 | --- | --- |
-| **005c** | The feedback round to finish |
+| **005c** | The feedback round. **[2026-08-01] Confirmed by the owner: no comments have arrived yet**, so 005c stays blocked. A round that has started is not a round that has returned anything |
 | **007a** | Logo, favicon, social image |
 | **006b** | A Mastodon handle - **and the anticipated name change, which is the real constraint** |
 | **008** | DNS, and a working mailbox |
+
+### Open owner items that are not tasks
+
+Neither of these can be closed by any session, and both are easy to lose because they live outside
+the repository.
+
+| Item | State on 2026-08-01 |
+| --- | --- |
+| **`NODE_VERSION` = `22.23.2` on Cloudflare Pages** | **Still open.** Owner dashboard check. Without it the `prebuild` Mastodon step fails in the Pages build - which starts to matter as soon as Task 006a lands, because that task makes the prebuild step do real work |
+| **Merging `task/005b-content-consolidation` into `main`** | **Open, and the owner will run it.** Five tasks now sit on this branch. **`a0433d5` is not pushed** - `origin` is one commit behind, so the live Pages preview does **not** include the close-out bundle. Git operations in this project are owner-driven; no session runs a git network command or `gh` |
 
 **The largest lever is not sequencing, it is closing owner inputs**, because three of them each
 unblock a whole task and one of them (Mastodon) can *delete* work rather than enable it.
@@ -275,14 +300,20 @@ dedicated under CC0 is needed. Cheap now, painful to retrofit once patches have 
 
 ## Task 004d - Contributor guidance
 
-**Status: ACTIVE**, promoted 2026-08-01 as **Part A** of the three-part close-out bundle in
-`TASK_SPEC.md`, which is the only authority on its scope and acceptance.
-**Blocked on:** nothing.
+**Status: COMPLETE**, 2026-08-01. Committed as `a0433d5` on `task/005b-content-consolidation`,
+as **Part A** of the three-part close-out bundle. Verification record in
+`docs/DECISIONS_ARCHIVE.md` under `## Verification history`.
 
-The planned scope that stood here has been **cut into `TASK_SPEC.md`**, not copied.
+`CONTRIBUTING.md` states that contributions are dedicated under CC0 1.0 - which is what lets the
+repository keep claiming public domain once outside patches land - names the three carve-outs, and
+points at `README.md` rather than restating it.
 
-Flagged open by Task 004c on 2026-07-31 - "CC0 only covers what the owner holds" - and carried
-by no task until now.
+**It deliberately contains no code of conduct, review process, maintainer list, response-time
+promise or CLA. None of them exist**, and constraint 3.1 covers a fabricated process exactly as it
+covers a fabricated address. **A future session must not "complete" the file by adding them.**
+
+Flagged open by Task 004c on 2026-07-31 - "CC0 only covers what the owner holds" - and carried by
+no task until this one.
 
 ---
 
@@ -345,10 +376,20 @@ re-derive. It was measured and it is wrong: the home page is roughly 60% prose b
 
 ## Task 008a - Preview deployment
 
-**Status: LARGELY DONE BY THE OWNER, 2026-08-01, outside a task session.** The preview is
-deployed from `task/005b-content-consolidation` and the link has been shared with friends. Alias
-`https://2889d153.community-food-group.pages.dev/`. **The feedback round has started.**
-**Blocked on:** nothing.
+**Status: COMPLETE except for one owner dashboard check**, 2026-08-01. The preview was deployed by
+the owner outside a task session, from `task/005b-content-consolidation`; alias
+`https://2889d153.community-food-group.pages.dev/`. **The feedback round has started** - and as of
+2026-08-01 has returned no comments yet. The remainder was implemented and verified as **Part C**
+of the close-out bundle, committed as `a0433d5`. Verification record in
+`docs/DECISIONS_ARCHIVE.md` under `## Verification history`.
+
+**The one thing still open is `NODE_VERSION` = `22.23.2` on Pages** - an owner dashboard check that
+no session can close. See the open-owner-items table at the top of this file.
+
+**Note the deployed preview is `2081c8c`, not `a0433d5`.** The close-out bundle is committed
+locally but not pushed, so the live preview does not contain it. Nothing on the preview is wrong
+because of that - the bundle changed no rendered output - but a session inspecting the live site
+is inspecting the previous commit.
 
 **Nothing was bypassed.** The deployed build contains zero tokens - Task 005b filled
 `GROUP_DOMAIN`, the only one that ever reached `dist/`. Verified 2026-08-01 against both
@@ -362,18 +403,15 @@ full in `PROJECT_CONTEXT.md` section 4, which is the authority. Summary of what 
 | --- | --- |
 | `noindex` on the preview | **Done manually by the owner.** Mechanism deferred to production, where the preview/production distinction becomes real |
 | Cloudflare Pages project | **Done.** Note it is named `community-food-group` - the retired invented scaffold name, now baked into the `*.pages.dev` hostname. Rename before the real domain goes live |
-| Output scan over `dist/` | **Still wanted, and now the main practical annoyance** - see below |
-| `NODE_VERSION` = `22.23.2` | **Still required.** Confirm the Pages build actually ran on Node 22 |
-| Re-verify the CGT listing | **Still required. Not relaxed** - unrelated to the domain, and a published claim about a third party |
+| Output scan over `dist/` | **DONE 2026-08-01.** `scripts/check-dist.mjs`, wired into `verify` after `build` and fatal there; `check:config` is non-fatal inside `verify` only. **Proven to fail as well as to pass** |
+| `NODE_VERSION` = `22.23.2` | **STILL OPEN.** The only item left in this task. Owner dashboard check |
+| Re-verify the CGT listing | **DONE 2026-08-01, unchanged.** Name, address and operator all as recorded. **Standing, not discharged** - check again before production |
 | Confirm the mailbox | **Downgraded to a production gate.** Accepted risk for the preview |
-| `SITE_URL` / canonical | **Deferred to production** |
+| `SITE_URL` / canonical | **Deferred to production.** Task 007 sets it |
 
-**[2026-08-01] The remainder is ACTIVE** as **Part C** of the three-part close-out bundle in
-`TASK_SPEC.md`, which is the only authority on its scope: the `dist/` output scan, rewiring
-`verify` so it reaches `build`, and the **overdue** CGT re-verification. That scope has been
-**cut into `TASK_SPEC.md`**, not copied.
-
-**`NODE_VERSION` on Pages stays here** - it is an owner dashboard check, not implementer work.
+The remainder's scope was **cut into `TASK_SPEC.md`** at promotion and has since been archived; it
+is not restated here. **`NODE_VERSION` on Pages stays open** - it is an owner dashboard check, not
+implementer work, and it is the one item from this task that no session can close.
 
 ### Why this moved ahead of Tasks 006 and 007
 
@@ -388,46 +426,37 @@ never needed the production URL**, and in the event it did not need the domain a
 and the site has been running on `pages.dev` since 2026-08-01. What remains for production is
 Task 008, which blocks nothing.
 
-### Planned scope
+### What did not ship here, and where it went
 
-- **An output scan that enforces the rule the project actually has.** `scripts/check-config.mjs`
-  scans `site.config.ts` and `src/`; nothing scans `dist/`. Add a check that greps build output
-  for the documented token pattern, **reading files through Node's `fs`** rather than the shell,
-  because the shell's `grep` honours `.gitignore` and `dist/` is git-ignored. This is the check
-  that gates publishing. `check:config` keeps gating source. **Do not merge the two.**
-- ~~A `noindex` mechanism that distinguishes preview from production.~~ **Owner set it manually.
-  Deferred to production**, where a `public/_headers` file would ship to both and the
-  distinction stops being a remembered rule. **Cloudflare's default behaviour for preview
-  aliases has never been verified from this workstation - confirm it against the dashboard
-  rather than assuming it.**
-- ~~Create or confirm the Cloudflare Pages project.~~ **Done.** **Confirm the Pages build
-  actually ran on `NODE_VERSION` `22.23.2`** - a mismatch fails the `prebuild` Mastodon step.
-  ~~Set `SITE_URL`~~ - deferred to production; `astro.config.mjs` is evaluated before `.env`
-  loads, so it must be a real environment variable when it is set.
-- **Re-verify the Community Gardens of Tucson listing. STILL REQUIRED.**
-  `PROJECT_CONTEXT.md` records this as a standing dependency: facts about a third party and
-  about a rental that can lapse. **Not covered by the domain relaxation** - it has nothing to do
-  with the domain, and the claim is published to whoever holds the link.
-- ~~Confirm `info@vegansagainstfascism.org` is receiving mail.~~ **Downgraded to a production
-  gate by owner decision.** The address is live on all six routes and may bounce; accepted risk
-  for a friends preview. **Cost to close: one test email.**
+Recorded so a future session does not read these as forgotten:
 
-### Acceptance, for what remains
-
-- `npm run verify` reaches `build` - the source scan reports unanswered owner inputs without
-  blocking, and a `dist/` scan blocks publishing instead.
-- The `dist/` scan is **proven to fail**, not merely to pass, by temporarily reintroducing a
-  token.
-- The Pages build is confirmed to have run on Node 22.
-- The CGT listing is re-verified against the operator's own site.
+- **A `noindex` mechanism that distinguishes preview from production.** Owner set it manually and
+  deferred the mechanism to production, where a `public/_headers` file would ship to both and the
+  distinction stops being a remembered rule. **Cloudflare's default behaviour for preview aliases
+  has never been verified from this workstation - confirm it against the dashboard rather than
+  assuming it.** Task 008.
+- **`SITE_URL`.** Deferred to production; `astro.config.mjs` is evaluated before `.env` loads, so
+  it must be a real environment variable when it is set. Task 007 sets it for the preview origin,
+  Task 008 swaps in the real one.
+- **Confirming `info@vegansagainstfascism.org` receives mail.** Downgraded to a production gate by
+  owner decision. The address is live on all six routes and may bounce. **Cost to close: one test
+  email.** Task 008.
 
 ---
 
 ## Task 005c - Copy register pass
 
 **Status:** queued. **Runs after the feedback round.**
-**Blocked on:** Task 005b (so the copy is in one place before it is rewritten), Task 008a, and
-the friends' feedback itself.
+**Blocked on:** the friends' feedback itself. Tasks 005b and 008a are both complete, so the
+feedback is now the only thing standing in front of it.
+
+**[2026-08-01] Confirmed with the owner: the round has started but no comments have arrived yet.**
+So 005c stays blocked. A round being open is not the same as a round having returned something,
+and this is the distinction that decides whether the task is promotable.
+
+**When comments do arrive they are input to a promotion decision, never authorization to change
+code.** They reach an `ARCHITECT`, who writes them into this file or into a promoted
+`TASK_SPEC.md`. A comment does not become work before that.
 
 ### Why it is last
 
@@ -473,60 +502,24 @@ that would mean *decided against*, and the owner has decided *for*, just not yet
 
 ## Task 006a - Fix the feed, no account required
 
-**Status:** queued. **Unblocked.**
+**Status: ACTIVE**, promoted 2026-08-01. `TASK_SPEC.md` is the only authority on its scope and
+acceptance.
 **Blocked on:** nothing.
 
-### Why it needs no account
+The planned scope that stood here has been **cut into `TASK_SPEC.md`**, not copied.
 
-Every correctness problem below is verifiable against a **seeded cache**. That is not a
-workaround - it is how the rendering defect was *proven* in the first place, on 2026-07-30, by
-writing one fake post into `src/data/mastodon-posts.json` and building. The cache is currently
-`[]`, so the feature has only ever been claimed against an empty array.
+**Two things were added to it at promotion, from grepping the repository rather than trusting the
+entry that stood here:**
 
-### Planned scope
-
-- **Resolve the HTML rendering defect.** `src/components/MastodonFeed.astro:61` interpolates
-  `post.content` - an HTML string - into a text node, so visitors would see literal `<p>` tags.
-  **Confirmed empirically, not predicted.**
-
-  **[2026-08-01] DECIDED: sanitize to an allowlist** (`p`, `br`, `a`, `em`, `strong`), not
-  plain-text stripping. Owner input - the posts carry links and plain text would discard them.
-  **This authorizes a sanitizer dependency** under constraint 3.6. Sanitize at **build time**,
-  never in the browser; constraint 3.8 still forbids `set:html` on unsanitized input.
-- Handle custom emoji and mentions, which arrive as markup and will otherwise look broken.
-- **Stop hot-linking media, and fetch it at build time instead.**
-  `MastodonFeed.astro:68` uses `src={media.preview_url || media.url}`, pointing at the Mastodon
-  instance. **Every visitor's browser then contacts a third party - precisely what Task 003
-  removed** when it took Inter off the Google Fonts CDN so no visitor IP reaches one. The owner's
-  posts are image-first, so this is most posts, not an edge case. Hot-linked images also die if a
-  post is deleted upstream. The fetch script already runs at build time.
-- **Fix the alt-text fallback.** `MastodonFeed.astro:69` falls back to `'Post attachment'`, which
-  describes nothing, and **the information in these posts lives in the image** - announcements,
-  community notices, garden pictures. Accessibility is a release requirement here.
-  **Half this fix is not code:** Mastodon only supplies `media.description` when the poster wrote
-  alt text, and the site must not invent one (constraint 3.1). Handle a missing description
-  honestly rather than papering over it, and flag to the owner that alt text needs writing at
-  post time.
-
-**Images are already implemented and this task does not add them.** `src/types/mastodon.ts`,
-`scripts/fetch-mastodon.ts` and `MastodonFeed.astro:64-75` all handle `media_attachments`
-today, rendering up to four per post. The two items above are corrections to existing behaviour.
-- **Distinguish the two empty states.** "No updates available at the moment" is shown today for
-  both *the group has not posted* and *no account is configured*. With the account genuinely
-  unconfigured, the second is the state that actually ships - and it is the one a visitor sees
-  right now on `/` and `/posts`.
-- Decide a cache-staleness policy. A static site shows whatever was cached at build time, so a
-  feed can silently go months stale.
-
-### Acceptance
-
-- With a seeded cache containing markup, the rendered page shows readable text and **no visible
-  tags** - verified in `dist/`, with `/usr/bin/grep`.
-- The unconfigured state renders distinctly from the empty state.
-- Build succeeds with the cache seeded and with it `[]`.
-- No client-side request to any Mastodon instance.
-- **The seeded fixture is removed before completion**, or is clearly a fixture. Do not ship
-  invented posts - constraint 3.1.
+1. **The account avatar at `MastodonFeed.astro:38` is a second hot-link** to the Mastodon
+   instance, and this entry named only the media attachment at line 68. Both reach a third party
+   from the visitor's browser; fixing one and not the other would leave the privacy property this
+   task exists to restore still broken, on every post rather than on some.
+2. **The two `src/content.config.ts` residuals from Task 009a are folded in here**, as a named
+   two-line exception to scope: `z.string().url()` -> `z.url()` at line 61, and the **false
+   comment at lines 43-45** which still describes zod as undeclared. Neither justified a task of
+   its own, they are one edit in one file, and the comment would otherwise lead a future session
+   to revert a shipped owner decision.
 
 ---
 
@@ -632,10 +625,13 @@ becomes available.
 ### Planned scope
 
 - CI running `npm ci`, `npm run check`, `npm run build`, and `npm audit` on pull requests.
-- ~~Resolve the zod deprecation.~~ **Split out as Task 009a and ACTIVE**, as **Part B** of the
-  three-part close-out bundle in `TASK_SPEC.md`, which is the only authority on its scope. Decided
-  2026-08-01: declare `zod` and move the import off `astro:content`. **The rest of Task 009 - CI,
-  link checker, automated accessibility, dependency updates - stays queued here.**
+- ~~Resolve the zod deprecation.~~ **Split out as Task 009a. COMPLETE 2026-08-01**, committed as
+  `a0433d5` as **Part B** of the close-out bundle. `zod` is a declared dependency and
+  `src/content.config.ts` imports `z` from `'zod'`. Verification record in
+  `docs/DECISIONS_ARCHIVE.md`. **The hints went 21 -> 1, not 21 -> 0** - the survivor is an
+  unrelated `z.string().url()` deprecation the old count was masking, and it is folded into Task
+  006a. **The rest of Task 009 - CI, link checker, automated accessibility, dependency updates -
+  stays queued here.**
 - A link checker, given how many dead and invented links the scaffold shipped with.
 - An automated accessibility pass on built HTML.
 - Dependency update automation.
